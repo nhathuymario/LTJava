@@ -2,22 +2,15 @@ package com.example.LTJava.user.dto;
 
 public class CreateUserRequest {
 
-    private String username;
     private String password;
     private String fullName;
-    private String email;
+    private String cccd;
     private String roleName; // ví dụ: "LECTURER"
 
     public CreateUserRequest() {
     }
 
-    public String getUsername() {
-        return username;
-    }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
 
     public String getPassword() {
         return password;
@@ -35,12 +28,12 @@ public class CreateUserRequest {
         this.fullName = fullName;
     }
 
-    public String getEmail() {
-        return email;
+    public String getCccd() {
+        return cccd;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setCccd(String cccd) {
+        this.cccd = cccd;
     }
 
     public String getRoleName() {
