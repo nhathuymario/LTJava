@@ -7,6 +7,9 @@ import com.example.LTJava.user.repository.RoleRepository;
 import com.example.LTJava.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,33 +33,45 @@ public class UserServiceImpl implements UserService {
 
         // 1. validate cccd
 
-        // ===== 1. Lấy và validate CCCD =====
+
+        // 1. CCCD
         String cccd = request.getCccd();
         if (cccd == null || cccd.isBlank()) {
             throw new RuntimeException("CCCD không được để trống");
         }
-
         if (userRepository.existsByCccd(cccd)) {
-            throw new RuntimeException("CCCD đã tồn tại trong hệ thống");
+            throw new RuntimeException("CCCD đã tồn tại");
         }
 
-        // ===== 2. Generate username từ CCCD =====
+        // 2. username = cccd
         String username = cccd;
         if (userRepository.existsByUsername(username)) {
             throw new RuntimeException("Username đã tồn tại: " + username);
         }
 
-        // ===== 3. Validate fullName =====
+        // 3. Họ tên
         String fullName = request.getFullName();
         if (fullName == null || fullName.isBlank()) {
             throw new RuntimeException("Full name không được để trống");
         }
 
-        // ===== 4. Generate email =====
-        String email = buildEmailFromFullNameAndCccd(fullName, cccd);
-        if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("Email đã tồn tại: " + email);
+        // 4. Ngày sinh + password
+        String dobStr = request.getDateOfBirth();
+        if (dobStr == null || dobStr.isBlank()) {
+            throw new RuntimeException("Ngày sinh không được để trống");
         }
+
+        // Format ngày sinh: dd/MM/yyyy  (ví dụ: 01/12/2003)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate dob;
+        try {
+            dob = LocalDate.parse(dobStr, formatter);
+        } catch (DateTimeParseException e) {
+            throw new RuntimeException("Ngày sinh không đúng định dạng dd/MM/yyyy");
+        }
+
+        // password = ddMMyyyy
+        String password = dob.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 
         // ===== 5. Lấy role =====
         String reqRole = request.getRoleName();
@@ -67,30 +82,17 @@ public class UserServiceImpl implements UserService {
 
         // ===== 6. Tạo user =====
         User user = new User();
-        user.setCccd(cccd);          // <<< QUAN TRỌNG
+        user.setCccd(cccd);
         user.setUsername(username);
-        user.setPassword(request.getPassword());
+        user.setPassword(password);      // <-- dùng ngày sinh
         user.setFullName(fullName);
-        user.setEmail(email);
+        user.setDateOfBirth(dob);        // lưu ngày sinh
         user.setActive(true);
         user.addRole(role);
 
         // ===== 7. Lưu DB =====
         return userRepository.save(user);
     }
-    // Hàm build email: chữ cái đầu mỗi từ + 4 số cuối cccd + domain
-    private String buildEmailFromFullNameAndCccd(String fullName, String cccd) {
-        String[] parts = fullName.trim().toLowerCase().split("\\s+");
-        StringBuilder initials = new StringBuilder();
-        for (String p : parts) {
-            initials.append(p.charAt(0));
-        }
-
-        String last4 = cccd.substring(cccd.length() - 4);
-
-        return initials.toString() + last4 + "@example.com";
-    }
-
     // ====== TẠO HÀNG LOẠT (BULK) ======
     @Override
     public List<User> createUsersBulk(List<CreateUserRequest> requests) {
