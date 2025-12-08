@@ -5,6 +5,7 @@ import com.example.LTJava.user.entity.Role;
 import com.example.LTJava.user.entity.User;
 import com.example.LTJava.user.repository.RoleRepository;
 import com.example.LTJava.user.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,14 +19,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-
-    // bạn có thể cho domain vào cấu hình, ở đây hard-code cho dễ nhìn
-    private static final String EMAIL_DOMAIN = "@example.com";
+    private final PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserRepository userRepository,
-                           RoleRepository roleRepository) {
+                           RoleRepository roleRepository,
+                           PasswordEncoder passwordEncoder, PasswordEncoder passwordEncoder1) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder1;
     }
 
     @Override
@@ -61,7 +62,6 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Ngày sinh không được để trống");
         }
 
-        // Format ngày sinh: dd/MM/yyyy  (ví dụ: 01/12/2003)
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate dob;
         try {
@@ -70,8 +70,11 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Ngày sinh không đúng định dạng dd/MM/yyyy");
         }
 
-        // password = ddMMyyyy
-        String password = dob.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+        // password gốc = ddMMyyyy
+        String rawPassword = dob.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+
+        // MÃ HOÁ BCRYPT TRƯỚC KHI LƯU
+        String hashedPassword = passwordEncoder.encode(rawPassword);
 
         // ===== 5. Lấy role =====
         String reqRole = request.getRoleName();
@@ -84,7 +87,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setCccd(cccd);
         user.setUsername(username);
-        user.setPassword(password);      // <-- dùng ngày sinh
+        user.setPassword(hashedPassword);      // dùng ngày sinh
         user.setFullName(fullName);
         user.setDateOfBirth(dob);        // lưu ngày sinh
         user.setActive(true);
