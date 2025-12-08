@@ -32,4 +32,38 @@ public class UserController {
         List<User> createdList = userService.createUsersBulk(requests);
         return new ResponseEntity<>(createdList, HttpStatus.CREATED);
     }
+    //  Lấy danh sách tất cả user
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    //  Khoá tài khoản
+    @PostMapping("/{id}/lock")
+    public ResponseEntity<User> lockUser(@PathVariable Long id) {
+        User user = userService.lockUser(id);
+        return ResponseEntity.ok(user);
+    }
+
+    //  Mở khoá tài khoản
+    @PostMapping("/{id}/unlock")
+    public ResponseEntity<User> unlockUser(@PathVariable Long id) {
+        User user = userService.unlockUser(id);
+        return ResponseEntity.ok(user);
+    }
+
+    //  Đổi role cho user
+    @PutMapping("/{id}/role")
+    public ResponseEntity<User> changeUserRole(@PathVariable Long id,
+                                               @RequestParam String roleName) {
+        User user = userService.changeUserRole(id, roleName);
+        return ResponseEntity.ok(user);
+    }
+    // xóa user
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok("Đã xoá user id = " + id);
+    }
+
 }

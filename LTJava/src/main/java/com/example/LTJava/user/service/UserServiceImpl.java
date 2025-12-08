@@ -103,4 +103,54 @@ public class UserServiceImpl implements UserService {
                 .map(this::createUser)
                 .toList();
     }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public User lockUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user id = " + userId));
+        user.setActive(false); // khóa
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User unlockUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user id = " + userId));
+        user.setActive(true); // mở khóa
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User changeUserRole(Long userId, String roleName) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user id = " + userId));
+
+        if (roleName == null || roleName.isBlank()) {
+            throw new RuntimeException("Role name không được để trống");
+        }
+
+        Role role = roleRepository.findByName(roleName)
+                .orElseGet(() -> roleRepository.save(new Role(roleName)));
+
+        // hiện tại ta cho mỗi user chỉ 1 role chính
+        user.getRoles().clear();
+        user.addRole(role);
+
+        return userRepository.save(user);
+    }
+    // xóa user
+    @Override
+    public void deleteUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("Không tìm thấy user id = " + userId);
+        }
+        userRepository.deleteById(userId);
+    }
+
+
 }

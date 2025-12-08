@@ -10,4 +10,15 @@ public interface UserService {
     User createUser(CreateUserRequest request);
 
     List<User> createUsersBulk(List<CreateUserRequest> requests);
+
+    List<User> getAllUsers();
+
+    User lockUser(Long userId);
+
+    User unlockUser(Long userId);
+
+    User changeUserRole(Long userId, String roleName);
+
+    void deleteUser(Long userId);
+
 }
