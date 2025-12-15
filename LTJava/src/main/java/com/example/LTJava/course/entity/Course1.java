@@ -7,7 +7,7 @@ import lombok.*;
 @Table(name = "courses")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
-public class Course {
+public class Course1 {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +17,8 @@ public class Course {
     private String code;      // VD: CS101
 
     @Column(nullable = false)
+    private String name;      // VD: Intro to Programming
+
     private Integer credits;  // VD: 3
     private String department; // VD: CS
-    private String name;      // VD: Intro to Programming
 }
