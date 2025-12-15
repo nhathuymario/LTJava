@@ -9,6 +9,8 @@ import com.example.LTJava.syllabus.repository.SyllabusRepository;
 import com.example.LTJava.user.entity.User;
 import com.example.LTJava.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class SyllabusServiceImpl implements SyllabusService {
@@ -29,10 +31,11 @@ public class SyllabusServiceImpl implements SyllabusService {
     public Syllabus createSyllabus(CreateSyllabusRequest request, Long lecturerId) {
 
         Course course = courseRepository.findById(request.getCourseId())
-                .orElseThrow(() -> new RuntimeException("Course không tồn tại"));
-
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Course không tồn tại với id=" + request.getCourseId()));
         User lecturer = userRepository.findById(lecturerId)
-                .orElseThrow(() -> new RuntimeException("Lecturer không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Lecturer không tồn tại với id=" + lecturerId));
 
         Syllabus syllabus = new Syllabus();
         syllabus.setCourse(course);

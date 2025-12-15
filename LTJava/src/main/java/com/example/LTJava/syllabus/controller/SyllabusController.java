@@ -33,4 +33,3 @@ public class SyllabusController {
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 }
-ad

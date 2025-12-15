@@ -19,7 +19,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        User user = userRepository.findByUsername(username)
+        // ✅ đổi sang fetch roles
+        User user = userRepository.findByUsernameFetchRoles(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user: " + username));
 
         return new CustomUserDetails(user);
