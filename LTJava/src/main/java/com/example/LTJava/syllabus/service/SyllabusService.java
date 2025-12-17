@@ -6,4 +6,6 @@ import com.example.LTJava.syllabus.entity.Syllabus;
 public interface SyllabusService {
 
     Syllabus createSyllabus(CreateSyllabusRequest request, Long lecturerId);
+    Syllabus submitSyllabus(Long syllabusId, Long lecturerId);
+    Syllabus resubmitSyllabus(Long syllabusId, Long lecturerId);
 }

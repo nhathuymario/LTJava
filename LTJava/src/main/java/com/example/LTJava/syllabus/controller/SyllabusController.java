@@ -32,4 +32,28 @@ public class SyllabusController {
         Syllabus created = syllabusService.createSyllabus(request, lecturerId);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
+
+
+    @PreAuthorize("hasRole('LECTURER')")
+    @PutMapping("/{id}/submit")
+    public ResponseEntity<Syllabus> submit(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long id
+    ) {
+        Long lecturerId = currentUser.getUser().getId();
+        Syllabus updated = syllabusService.submitSyllabus(id, lecturerId);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PreAuthorize("hasRole('LECTURER')")
+    @PutMapping("/{id}/resubmit")
+    public ResponseEntity<Syllabus> resubmit(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long id
+    ) {
+        Long lecturerId = currentUser.getUser().getId();
+        Syllabus updated = syllabusService.resubmitSyllabus(id, lecturerId);
+        return ResponseEntity.ok(updated);
+    }
+
 }

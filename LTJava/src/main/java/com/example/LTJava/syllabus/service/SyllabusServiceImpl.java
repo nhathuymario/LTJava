@@ -49,4 +49,32 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         return syllabusRepository.save(syllabus);
     }
+
+
+    @Override
+    public Syllabus submitSyllabus(Long syllabusId, Long lecturerId) {
+        Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
+
+        if (syllabus.getStatus() != SyllabusStatus.DRAFT) {
+            throw new RuntimeException("Chỉ syllabus ở trạng thái DRAFT mới được submit");
+        }
+
+        syllabus.setStatus(SyllabusStatus.SUBMITTED);
+        return syllabusRepository.save(syllabus);
+    }
+
+    @Override
+    public Syllabus resubmitSyllabus(Long syllabusId, Long lecturerId) {
+        Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
+
+        if (syllabus.getStatus() != SyllabusStatus.REJECTED) {
+            throw new RuntimeException("Chỉ syllabus ở trạng thái REJECTED mới được resubmit");
+        }
+
+        syllabus.setStatus(SyllabusStatus.SUBMITTED);
+        syllabus.setVersion(syllabus.getVersion() + 1); // optional: tăng version khi gửi lại
+        return syllabusRepository.save(syllabus);
+    }
 }
