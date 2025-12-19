@@ -5,12 +5,15 @@ import com.example.LTJava.user.entity.User;
 import com.example.LTJava.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@PreAuthorize("hasRole('SYSTEM_ADMIN')")
+@RequestMapping("/api/admin/users")
+
 public class UserController {
 
     private final UserService userService;
@@ -53,12 +56,14 @@ public class UserController {
     }
 
     //  Đổi role cho user
+    public record ChangeRoleRequest(String roleName) {}
+
     @PutMapping("/{id}/role")
-    public ResponseEntity<User> changeUserRole(@PathVariable Long id,
-                                               @RequestParam String roleName) {
-        User user = userService.changeUserRole(id, roleName);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<?> changeUserRole(@PathVariable Long id,
+                                            @RequestBody ChangeRoleRequest req) {
+        return ResponseEntity.ok(userService.changeUserRole(id, req.roleName()));
     }
+
     // xóa user
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {

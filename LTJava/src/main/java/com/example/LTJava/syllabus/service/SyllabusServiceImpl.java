@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @Service
 public class SyllabusServiceImpl implements SyllabusService {
 
@@ -77,4 +79,9 @@ public class SyllabusServiceImpl implements SyllabusService {
         syllabus.setVersion(syllabus.getVersion() + 1); // optional: tăng version khi gửi lại
         return syllabusRepository.save(syllabus);
     }
+ //để tạm check thông tin
+    public List<Syllabus> getMySyllabus(Long lecturerId) {
+        return syllabusRepository.findByCreatedBy_Id(lecturerId);
+    }
+
 }

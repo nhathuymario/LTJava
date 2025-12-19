@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    Optional<User> findByCccd(String cccd);
     Optional<User> findByUsername(String username);
 
     // ✅ thêm cái này để load kèm roles (tránh LazyInitializationException)

@@ -10,6 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/syllabus")
 public class SyllabusController {
@@ -54,6 +56,12 @@ public class SyllabusController {
         Long lecturerId = currentUser.getUser().getId();
         Syllabus updated = syllabusService.resubmitSyllabus(id, lecturerId);
         return ResponseEntity.ok(updated);
+    }
+//để tạm check thông tin LECTURER
+    @PreAuthorize("hasRole('LECTURER')")
+    @GetMapping("/my")
+    public List<Syllabus> mySyllabus(@AuthenticationPrincipal CustomUserDetails user) {
+        return syllabusService.getMySyllabus(user.getUser().getId());
     }
 
 }

@@ -74,4 +74,10 @@ public class User {
 
     public Set<Role> getRoles() { return roles; }
     public void addRole(Role role) { this.roles.add(role); }
+
+    public void setRole(Role adminRole) {
+    }
+
+    public void setRoles(Set<Role> adminRole) {
+    }
 }
