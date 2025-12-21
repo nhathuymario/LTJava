@@ -79,5 +79,6 @@ public class User {
     }
 
     public void setRoles(Set<Role> adminRole) {
+
     }
 }
