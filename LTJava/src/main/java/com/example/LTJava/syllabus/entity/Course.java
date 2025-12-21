@@ -1,6 +1,9 @@
 package com.example.LTJava.syllabus.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+
+import java.util.Set;
 
 @Entity
 @Table(name = "courses")
@@ -21,6 +24,38 @@ public class Course {
     private String department;     // tên khoa, tạm đơn giản
 
     public Course() {}
+
+    // --- PHẦN THÊM MỚI QUAN HỆ MÔN HỌC ---
+
+    // 1. Môn Tiên quyết (Prerequisites)
+    @ManyToMany
+    @JoinTable(
+            name = "course_prerequisites", // Tên bảng trong SQL
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "prerequisite_id")
+    )
+    @JsonIgnoreProperties("prerequisites") // Tránh đệ quy nếu môn kia cũng trỏ ngược lại
+    private Set<Course> prerequisites;
+
+    // 2. Môn Song hành (Parallel)
+    @ManyToMany
+    @JoinTable(
+            name = "course_parallel",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "parallel_id")
+    )
+    @JsonIgnoreProperties("parallelCourses")
+    private Set<Course> parallelCourses;
+
+    // 3. Môn Bổ trợ (Supplementary)
+    @ManyToMany
+    @JoinTable(
+            name = "course_supplementary",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "supplementary_id")
+    )
+    @JsonIgnoreProperties("supplementaryCourses")
+    private Set<Course> supplementaryCourses;
 
     // getters & setters
     public Long getId() {
@@ -61,5 +96,29 @@ public class Course {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public Set<Course> getPrerequisites() {
+        return prerequisites;
+    }
+
+    public void setPrerequisites(Set<Course> prerequisites) {
+        this.prerequisites = prerequisites;
+    }
+
+    public Set<Course> getParallelCourses() {
+        return parallelCourses;
+    }
+
+    public void setParallelCourses(Set<Course> parallelCourses) {
+        this.parallelCourses = parallelCourses;
+    }
+
+    public Set<Course> getSupplementaryCourses() {
+        return supplementaryCourses;
+    }
+
+    public void setSupplementaryCourses(Set<Course> supplementaryCourses) {
+        this.supplementaryCourses = supplementaryCourses;
     }
 }
