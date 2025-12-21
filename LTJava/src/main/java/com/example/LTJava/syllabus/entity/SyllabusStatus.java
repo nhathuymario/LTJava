@@ -5,5 +5,5 @@ public enum SyllabusStatus {
     SUBMITTED,      // Đã gửi HoD
     APPROVED,       // HoD/Approver đã duyệt
     PUBLISHED,// Đã xuất bản cho SV xem
-    REJECTED  // từ chối xuất bản
+    REJECTED,// từ chối xuất bản
 }
