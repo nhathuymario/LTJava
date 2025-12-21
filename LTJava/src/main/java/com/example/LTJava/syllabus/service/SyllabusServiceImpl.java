@@ -4,6 +4,7 @@ import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
 import com.example.LTJava.syllabus.entity.Course;
 import com.example.LTJava.syllabus.entity.Syllabus;
 import com.example.LTJava.syllabus.entity.SyllabusStatus;
+import com.example.LTJava.syllabus.exception.ResourceNotFoundException;
 import com.example.LTJava.syllabus.repository.CourseRepository;
 import com.example.LTJava.syllabus.repository.SyllabusRepository;
 import com.example.LTJava.user.entity.User;
@@ -84,4 +85,57 @@ public class SyllabusServiceImpl implements SyllabusService {
         return syllabusRepository.findByCreatedBy_Id(lecturerId);
     }
 
+    @Override
+    public Syllabus publishSyllabus(Long syllabusId) {
+        Syllabus syllabus = syllabusRepository.findById(syllabusId)
+                .orElseThrow(() -> new ResourceNotFoundException("Syllabus not found"));
+
+        // Logic: Chuyển trạng thái sang PUBLISHED (Đã xuất bản)
+        syllabus.setStatus(SyllabusStatus.PUBLISHED);
+        return syllabusRepository.save(syllabus);
+    }
+
+    // 2. THÊM HÀM REJECT (Của AA) -> Chức năng Từ chối
+    @Override
+    public Syllabus rejectSyllabus(Long id, String reason) {
+        Syllabus syllabus = syllabusRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Giáo trình không tồn tại"));
+
+        // Chỉ được từ chối bài đang ở trạng thái SUBMITTED
+        if (syllabus.getStatus() != SyllabusStatus.SUBMITTED) {
+            throw new RuntimeException("Chỉ được từ chối giáo trình đã Nộp (SUBMITTED)");
+        }
+
+        syllabus.setStatus(SyllabusStatus.REJECTED);
+        // syllabus.setRejectReason(reason); // Nếu bạn có cột này trong Entity thì mở ra
+        System.out.println("Lý do từ chối: " + reason); // Log tạm ra màn hình
+
+        return syllabusRepository.save(syllabus);
+    }
+
+    @Override
+    public List<Syllabus> getPendingSyllabus() {
+        // Giả sử luồng là: Giảng viên nộp -> Trạng thái SUBMITTED -> AA vào duyệt
+        return syllabusRepository.findByStatus(SyllabusStatus.SUBMITTED);
+    }
+
+    // --- TRIỂN KHAI LOGIC CHO SINH VIÊN ---
+
+    // 3.HÀM SEARCH (Của Sinh viên)
+    @Override
+    public List<Syllabus> searchSyllabus(String keyword, String year, String semester) {
+        return syllabusRepository.searchForStudent(keyword, year, semester);
+    }
+
+    @Override
+    public Syllabus getSyllabusDetailPublic(Long id) {
+        Syllabus syllabus = syllabusRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Syllabus not found"));
+
+        // Quan trọng: Sinh viên chỉ xem được bài ĐÃ XUẤT BẢN
+        if (syllabus.getStatus() != SyllabusStatus.PUBLISHED) {
+            throw new ResourceNotFoundException("Syllabus is not available publicly.");
+        }
+        return syllabus;
+    }
 }
