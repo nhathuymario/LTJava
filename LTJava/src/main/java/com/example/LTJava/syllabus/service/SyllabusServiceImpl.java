@@ -88,10 +88,24 @@ public class SyllabusServiceImpl implements SyllabusService {
                 .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại"));
 
         if (syllabus.getStatus() != SyllabusStatus.SUBMITTED) {
-            throw new RuntimeException("Chỉ syllabus SUBMITTED mới được duyệt");
+            throw new RuntimeException("Syllabus không ở trạng thái chờ duyệt");
         }
 
         syllabus.setStatus(SyllabusStatus.APPROVED);
+        return syllabusRepository.save(syllabus);
+    }
+
+    // yêu cầu chính sửa
+    @Override
+    public Syllabus requestEditSyllabus(Long syllabusId, Long hodId) {
+        Syllabus syllabus = syllabusRepository.findById(syllabusId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại"));
+
+        if (syllabus.getStatus() != SyllabusStatus.SUBMITTED) {
+            throw new RuntimeException("Syllabus không ở trạng thái chờ duyệt");
+        }
+
+        syllabus.setStatus(SyllabusStatus.REQUESTEDIT);
         return syllabusRepository.save(syllabus);
     }
 
@@ -100,5 +114,4 @@ public class SyllabusServiceImpl implements SyllabusService {
     public List<Syllabus> getMySyllabus(Long lecturerId) {
         return syllabusRepository.findByCreatedBy_Id(lecturerId);
     }
-
 }

@@ -76,6 +76,17 @@ public class SyllabusController {
         return ResponseEntity.ok(updated);
     }
 
+    @PreAuthorize("hasRole('HOD')")
+    @PutMapping("/{id}/request-edit")
+    public ResponseEntity<Syllabus> requestEdit(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long id
+    ) {
+        Long hodId = currentUser.getUser().getId();
+        Syllabus updated = syllabusService.requestEditSyllabus(id, hodId);
+        return ResponseEntity.ok(updated);
+    }
+
     //để tạm check thông tin LECTURER
     @PreAuthorize("hasRole('LECTURER')")
     @GetMapping("/my")

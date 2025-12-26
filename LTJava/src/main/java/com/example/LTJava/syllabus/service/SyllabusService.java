@@ -11,6 +11,7 @@ public interface SyllabusService {
     Syllabus submitSyllabus(Long syllabusId, Long lecturerId);
     Syllabus resubmitSyllabus(Long syllabusId, Long lecturerId);
     Syllabus approveSyllabus(Long syllabusId, Long hodId);
+    Syllabus requestEditSyllabus(Long syllabusId, Long hodId);
     //để tạm check thông tin
     List<Syllabus> getMySyllabus(Long id);
 }
