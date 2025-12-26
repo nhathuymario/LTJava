@@ -1,5 +1,11 @@
 package com.example.LTJava.syllabus.service;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
 import com.example.LTJava.syllabus.entity.Course;
 import com.example.LTJava.syllabus.entity.Syllabus;
@@ -8,11 +14,6 @@ import com.example.LTJava.syllabus.repository.CourseRepository;
 import com.example.LTJava.syllabus.repository.SyllabusRepository;
 import com.example.LTJava.user.entity.User;
 import com.example.LTJava.user.repository.UserRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @Service
 public class SyllabusServiceImpl implements SyllabusService {
@@ -79,7 +80,23 @@ public class SyllabusServiceImpl implements SyllabusService {
         syllabus.setVersion(syllabus.getVersion() + 1); // optional: tăng version khi gửi lại
         return syllabusRepository.save(syllabus);
     }
- //để tạm check thông tin
+
+    // duyệt syllabus 
+    @Override
+    public Syllabus approveSyllabus(Long syllabusId, Long hodId) {
+        Syllabus syllabus = syllabusRepository.findById(syllabusId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại"));
+
+        if (syllabus.getStatus() != SyllabusStatus.SUBMITTED) {
+            throw new RuntimeException("Chỉ syllabus SUBMITTED mới được duyệt");
+        }
+
+        syllabus.setStatus(SyllabusStatus.APPROVED);
+        return syllabusRepository.save(syllabus);
+    }
+
+    //để tạm check thông tin
+    @Override
     public List<Syllabus> getMySyllabus(Long lecturerId) {
         return syllabusRepository.findByCreatedBy_Id(lecturerId);
     }

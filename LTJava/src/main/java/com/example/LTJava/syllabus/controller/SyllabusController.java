@@ -1,16 +1,23 @@
 package com.example.LTJava.syllabus.controller;
 
-import com.example.LTJava.auth.security.CustomUserDetails;
-import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
-import com.example.LTJava.syllabus.entity.Syllabus;
-import com.example.LTJava.syllabus.service.SyllabusService;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.example.LTJava.auth.security.CustomUserDetails;
+import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
+import com.example.LTJava.syllabus.entity.Syllabus;
+import com.example.LTJava.syllabus.service.SyllabusService;
 
 @RestController
 @RequestMapping("/api/syllabus")
@@ -57,7 +64,19 @@ public class SyllabusController {
         Syllabus updated = syllabusService.resubmitSyllabus(id, lecturerId);
         return ResponseEntity.ok(updated);
     }
-//để tạm check thông tin LECTURER
+
+    @PreAuthorize("hasRole('HOD')")
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<Syllabus> approve(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long id
+    ) {
+        Long hodId = currentUser.getUser().getId();
+        Syllabus updated = syllabusService.approveSyllabus(id, hodId);
+        return ResponseEntity.ok(updated);
+    }
+
+    //để tạm check thông tin LECTURER
     @PreAuthorize("hasRole('LECTURER')")
     @GetMapping("/my")
     public List<Syllabus> mySyllabus(@AuthenticationPrincipal CustomUserDetails user) {
