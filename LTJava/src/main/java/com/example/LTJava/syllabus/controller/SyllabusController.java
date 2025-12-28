@@ -140,7 +140,7 @@ public class SyllabusController {
             @RequestParam Long id2) {
 
         // Logic so sánh 2 Syllabus entity khác nhau (viết thêm trong Service tương tự hàm compareVersions ở trên)
-        // Đây là bài tập nhỏ cho bạn: Copy logic compareVersions nhưng đổi tham số thành (Syllabus s1, Syllabus s2)
+        // Copy logic compareVersions nhưng đổi tham số thành (Syllabus s1, Syllabus s2)
         return ResponseEntity.ok("Chức năng đang phát triển: So sánh ID " + id1 + " và " + id2);
     }
 

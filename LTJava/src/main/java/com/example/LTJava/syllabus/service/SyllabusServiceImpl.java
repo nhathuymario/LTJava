@@ -93,6 +93,7 @@ public class SyllabusServiceImpl implements SyllabusService {
         return syllabusRepository.findByCreatedBy_Id(lecturerId);
     }
 
+    @Autowired private AIService aiService;
     @Override
     public Syllabus publishSyllabus(Long syllabusId) {
         Syllabus syllabus = syllabusRepository.findById(syllabusId)
@@ -110,6 +111,21 @@ public class SyllabusServiceImpl implements SyllabusService {
         for (Subscription sub : subs) {
             String msg = "Giáo trình môn " + syllabus.getCourse().getName() + " đã được cập nhật phiên bản mới!";
             notiRepo.save(new Notification(sub.getUser(), msg));
+        }
+
+        syllabus.setStatus(SyllabusStatus.PUBLISHED);
+        syllabus.setVersion(syllabus.getVersion() + 1);
+
+        // --- GỌI AI XỬ LÝ (Tóm tắt + Keyword) ---
+        // Chỉ chạy AI nếu nội dung đủ dài (tránh tốn quota với bài test rỗng)
+        if (syllabus.getDescription() != null && syllabus.getDescription().length() > 10) {
+            try {
+                String[] aiResult = aiService.processSyllabusContent(syllabus.getTitle(), syllabus.getDescription());
+                syllabus.setAiSummary(aiResult[0]); // Lưu tóm tắt
+                syllabus.setKeywords(aiResult[1]);  // Lưu keywords
+            } catch (Exception e) {
+                System.out.println("AI Service Error: " + e.getMessage());
+            }
         }
 
         return syllabusRepository.save(syllabus);
