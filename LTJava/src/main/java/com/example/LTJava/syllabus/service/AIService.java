@@ -2,6 +2,8 @@ package com.example.LTJava.syllabus.service;
 
 import com.example.LTJava.syllabus.dto.ai.GeminiRequest;
 import com.example.LTJava.syllabus.dto.ai.GeminiResponse;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -16,44 +18,41 @@ public class AIService {
     private String apiUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper(); // Dùng để đọc JSON
 
-    // Hàm trả về mảng String: [0] là Tóm tắt, [1] là Keywords
     public String[] processSyllabusContent(String title, String description) {
-        // 1. Soạn "câu thần chú" (Prompt) cho AI
-        String prompt = "Bạn là trợ lý học thuật. Với môn học '" + title + "' và nội dung: '" + description + "'. " +
-                "Hãy thực hiện 2 nhiệm vụ:\n" +
-                "1. Tóm tắt nội dung trong khoảng 2-3 câu.\n" +
-                "2. Trích xuất 5 từ khóa quan trọng nhất (cách nhau bằng dấu phẩy).\n" +
-                "Trả về định dạng CHÍNH XÁC như sau (không thêm lời chào):\n" +
-                "SUMMARY: <nội dung tóm tắt>\n" +
-                "KEYWORDS: <từ khóa 1, từ khóa 2...>";
+        // 1. Prompt yêu cầu trả về JSON chuẩn
+        String prompt = "Bạn là chuyên gia tóm tắt giáo trình. \n" +
+                "Đầu vào: Môn '" + title + "', Nội dung: '" + description + "'.\n" +
+                "Nhiệm vụ: \n" +
+                "1. Viết lại tóm tắt mới ngắn gọn (khoảng 2 câu), văn phong học thuật, KHÔNG copy y nguyên văn bản gốc.\n" +
+                "2. Trích xuất 5 từ khóa quan trọng.\n" +
+                "YÊU CẦU BẮT BUỘC: Chỉ trả về đúng 1 đoạn JSON duy nhất theo mẫu sau (không markdown, không giải thích):\n" +
+                "{ \"summary\": \"...nội dung tóm tắt...\", \"keywords\": \"...từ khóa...\" }";
 
         try {
-            // 2. Gọi API Google
             String finalUrl = apiUrl + "?key=" + apiKey;
             GeminiRequest request = new GeminiRequest(prompt);
             GeminiResponse response = restTemplate.postForObject(finalUrl, request, GeminiResponse.class);
 
-            // 3. Xử lý kết quả trả về
             if (response != null && !response.getCandidates().isEmpty()) {
                 String rawText = response.getCandidates().get(0).getContent().getParts().get(0).getText();
 
-                // Tách chuỗi dựa trên từ khóa mình đã quy định
-                String summary = "Không có tóm tắt";
-                String keywords = "";
+                // Lọc bỏ ký tự thừa nếu AI lỡ gửi markdown (```json ... ```)
+                rawText = rawText.replaceAll("```json", "").replaceAll("```", "").trim();
 
-                if (rawText.contains("SUMMARY:") && rawText.contains("KEYWORDS:")) {
-                    summary = rawText.substring(rawText.indexOf("SUMMARY:") + 8, rawText.indexOf("KEYWORDS:")).trim();
-                    keywords = rawText.substring(rawText.indexOf("KEYWORDS:") + 9).trim();
-                } else {
-                    summary = rawText; // Nếu AI trả về format lạ thì lấy hết làm tóm tắt
-                }
+                // Đọc JSON để lấy dữ liệu chính xác
+                JsonNode rootNode = objectMapper.readTree(rawText);
+                String summary = rootNode.path("summary").asText("Không thể tóm tắt");
+                String keywords = rootNode.path("keywords").asText("");
 
                 return new String[]{summary, keywords};
             }
         } catch (Exception e) {
+            System.out.println("AI Processing Error: " + e.getMessage());
+            // In ra console để debug nếu cần
             e.printStackTrace();
         }
-        return new String[]{"Lỗi kết nối AI", ""};
+        return new String[]{"Lỗi xử lý AI", ""};
     }
 }
