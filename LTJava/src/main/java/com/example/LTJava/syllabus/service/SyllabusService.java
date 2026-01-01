@@ -14,4 +14,5 @@ public interface SyllabusService {
     Syllabus requestEditSyllabus(Long syllabusId, Long hodId);
     //để tạm check thông tin
     List<Syllabus> getMySyllabus(Long id);
+    List<Syllabus> getSubmittedSyllabus();
 }

@@ -53,7 +53,6 @@ public class SyllabusServiceImpl implements SyllabusService {
         return syllabusRepository.save(syllabus);
     }
 
-
     @Override
     public Syllabus submitSyllabus(Long syllabusId, Long lecturerId) {
         Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
@@ -79,6 +78,12 @@ public class SyllabusServiceImpl implements SyllabusService {
         syllabus.setStatus(SyllabusStatus.SUBMITTED);
         syllabus.setVersion(syllabus.getVersion() + 1); // optional: tăng version khi gửi lại
         return syllabusRepository.save(syllabus);
+    }
+
+    // get syllabus chờ duyệt 
+    @Override
+    public List<Syllabus> getSubmittedSyllabus() {
+        return syllabusRepository.findByStatus(SyllabusStatus.SUBMITTED);
     }
 
     // duyệt syllabus 

@@ -22,19 +22,16 @@ import com.example.LTJava.syllabus.service.SyllabusService;
 @RestController
 @RequestMapping("/api/syllabus")
 public class SyllabusController {
-
     private final SyllabusService syllabusService;
 
     public SyllabusController(SyllabusService syllabusService) {
         this.syllabusService = syllabusService;
     }
 
-    // 👇 chỉ giảng viên mới được tạo giáo trình
+    // chỉ giảng viên mới được tạo giáo trình
     @PreAuthorize("hasRole('LECTURER')")
     @PostMapping("/create")
-    public ResponseEntity<Syllabus> createSyllabus(
-            @AuthenticationPrincipal CustomUserDetails currentUser,
-            @RequestBody CreateSyllabusRequest request
+    public ResponseEntity<Syllabus> createSyllabus( @AuthenticationPrincipal CustomUserDetails currentUser, @RequestBody CreateSyllabusRequest request
     ) {
         Long lecturerId = currentUser.getUser().getId();
 
@@ -45,9 +42,7 @@ public class SyllabusController {
 
     @PreAuthorize("hasRole('LECTURER')")
     @PutMapping("/{id}/submit")
-    public ResponseEntity<Syllabus> submit(
-            @AuthenticationPrincipal CustomUserDetails currentUser,
-            @PathVariable Long id
+    public ResponseEntity<Syllabus> submit( @AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long id
     ) {
         Long lecturerId = currentUser.getUser().getId();
         Syllabus updated = syllabusService.submitSyllabus(id, lecturerId);
@@ -56,21 +51,21 @@ public class SyllabusController {
 
     @PreAuthorize("hasRole('LECTURER')")
     @PutMapping("/{id}/resubmit")
-    public ResponseEntity<Syllabus> resubmit(
-            @AuthenticationPrincipal CustomUserDetails currentUser,
-            @PathVariable Long id
-    ) {
+    public ResponseEntity<Syllabus> resubmit( @AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long id) {
         Long lecturerId = currentUser.getUser().getId();
         Syllabus updated = syllabusService.resubmitSyllabus(id, lecturerId);
         return ResponseEntity.ok(updated);
     }
 
     @PreAuthorize("hasRole('HOD')")
+    @GetMapping("/submitted")
+    public ResponseEntity<List<Syllabus>> getSubmittedSyllabus() {
+        return ResponseEntity.ok(syllabusService.getSubmittedSyllabus());
+    }
+
+    @PreAuthorize("hasRole('HOD')")
     @PutMapping("/{id}/approve")
-    public ResponseEntity<Syllabus> approve(
-            @AuthenticationPrincipal CustomUserDetails currentUser,
-            @PathVariable Long id
-    ) {
+    public ResponseEntity<Syllabus> approve( @AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long id) {
         Long hodId = currentUser.getUser().getId();
         Syllabus updated = syllabusService.approveSyllabus(id, hodId);
         return ResponseEntity.ok(updated);
@@ -78,10 +73,7 @@ public class SyllabusController {
 
     @PreAuthorize("hasRole('HOD')")
     @PutMapping("/{id}/request-edit")
-    public ResponseEntity<Syllabus> requestEdit(
-            @AuthenticationPrincipal CustomUserDetails currentUser,
-            @PathVariable Long id
-    ) {
+    public ResponseEntity<Syllabus> requestEdit( @AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long id) {
         Long hodId = currentUser.getUser().getId();
         Syllabus updated = syllabusService.requestEditSyllabus(id, hodId);
         return ResponseEntity.ok(updated);
