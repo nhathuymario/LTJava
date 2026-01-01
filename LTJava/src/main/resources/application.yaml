@@ -4,7 +4,7 @@ spring:
     url: jdbc:mysql://localhost:3306/LTJava?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
 #    url: jdbc:mysql://host.docker.internal:3306/LTJava
     username: root
-    password:
+    password: 123456
   jpa:
     hibernate:
       ddl-auto: update   # dev cho ti?n, sau n�y ??i th�nh validate

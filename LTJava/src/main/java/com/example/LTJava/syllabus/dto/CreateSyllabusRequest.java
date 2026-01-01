@@ -51,3 +51,5 @@ public class CreateSyllabusRequest {
         this.semester = semester;
     }
 }
+
+

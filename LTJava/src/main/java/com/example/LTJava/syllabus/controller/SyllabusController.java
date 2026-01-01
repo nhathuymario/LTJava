@@ -12,11 +12,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.LTJava.auth.security.CustomUserDetails;
 import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
+import com.example.LTJava.syllabus.dto.RequestEditSyllabusRequest;
 import com.example.LTJava.syllabus.entity.Syllabus;
+import com.example.LTJava.syllabus.entity.SyllabusStatus;
 import com.example.LTJava.syllabus.service.SyllabusService;
 
 @RestController
@@ -39,7 +42,6 @@ public class SyllabusController {
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-
     @PreAuthorize("hasRole('LECTURER')")
     @PutMapping("/{id}/submit")
     public ResponseEntity<Syllabus> submit( @AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long id
@@ -58,9 +60,9 @@ public class SyllabusController {
     }
 
     @PreAuthorize("hasRole('HOD')")
-    @GetMapping("/submitted")
-    public ResponseEntity<List<Syllabus>> getSubmittedSyllabus() {
-        return ResponseEntity.ok(syllabusService.getSubmittedSyllabus());
+    @GetMapping
+    public List<Syllabus> getSyllabusByStatus(@RequestParam SyllabusStatus status) {
+        return syllabusService.getSyllabusByStatus(status);
     }
 
     @PreAuthorize("hasRole('HOD')")
@@ -70,12 +72,14 @@ public class SyllabusController {
         Syllabus updated = syllabusService.approveSyllabus(id, hodId);
         return ResponseEntity.ok(updated);
     }
-
+    
     @PreAuthorize("hasRole('HOD')")
     @PutMapping("/{id}/request-edit")
-    public ResponseEntity<Syllabus> requestEdit( @AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long id) {
+    public ResponseEntity<Syllabus> requestEdit(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long id, @RequestBody RequestEditSyllabusRequest request) {
         Long hodId = currentUser.getUser().getId();
-        Syllabus updated = syllabusService.requestEditSyllabus(id, hodId);
+        Syllabus updated = syllabusService.requestEditSyllabus(
+                id, hodId, request.getNote()
+        );
         return ResponseEntity.ok(updated);
     }
 

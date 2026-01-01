@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
 import com.example.LTJava.syllabus.entity.Syllabus;
+import com.example.LTJava.syllabus.entity.SyllabusStatus;
 
 public interface SyllabusService {
 
@@ -11,8 +12,8 @@ public interface SyllabusService {
     Syllabus submitSyllabus(Long syllabusId, Long lecturerId);
     Syllabus resubmitSyllabus(Long syllabusId, Long lecturerId);
     Syllabus approveSyllabus(Long syllabusId, Long hodId);
-    Syllabus requestEditSyllabus(Long syllabusId, Long hodId);
+    Syllabus requestEditSyllabus(Long syllabusId, Long hodId, String editNote);
     //để tạm check thông tin
     List<Syllabus> getMySyllabus(Long id);
-    List<Syllabus> getSubmittedSyllabus();
+    List<Syllabus> getSyllabusByStatus(SyllabusStatus status);
 }

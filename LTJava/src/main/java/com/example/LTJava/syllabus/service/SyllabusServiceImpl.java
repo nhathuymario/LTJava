@@ -77,13 +77,14 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         syllabus.setStatus(SyllabusStatus.SUBMITTED);
         syllabus.setVersion(syllabus.getVersion() + 1); // optional: tăng version khi gửi lại
+        syllabus.setEditNote(null);
         return syllabusRepository.save(syllabus);
     }
 
-    // get syllabus chờ duyệt 
+    // get syllabus theo trạng thái
     @Override
-    public List<Syllabus> getSubmittedSyllabus() {
-        return syllabusRepository.findByStatus(SyllabusStatus.SUBMITTED);
+    public List<Syllabus> getSyllabusByStatus(SyllabusStatus status) {
+        return syllabusRepository.findByStatus(status);
     }
 
     // duyệt syllabus 
@@ -102,7 +103,7 @@ public class SyllabusServiceImpl implements SyllabusService {
 
     // yêu cầu chính sửa
     @Override
-    public Syllabus requestEditSyllabus(Long syllabusId, Long hodId) {
+    public Syllabus requestEditSyllabus(Long syllabusId, Long hodId, String editNote) {
         Syllabus syllabus = syllabusRepository.findById(syllabusId)
                 .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại"));
 
@@ -110,7 +111,13 @@ public class SyllabusServiceImpl implements SyllabusService {
             throw new RuntimeException("Syllabus không ở trạng thái chờ duyệt");
         }
 
+        if (editNote == null || editNote.trim().isEmpty()) {
+            throw new RuntimeException("Nội dung yêu cầu chỉnh sửa không được để trống");
+        }
+
         syllabus.setStatus(SyllabusStatus.REQUESTEDIT);
+        syllabus.setEditNote(editNote);
+
         return syllabusRepository.save(syllabus);
     }
 
