@@ -107,10 +107,13 @@ public class SyllabusServiceImpl implements SyllabusService {
         syllabus.setVersion(syllabus.getVersion() + 1); // Duyệt xong lên version mới
 
         // Gửi thông báo cho những ai đang theo dõi môn học này
-        List<Subscription> subs = subRepo.findByCourseId(syllabus.getCourse().getId());
-        for (Subscription sub : subs) {
-            String msg = "Giáo trình môn " + syllabus.getCourse().getName() + " đã được cập nhật phiên bản mới!";
-            notiRepo.save(new Notification(sub.getUser(), msg));
+        // Nhờ AI viết nội dung thông báo dựa trên tóm tắt vừa có
+        String notiContent = aiService.createNotificationMessage(syllabus.getCourse().getName(), syllabus.getAiSummary());
+
+        List<com.example.LTJava.syllabus.entity.Subscription> subs = subRepo.findByCourseId(syllabus.getCourse().getId());
+        for (com.example.LTJava.syllabus.entity.Subscription sub : subs) {
+            // Dùng nội dung do AI viết
+            notiRepo.save(new com.example.LTJava.syllabus.entity.Notification(sub.getUser(), notiContent));
         }
 
         syllabus.setStatus(SyllabusStatus.PUBLISHED);

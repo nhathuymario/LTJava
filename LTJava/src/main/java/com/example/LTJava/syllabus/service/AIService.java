@@ -55,4 +55,29 @@ public class AIService {
         }
         return new String[]{"Lỗi xử lý AI", ""};
     }
+
+    // ... (Code cũ giữ nguyên) ...
+
+    // --- HÀM MỚI: VIẾT THÔNG BÁO ---
+    public String createNotificationMessage(String courseName, String summary) {
+        String prompt = "Bạn là trợ lý lớp học vui tính. Môn học '" + courseName + "' vừa cập nhật giáo trình mới với nội dung: '" + summary + "'. " +
+                "Hãy viết một thông báo ngắn (dưới 30 từ) gửi đến sinh viên để nhắc họ vào xem. " +
+                "Yêu cầu: Văn phong Gen Z, hài hước, dùng emoji, không quá nghiêm túc. " +
+                "Chỉ trả về nội dung thông báo, không có lời dẫn.";
+
+        try {
+            String finalUrl = apiUrl + "?key=" + apiKey;
+            GeminiRequest request = new GeminiRequest(prompt);
+            GeminiResponse response = restTemplate.postForObject(finalUrl, request, GeminiResponse.class);
+
+            if (response != null && !response.getCandidates().isEmpty()) {
+                // Lấy text trả về trực tiếp
+                return response.getCandidates().get(0).getContent().getParts().get(0).getText().trim();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // Fallback nếu AI lỗi
+        return "🔥 Giáo trình môn " + courseName + " đã có cập nhật mới. Vào xem ngay!";
+    }
 }
