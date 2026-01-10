@@ -136,7 +136,7 @@ html, body, #root {
 }
 .uth-footer:hover { color: #2d2348; }
 
-@media (max-width: 900px) {
+/* @media (max-width: 900px) {
     .uth-hero { justify-content: center; padding: 24px; }
     .uth-login-card { width: 100%; max-width: 420px; }
 }
@@ -146,4 +146,4 @@ html, body, #root {
 }
 @media (max-width: 899px) {
     html, body, #root, .uth-login-page { overflow: auto; }
-}
+} */

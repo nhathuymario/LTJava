@@ -15,6 +15,8 @@ api.interceptors.request.use((config) => {
         localStorage.getItem('token') ||
         localStorage.getItem('accessToken') ||
         localStorage.getItem('jwt')
+
+    console.log('token:', token)
     if (token) {
         config.headers = config.headers || {}
         config.headers.Authorization = `Bearer ${token}`

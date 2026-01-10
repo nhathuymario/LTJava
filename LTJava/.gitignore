@@ -13,3 +13,4 @@ target/
 .env
 *.yaml
 */xml
+*.properties
