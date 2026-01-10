@@ -1,9 +1,21 @@
 package com.example.LTJava.syllabus.entity;
 
-import com.example.LTJava.user.entity.User;
-import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
+
+import com.example.LTJava.user.entity.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "syllabus")
@@ -57,6 +69,10 @@ public class Syllabus {
     public void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @Column(columnDefinition = "TEXT")
+    private String editNote; // nội dung yêu cầu chỉnh sửa
+
 
     // getters & setters
     public Long getId() {
@@ -139,23 +155,11 @@ public class Syllabus {
         return updatedAt;
     }
 
-    @Column(columnDefinition = "TEXT")
-    private String aiSummary;
+    public String getEditNote() {
+    return editNote;
+}
 
-    @Column(columnDefinition = "TEXT")
-    private String keywords;
-
-    // --- Getter & Setter cho Keywords ---
-    public String getKeywords() { return keywords; }
-
-    public void setKeywords(String keywords) { this.keywords = keywords; }
-
-    // --- GETTER & SETTER CHO AI SUMMARY ---
-    public String getAiSummary() {
-        return aiSummary;
-    }
-
-    public void setAiSummary(String aiSummary) {
-        this.aiSummary = aiSummary;
+    public void setEditNote(String editNote) {
+        this.editNote = editNote;
     }
 }
