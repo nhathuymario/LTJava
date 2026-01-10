@@ -1,0 +1,149 @@
+:root {
+    --primary: #0b6b5c;
+    --text: #1e1e2f;
+    --muted: #4a4a5a;
+    --card-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+}
+
+html, body, #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+/* Login page */
+.uth-login-page {
+    min-height: 100vh;
+    width: 100%;
+}
+
+.uth-topbar {
+    height: 56px;
+    padding: 0 16px;
+    display: flex; align-items: center; gap: 16px;
+    background: #fff; border-bottom: 1px solid #e6e6e6;
+    position: sticky; top: 0; z-index: 10;
+}
+
+.uth-logo {
+    font-weight: 800;
+    color: #0b6b5c;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+.uth-logo span {
+    font-size: 13px;
+    color: #d32f2f;
+    letter-spacing: 0.2px;
+}
+
+.uth-menu {
+    display: flex;
+    gap: 14px;
+    font-size: 14px;
+    color: #1f2933;
+}
+.uth-menu a { cursor: pointer; }
+.uth-menu a:hover { color: var(--primary); }
+
+.uth-spacer { flex: 1; }
+
+.uth-hero {
+    width: 100%;
+    min-height: calc(100vh - 56px);
+    display: flex; justify-content: center; align-items: center;
+    padding: 32px 24px;
+    background: linear-gradient(135deg, #dfe1e5, #d1d3d8); /* hoặc ảnh nền */
+}
+
+.uth-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05));
+}
+
+.uth-login-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 420px;             /* giới hạn chiều rộng */
+    padding: 26px 26px 20px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: var(--card-shadow);
+}
+
+.uth-title {
+    margin: 0 0 14px;
+    color: #2d2348;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.uth-alert {
+    background: #fde2e2;
+    color: #a01b1b;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.uth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.uth-input {
+    padding: 12px 14px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #f7f9fc;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.uth-input:focus {
+    outline: none;
+    border-color: #b0bec5;
+    box-shadow: 0 0 0 3px rgba(11, 107, 92, 0.18);
+    background: #fff;
+}
+
+.uth-button {
+    margin-top: 6px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+.uth-button:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(11,107,92,0.22); }
+.uth-button:disabled { opacity: 0.75; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.uth-footer {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+}
+.uth-footer:hover { color: #2d2348; }
+
+@media (max-width: 900px) {
+    .uth-hero { justify-content: center; padding: 24px; }
+    .uth-login-card { width: 100%; max-width: 420px; }
+}
+
+@media (min-width: 900px) {
+    html, body, #root, .uth-login-page { overflow: hidden; }
+}
+@media (max-width: 899px) {
+    html, body, #root, .uth-login-page { overflow: auto; }
+}
