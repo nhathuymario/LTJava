@@ -81,6 +81,28 @@ public class SyllabusServiceImpl implements SyllabusService {
         return syllabusRepository.save(syllabus);
     }
 
+    @Override
+    public List<Syllabus> getAll() {
+        return syllabusRepository.findAll();
+    }
+
+    @Override
+    public Syllabus getById(Long id) {
+        return syllabusRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại"));
+    }
+
+    @Override
+    public List<Syllabus> getByCourseId(Long courseId) {
+        return syllabusRepository.findByCourseId(courseId);
+    }
+
+    // 🔥 METHOD BẮT BUỘC – KHÔNG THIẾU – KHÔNG SAI TYPE
+    @Override
+    public List<Syllabus> getByStatus(SyllabusStatus status) {
+        return syllabusRepository.findByStatus(status);
+    }
+
     // get syllabus theo trạng thái
     @Override
     public List<Syllabus> getSyllabusByStatus(SyllabusStatus status) {

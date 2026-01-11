@@ -59,29 +59,57 @@ public class SyllabusController {
         return ResponseEntity.ok(updated);
     }
 
-    @PreAuthorize("hasRole('HOD')")
+    // ✅ 1. Xem tất cả giáo trình
+    @PreAuthorize("hasRole('LECTURER')")
     @GetMapping
-    public List<Syllabus> getSyllabusByStatus(@RequestParam SyllabusStatus status) {
-        return syllabusService.getSyllabusByStatus(status);
+    public List<Syllabus> getAllSyllabus() {
+        return syllabusService.getAll();
     }
 
-    @PreAuthorize("hasRole('HOD')")
-    @PutMapping("/{id}/approve")
-    public ResponseEntity<Syllabus> approve( @AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long id) {
-        Long hodId = currentUser.getUser().getId();
-        Syllabus updated = syllabusService.approveSyllabus(id, hodId);
-        return ResponseEntity.ok(updated);
+    // ✅ 2. Xem chi tiết 1 giáo trình
+    @PreAuthorize("hasRole('LECTURER')")
+    @GetMapping("/{id}")
+    public Syllabus getById(@PathVariable Long id) {
+        return syllabusService.getById(id);
     }
-    
-    @PreAuthorize("hasRole('HOD')")
-    @PutMapping("/{id}/request-edit")
-    public ResponseEntity<Syllabus> requestEdit(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long id, @RequestBody RequestEditSyllabusRequest request) {
-        Long hodId = currentUser.getUser().getId();
-        Syllabus updated = syllabusService.requestEditSyllabus(
-                id, hodId, request.getNote()
-        );
-        return ResponseEntity.ok(updated);
+
+    // ✅ 3. Xem giáo trình theo môn học
+    @PreAuthorize("hasRole('LECTURER')")
+    @GetMapping("/course/{courseId}")
+    public List<Syllabus> getByCourse(@PathVariable Long courseId) {
+        return syllabusService.getByCourseId(courseId);
     }
+
+    // ✅ 4. Xem theo trạng thái
+    @PreAuthorize("hasRole('LECTURER')")
+    @GetMapping("/status/{status}")
+    public List<Syllabus> getByStatus(@PathVariable SyllabusStatus status) {
+        return syllabusService.getByStatus(status);
+    }
+
+//    @PreAuthorize("hasRole('HOD')")
+//    @GetMapping
+//    public List<Syllabus> getSyllabusByStatus(@RequestParam SyllabusStatus status) {
+//        return syllabusService.getSyllabusByStatus(status);
+//    }
+//
+//    @PreAuthorize("hasRole('HOD')")
+//    @PutMapping("/{id}/approve")
+//    public ResponseEntity<Syllabus> approve( @AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long id) {
+//        Long hodId = currentUser.getUser().getId();
+//        Syllabus updated = syllabusService.approveSyllabus(id, hodId);
+//        return ResponseEntity.ok(updated);
+//    }
+//
+//    @PreAuthorize("hasRole('HOD')")
+//    @PutMapping("/{id}/request-edit")
+//    public ResponseEntity<Syllabus> requestEdit(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable Long id, @RequestBody RequestEditSyllabusRequest request) {
+//        Long hodId = currentUser.getUser().getId();
+//        Syllabus updated = syllabusService.requestEditSyllabus(
+//                id, hodId, request.getNote()
+//        );
+//        return ResponseEntity.ok(updated);
+//    }
 
     //để tạm check thông tin LECTURER
     @PreAuthorize("hasRole('LECTURER')")

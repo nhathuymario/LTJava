@@ -5,6 +5,8 @@ import com.example.LTJava.course.entity.Course1;
 import com.example.LTJava.course.repository.CourseRepository1;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CourseServiceImpl implements CourseService {
 
@@ -33,5 +35,15 @@ public class CourseServiceImpl implements CourseService {
         c.setDepartment(req.getDepartment());
 
         return courseRepository.save(c);
+    }
+    @Override
+    public List<Course1> getAll() {
+        return courseRepository.findAll();
+    }
+
+    @Override
+    public Course1 getById(Long id) {
+        return courseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Course không tồn tại"));
     }
 }

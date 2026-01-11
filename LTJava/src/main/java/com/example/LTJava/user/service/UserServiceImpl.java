@@ -7,12 +7,17 @@ import com.example.LTJava.user.repository.RoleRepository;
 import com.example.LTJava.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.example.LTJava.user.dto.ImportUsersResult;
+import com.example.LTJava.user.dto.UserImportRow;
+import com.example.LTJava.user.importer.ExcelUserImporter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -20,13 +25,16 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ExcelUserImporter excelUserImporter;
 
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder, PasswordEncoder passwordEncoder1) {
+                           PasswordEncoder passwordEncoder, PasswordEncoder passwordEncoder1,
+                           ExcelUserImporter excelUserImporter) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder1;
+        this.excelUserImporter = excelUserImporter;
     }
 
     @Override
@@ -151,6 +159,54 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.deleteById(userId);
     }
+
+    @Override
+    public ImportUsersResult importUsersFromExcel(MultipartFile file) {
+
+        ExcelUserImporter.ParseResult parsed = excelUserImporter.parse(file);
+        ImportUsersResult result = parsed.result();
+        List<UserImportRow> rows = parsed.rows();
+
+        int success = 0;
+        DateTimeFormatter dmy = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        for (UserImportRow r : rows) {
+            try {
+                // ✅ LOG DỮ LIỆU ĐỌC TỪ EXCEL (thô)
+                System.out.println("IMPORT ROW: " + r.getExcelRowNumber()
+                        + " | cccd=" + r.getCccd()
+                        + " | dob=" + r.getDateOfBirth()
+                        + " | role=" + r.getRoleName());
+
+                CreateUserRequest req = new CreateUserRequest();
+                req.setFullName(r.getFullName());
+                req.setCccd(r.getCccd());
+                req.setRoleName(r.getRoleName());
+
+                String dobStr = r.getDateOfBirth().format(dmy);
+                // ✅ LOG DOB STRING GỬI VÀO createUser()
+                System.out.println("IMPORT ROW: " + r.getExcelRowNumber()
+                        + " | dobStr=" + dobStr);
+
+                req.setDateOfBirth(dobStr);
+
+                createUser(req);
+                success++;
+
+            } catch (Exception e) {
+                // ✅ LOG LỖI THEO DÒNG
+                System.out.println("IMPORT ERROR ROW: " + r.getExcelRowNumber()
+                        + " | message=" + e.getMessage());
+
+                result.getErrors().add(new ImportUsersResult.RowError(r.getExcelRowNumber(), e.getMessage()));
+            }
+        }
+
+        result.setSuccessCount(success);
+        result.setFailedCount(result.getErrors().size());
+        return result;
+    }
+
 
 
 }

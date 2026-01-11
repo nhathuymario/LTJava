@@ -16,4 +16,9 @@ public interface SyllabusService {
     //để tạm check thông tin
     List<Syllabus> getMySyllabus(Long id);
     List<Syllabus> getSyllabusByStatus(SyllabusStatus status);
+
+    List<Syllabus> getAll();
+    Syllabus getById(Long id);
+    List<Syllabus> getByCourseId(Long courseId);
+    List<Syllabus> getByStatus(SyllabusStatus status);
 }

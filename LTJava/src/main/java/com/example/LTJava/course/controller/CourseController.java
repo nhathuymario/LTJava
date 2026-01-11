@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/course")
 public class CourseController {
@@ -23,5 +25,19 @@ public class CourseController {
     public ResponseEntity<Course1> create(@RequestBody CreateCourseRequest req) {
         Course1 created = courseService.create(req);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
+    }
+
+    // ✅ Xem tất cả môn học
+    @PreAuthorize("hasRole('LECTURER')")
+    @GetMapping
+    public List<Course1> getAllCourses() {
+        return courseService.getAll();
+    }
+
+    // ✅ Xem chi tiết môn học
+    @PreAuthorize("hasRole('LECTURER')")
+    @GetMapping("/{id}")
+    public Course1 getCourseById(@PathVariable Long id) {
+        return courseService.getById(id);
     }
 }

@@ -12,7 +12,8 @@ public interface SyllabusRepository extends JpaRepository<Syllabus, Long> {
     Optional<Syllabus> findByIdAndCreatedBy_Id(Long id, Long lecturerId);
     //để tạm check thông tin
     List<Syllabus> findByCreatedBy_Id(Long lecturerId);
-
     // Lọc theo trạng thái 
     List<Syllabus> findByStatus(SyllabusStatus status);
+
+    List<Syllabus> findByCourseId(Long courseId);
 }
