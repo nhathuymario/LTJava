@@ -1,175 +1,153 @@
-import { useEffect, useMemo, useState } from 'react'
-import {
-    createSyllabus,
-    getMySyllabus,
-    resubmitSyllabus,
-    submitSyllabus,
-    type CreateSyllabusRequest,
-    type Syllabus,
-} from '../../services/lecturer'
-import { hasRole } from '../../services/auth'
-import './lecturer.css'
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./lecturer.css";
+
+import { hasRole, getToken } from "../../services/auth";
+import { getMyCourses, type Course } from "../../services/course";
+
+type SortKey = "name_asc" | "name_desc";
 
 export default function LecturerPage() {
-    const [items, setItems] = useState<Syllabus[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [form, setForm] = useState<CreateSyllabusRequest>({
-        title: '',
-        description: '',
-        content: '',
-    })
-    const [creating, setCreating] = useState(false)
+    const nav = useNavigate();
 
-    const isLecturer = hasRole('LECTURER')
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const canSubmit = useMemo(
-        () => form.title.trim() !== '' && form.description.trim() !== '',
-        [form],
-    )
+    const [q, setQ] = useState("");
+    const [sort, setSort] = useState<SortKey>("name_asc");
 
-    const fetchMine = async () => {
-        setLoading(true)
-        setError(null)
+    const fullName = localStorage.getItem("fullName") || "Giảng viên";
+
+    const isLecturer = hasRole("LECTURER");
+
+    const fetchCourses = async () => {
+        setLoading(true);
+        setError(null);
         try {
-            const data = await getMySyllabus()
-            setItems(data)
+            const data = await getMyCourses();
+            setCourses(data);
         } catch (err: any) {
-            const msg =
-                err?.response?.data?.message ||
-                err?.response?.data ||
-                err?.message ||
-                'Không tải được giáo trình của bạn'
-            setError(typeof msg === 'string' ? msg : 'Không tải được giáo trình của bạn')
+            const status = err?.response?.status;
+            const resp = err?.response?.data;
+            console.error("GET /course/my failed:", status, resp);
+
+            if (status === 401 || status === 403) {
+                setError("Phiên đăng nhập hết hạn hoặc bạn không có quyền LECTURER.");
+            } else {
+                const msg = resp?.message || resp || err?.message || "Không tải được danh sách khóa học";
+                setError(typeof msg === "string" ? msg : "Không tải được danh sách khóa học");
+            }
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
-        if (!isLecturer) {
-            setError('Bạn không có quyền LECTURER')
-            setLoading(false)
-            return
+        const token = getToken?.() || localStorage.getItem("token"); // tùy auth.ts bạn lưu token tên gì
+        if (!token) {
+            setError("Bạn chưa đăng nhập (thiếu token).");
+            setLoading(false);
+            // nav("/login"); // nếu bạn muốn auto chuyển trang
+            return;
         }
-        fetchMine()
+        if (!isLecturer) {
+            setError("Bạn không có quyền truy cập trang này (LECTURER).");
+            setLoading(false);
+            return;
+        }
+        fetchCourses();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isLecturer])
+    }, [isLecturer]);
 
-    const onCreate = async () => {
-        if (!isLecturer) {
-            alert('Chỉ LECTURER')
-            return
-        }
-        if (!canSubmit) {
-            alert('Điền đủ tiêu đề và mô tả')
-            return
-        }
-        setCreating(true)
-        try {
-            await createSyllabus(form)
-            setForm({ title: '', description: '', content: '' })
-            await fetchMine()
-        } catch (err: any) {
-            const msg = err?.response?.data?.message || err?.response?.data || err?.message
-            alert(msg || 'Tạo giáo trình thất bại')
-        } finally {
-            setCreating(false)
-        }
-    }
+    const filtered = useMemo(() => {
+        const norm = (s: string) => s.toLowerCase().trim();
+        const hay = (c: Course) => `${c.code} ${c.name} ${c.department || ""}`.toLowerCase();
 
-    const onSubmit = async (id: number) => {
-        try {
-            await submitSyllabus(id)
-            await fetchMine()
-        } catch (err: any) {
-            alert(err?.response?.data || 'Gửi duyệt thất bại')
-        }
-    }
+        let list = courses.filter((c) => hay(c).includes(norm(q)));
 
-    const onResubmit = async (id: number) => {
-        try {
-            await resubmitSyllabus(id)
-            await fetchMine()
-        } catch (err: any) {
-            alert(err?.response?.data || 'Gửi lại thất bại')
-        }
-    }
+        list.sort((a, b) => {
+            const an = (a.name || "").toLowerCase();
+            const bn = (b.name || "").toLowerCase();
+            return sort === "name_asc" ? an.localeCompare(bn) : bn.localeCompare(an);
+        });
+
+        return list;
+    }, [courses, q, sort]);
 
     return (
-        <div className="lecturer-wrapper">
-            <div className="lecturer-card">
-                <h1 className="lecturer-title">Lecturer</h1>
-                <p className="lecturer-sub">Trang dành cho giảng viên</p>
+        <div className="lec-page">
+            <div className="lec-container">
+                <h1 className="lec-title">
+                    Khóa học của tôi
+                </h1>
 
-                {error && <div className="lecturer-alert">{error}</div>}
-                {loading && <p>Đang tải...</p>}
+                <div className="lec-card">
+                    <h2 className="lec-section-title">Tổng quan về khóa học</h2>
 
-                {/* Form tạo giáo trình */}
-                <section className="lecturer-section">
-                    <h3>Tạo giáo trình</h3>
-                    <div className="lecturer-row">
+                    <div className="lec-toolbar">
+                        <select className="lec-select" defaultValue="all" disabled>
+                            <option value="all">All</option>
+                        </select>
+
                         <input
-                            className="lecturer-input"
-                            placeholder="Tiêu đề"
-                            value={form.title}
-                            onChange={e => setForm({ ...form, title: e.target.value })}
+                            className="lec-search"
+                            placeholder="Tìm kiếm"
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
                         />
-                        <input
-                            className="lecturer-input"
-                            placeholder="Mô tả ngắn"
-                            value={form.description}
-                            onChange={e => setForm({ ...form, description: e.target.value })}
-                        />
+
+                        <select
+                            className="lec-select"
+                            value={sort}
+                            onChange={(e) => setSort(e.target.value as SortKey)}
+                        >
+                            <option value="name_asc">Sort by course name</option>
+                            <option value="name_desc">Sort Z → A</option>
+                        </select>
                     </div>
-                    <textarea
-                        className="lecturer-textarea"
-                        rows={5}
-                        placeholder="Nội dung chi tiết"
-                        value={form.content}
-                        onChange={e => setForm({ ...form, content: e.target.value })}
-                    />
-                    <button className="lecturer-btn" disabled={!canSubmit || creating} onClick={onCreate}>
-                        {creating ? 'Đang tạo...' : 'Tạo giáo trình'}
-                    </button>
-                </section>
 
-                {/* Danh sách giáo trình */}
-                {!loading && !error && (
-                    <section className="lecturer-section">
-                        <h3>Giáo trình của tôi</h3>
-                        {items.length === 0 && <p>Chưa có giáo trình.</p>}
-                        <ul className="lecturer-list">
-                            {items.map(item => (
-                                <li key={item.id} className="lecturer-item">
-                                    <div>
-                                        <div className="lecturer-item-title">{item.title}</div>
-                                        <div className="lecturer-item-desc">{item.description}</div>
-                                        <div className="lecturer-item-meta">
-                                            Trạng thái: <strong>{item.status}</strong>
-                                            {item.status === 'REQUESTED_EDIT' && item.note ? (
-                                                <span> — Ghi chú từ HOD: {item.note}</span>
-                                            ) : null}
+                    {error && <div className="lec-empty">❌ {error}</div>}
+                    {loading && <div className="lec-empty">Đang tải...</div>}
+
+                    {!loading && !error && (
+                        <div className="lec-list">
+                            {filtered.length === 0 ? (
+                                <div className="lec-empty">Không có course nào.</div>
+                            ) : (
+                                filtered.map((c, idx) => (
+                                    <div
+                                        key={c.id}
+                                        className="course-row"
+                                        onClick={() => nav(`/lecturer/courses/${c.id}`)}
+                                        style={{ cursor: "pointer" }}
+                                    >
+                                        <div className={`course-thumb thumb-${idx % 4}`} />
+
+                                        <div className="course-info">
+                                            <div className="course-name">
+                                                [{c.code}] - {c.name}
+                                            </div>
+                                            <div className="course-sub">
+                                                {c.department ? `[CQ]_${c.department}` : "[CQ]_HKI2024-2025_Trung Tâm NN, CNTT và ĐTNV"}
+                                            </div>
                                         </div>
+
+                                        <button
+                                            className="course-more"
+                                            title="More"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            ⋮
+                                        </button>
+
                                     </div>
-                                    <div className="lecturer-actions">
-                                        {item.status === 'DRAFT' && (
-                                            <button className="lecturer-btn secondary" onClick={() => onSubmit(item.id)}>
-                                                Gửi HOD duyệt
-                                            </button>
-                                        )}
-                                        {item.status === 'REQUESTED_EDIT' && (
-                                            <button className="lecturer-btn secondary" onClick={() => onResubmit(item.id)}>
-                                                Gửi lại
-                                            </button>
-                                        )}
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </section>
-                )}
+                                ))
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
-    )
+    );
 }

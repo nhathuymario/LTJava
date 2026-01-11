@@ -17,7 +17,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Course1 create(CreateCourseRequest req) {
+    public Course1 create(CreateCourseRequest req, Long lecturerId) {
         if (req.getCode() == null || req.getCode().isBlank()) {
             throw new RuntimeException("Course code không được để trống");
         }
@@ -33,9 +33,16 @@ public class CourseServiceImpl implements CourseService {
         c.setName(req.getName());
         c.setCredits(req.getCredits());
         c.setDepartment(req.getDepartment());
+        c.setLecturerId(lecturerId); // ✅ GIỜ THÌ ĐÚNG
 
         return courseRepository.save(c);
     }
+
+    @Override
+    public List<Course1> getMyCourses(Long lecturerId) {
+        return courseRepository.findByLecturerId(lecturerId);
+    }
+
     @Override
     public List<Course1> getAll() {
         return courseRepository.findAll();

@@ -6,7 +6,9 @@ import com.example.LTJava.course.entity.Course1;
 import java.util.List;
 
 public interface CourseService {
-    Course1 create(CreateCourseRequest req);
+    Course1 create(CreateCourseRequest req, Long lecturerId);
+
+    List<Course1> getMyCourses(Long lecturerId);
 
     List<Course1> getAll();
 
