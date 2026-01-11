@@ -30,6 +30,22 @@ export async function createUser(body: CreateUserBody) {
     return data
 }
 
+
+export async function importUsersExcel(file: File) {
+    const fd = new FormData();
+    fd.append("file", file);
+
+    const res = await api.post("/admin/users/import-excel", fd, {
+        headers: {
+            // ✅ quan trọng: xóa Content-Type JSON nếu api.ts set sẵn
+            "Content-Type": "multipart/form-data",
+        },
+    });
+
+    return res.data;
+}
+
+
 export async function bulkCreateUsers(items: Array<CreateUserBody>) {
     const { data } = await api.post('/admin/users/bulk-create', items)
     return data

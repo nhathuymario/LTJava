@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
-    getAllUsers, createUser, bulkCreateUsers,
+    getAllUsers, createUser,
     lockUser, unlockUser, changeUserRole, deleteUser, type User,
+    importUsersExcel,
 } from '../../services/admin'
 import { hasRole } from '../../services/auth'
 import './admin.css'
@@ -23,7 +24,9 @@ export default function AdminPage() {
     const [cccd, setCccd] = useState('')
     const [dob, setDob] = useState('')
     const [newRole, setNewRole] = useState<'SYSTEM_ADMIN' | 'LECTURER' | 'AA' | 'STUDENT'>('STUDENT')
-    const [bulkText, setBulkText] = useState('')
+    const [excelFile, setExcelFile] = useState<File | null>(null)
+    const [importResult, setImportResult] = useState<any>(null) // hoặc type ImportUsersResult nếu bạn export type
+
 
     const isSystemAdmin = hasRole('SYSTEM_ADMIN')
 
@@ -72,29 +75,50 @@ export default function AdminPage() {
         }
     }
 
-    const parsedBulk = useMemo(() => {
-        const lines = bulkText.split('\n').map(l => l.trim()).filter(Boolean)
-        const items: Array<{ fullName: string; cccd: string; dateOfBirth: string; roleName: string }> = []
-        for (const line of lines) {
-            const [fullName, cccd, dateOfBirth, roleName = 'STUDENT'] = line.split(',').map(p => p.trim())
-            if (fullName && cccd && dateOfBirth) items.push({ fullName, cccd, dateOfBirth, roleName })
-        }
-        return items
-    }, [bulkText])
-
-    const onBulkCreate = async () => {
+    const onImportExcel = async () => {
         if (!isSystemAdmin) { alert('Chỉ SYSTEM_ADMIN'); return }
-        if (parsedBulk.length === 0) { alert('Không có dòng hợp lệ'); return }
+        if (!excelFile) { alert('Chọn file .xlsx trước'); return }
+
         try {
-            // @ts-ignore
-            await bulkCreateUsers(parsedBulk)
-            setBulkText('')
+            const res = await importUsersExcel(excelFile)
+            setImportResult(res)
+            setExcelFile(null)
+
+            // refresh list
             await fetchUsers()
+
+            // thông báo nhanh
+            alert(`Import xong: thành công ${res.successCount}, lỗi ${res.failedCount}`)
         } catch (err: any) {
             const msg = err?.response?.data?.message || err?.response?.data || err?.message
-            alert(msg || 'Tạo nhiều tài khoản thất bại')
+            alert(msg || 'Import Excel thất bại')
         }
     }
+
+
+    // const parsedBulk = useMemo(() => {
+    //     const lines = bulkText.split('\n').map(l => l.trim()).filter(Boolean)
+    //     const items: Array<{ fullName: string; cccd: string; dateOfBirth: string; roleName: string }> = []
+    //     for (const line of lines) {
+    //         const [fullName, cccd, dateOfBirth, roleName = 'STUDENT'] = line.split(',').map(p => p.trim())
+    //         if (fullName && cccd && dateOfBirth) items.push({ fullName, cccd, dateOfBirth, roleName })
+    //     }
+    //     return items
+    // }, [bulkText])
+
+    // const onBulkCreate = async () => {
+    //     if (!isSystemAdmin) { alert('Chỉ SYSTEM_ADMIN'); return }
+    //     if (parsedBulk.length === 0) { alert('Không có dòng hợp lệ'); return }
+    //     try {
+    //         // @ts-ignore
+    //         await bulkCreateUsers(parsedBulk)
+    //         setBulkText('')
+    //         await fetchUsers()
+    //     } catch (err: any) {
+    //         const msg = err?.response?.data?.message || err?.response?.data || err?.message
+    //         alert(msg || 'Tạo nhiều tài khoản thất bại')
+    //     }
+    // }
 
     const onLock = async (u: User) => { try { await lockUser(u.id); await fetchUsers() } catch (err: any) { alert(err?.response?.data || 'Khoá thất bại') } }
     const onUnlock = async (u: User) => { try { await unlockUser(u.id); await fetchUsers() } catch (err: any) { alert(err?.response?.data || 'Mở khoá thất bại') } }
@@ -127,22 +151,68 @@ export default function AdminPage() {
                     <p style={{ color: '#6b7280', marginTop: 4 }}>Ngày sinh sẽ gửi dạng dd/MM/yyyy.</p>
                 </div>
 
-                {/* Tạo nhiều */}
+
+                {/* Import Excel */}
                 <div className="admin-section">
-                    <h3>Tạo nhiều tài khoản (CSV)</h3>
-                    <p style={{ color: '#6b7280' }}>Mỗi dòng: fullName,cccd,dateOfBirth(dd/MM/yyyy),roleName</p>
-                    <textarea
-                        className="admin-textarea"
-                        rows={5}
-                        placeholder={`vd:\nNguyen Van A,012345678901,01/01/2004,STUDENT\nLe Thi B,098765432109,31/12/1999,LECTURER`}
-                        value={bulkText}
-                        onChange={e => setBulkText(e.target.value)}
-                    />
-                    <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <button className="admin-btn" onClick={onBulkCreate}>Tạo nhiều</button>
-                        <span style={{ color: '#6b7280' }}>Sẽ tạo: {parsedBulk.length} tài khoản</span>
+                    <h3>Import tài khoản từ Excel (.xlsx)</h3>
+                    <p style={{ color: '#6b7280' }}>
+                        File mẫu: fullName | cccd | dateOfBirth | roleName
+                    </p>
+
+                    <div className="admin-row">
+                        <input
+                            className="admin-input"
+                            type="file"
+                            accept=".xlsx"
+                            onChange={(e) => setExcelFile(e.target.files?.[0] ?? null)}
+                        />
+                        <button className="admin-btn" onClick={onImportExcel}>
+                            Import Excel
+                        </button>
                     </div>
+
+                    {importResult && (
+                        <div style={{ marginTop: 10 }}>
+                            <div style={{ color: '#6b7280' }}>
+                                Tổng dòng: {importResult.totalRows ?? '-'} | Thành công: {importResult.successCount ?? 0} | Lỗi: {importResult.failedCount ?? 0}
+                            </div>
+
+                            {Array.isArray(importResult.errors) && importResult.errors.length > 0 && (
+                                <div style={{ marginTop: 8 }}>
+                                    <b>Danh sách lỗi:</b>
+                                    <ul style={{ marginTop: 6 }}>
+                                        {importResult.errors.slice(0, 20).map((e: any, idx: number) => (
+                                            <li key={idx}>
+                                                Dòng {e.excelRowNumber}: {e.message}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    {importResult.errors.length > 20 && (
+                                        <div style={{ color: '#6b7280' }}>Chỉ hiển thị 20 lỗi đầu.</div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
+
+
+                {/*/!* Tạo nhiều *!/*/}
+                {/*<div className="admin-section">*/}
+                {/*    <h3>Tạo nhiều tài khoản (CSV)</h3>*/}
+                {/*    <p style={{ color: '#6b7280' }}>Mỗi dòng: fullName,cccd,dateOfBirth(dd/MM/yyyy),roleName</p>*/}
+                {/*    <textarea*/}
+                {/*        className="admin-textarea"*/}
+                {/*        rows={5}*/}
+                {/*        placeholder={`vd:\nNguyen Van A,012345678901,01/01/2004,STUDENT\nLe Thi B,098765432109,31/12/1999,LECTURER`}*/}
+                {/*        value={bulkText}*/}
+                {/*        onChange={e => setBulkText(e.target.value)}*/}
+                {/*    />*/}
+                {/*    <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>*/}
+                {/*        <button className="admin-btn" onClick={onBulkCreate}>Tạo nhiều</button>*/}
+                {/*        <span style={{ color: '#6b7280' }}>Sẽ tạo: {parsedBulk.length} tài khoản</span>*/}
+                {/*    </div>*/}
+                {/*</div>*/}
 
                 {/* Bảng */}
                 {!loading && !error && (
