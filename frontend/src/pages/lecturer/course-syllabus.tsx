@@ -3,46 +3,20 @@ import { useNavigate, useParams } from "react-router-dom";
 import "./lecturer.css";
 
 import { hasRole, getToken } from "../../services/auth";
+import { getCourseById, type Course } from "../../services/course";
 import { getSyllabusByCourse, type Syllabus } from "../../services/syllabus";
-import { getCourseById, type Course } from "../../services/course"; // bạn tạo thêm getCourseById ở services/course.ts
 
-export default function LecturerCourseSyllabusPage() {
+export default function LecturerCourseDetailPage() {
     const nav = useNavigate();
     const { courseId } = useParams();
     const id = Number(courseId);
 
     const [course, setCourse] = useState<Course | null>(null);
-    const [items, setItems] = useState<Syllabus[]>([]);
+    const [syllabi, setSyllabi] = useState<Syllabus[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const isLecturer = hasRole("LECTURER");
-
-    const fetchData = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const [c, syl] = await Promise.all([
-                getCourseById(id),
-                getSyllabusByCourse(id),
-            ]);
-            setCourse(c);
-            setItems(syl);
-        } catch (err: any) {
-            const status = err?.response?.status;
-            const resp = err?.response?.data;
-            console.error("load course syllabus failed:", status, resp);
-
-            const msg =
-                resp?.message ||
-                resp ||
-                err?.message ||
-                "Không tải được danh sách giáo trình của môn này";
-            setError(typeof msg === "string" ? msg : "Không tải được dữ liệu");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     useEffect(() => {
         const token = getToken?.() || localStorage.getItem("token");
@@ -52,7 +26,7 @@ export default function LecturerCourseSyllabusPage() {
             return;
         }
         if (!isLecturer) {
-            setError("Bạn không có quyền LECTURER.");
+            setError("Bạn không có quyền truy cập (LECTURER).");
             setLoading(false);
             return;
         }
@@ -61,39 +35,64 @@ export default function LecturerCourseSyllabusPage() {
             setLoading(false);
             return;
         }
-        fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
+        (async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const [c, s] = await Promise.all([
+                    getCourseById(id),
+                    getSyllabusByCourse(id),
+                ]);
+                setCourse(c);
+                setSyllabi(s);
+            } catch (err: any) {
+                const resp = err?.response?.data;
+                const msg = resp?.message || resp || err?.message || "Không tải được dữ liệu course/syllabus";
+                setError(typeof msg === "string" ? msg : "Không tải được dữ liệu");
+            } finally {
+                setLoading(false);
+            }
+        })();
     }, [id, isLecturer]);
 
     return (
         <div className="lec-page">
             <div className="lec-container">
                 <div className="lec-card">
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                        <button className="lec-link" onClick={() => nav("/lecturer")}>← Quay lại</button>
-                        {/* nút thêm giáo trình làm sau */}
-                    </div>
+                    <button className="lec-link" onClick={() => nav("/lecturer")}>
+                        ← Quay lại
+                    </button>
 
-                    <h2 className="lec-section-title" style={{ marginTop: 10 }}>
-                        {course ? `Giáo trình: [${course.code}] ${course.name}` : "Giáo trình"}
-                    </h2>
-
-                    {error && <div className="lec-empty">❌ {error}</div>}
                     {loading && <div className="lec-empty">Đang tải...</div>}
+                    {error && <div className="lec-empty">❌ {error}</div>}
 
-                    {!loading && !error && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "10px 0 18px" }}>
-                            {items.length === 0 ? (
-                                <div className="lec-empty">Chưa có giáo trình nào cho môn này.</div>
-                            ) : (
-                                items.map((s) => (
-                                    <div key={s.id} className="folder-card">
-                                        <div className="folder-icon">📁</div>
-                                        <div className="folder-title">{s.title}</div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
+                    {!loading && !error && course && (
+                        <>
+                            {/* Header course */}
+                            <div className="course-detail-header">
+                                <div className="course-detail-title">
+                                    [{course.code}] - {course.name}
+                                </div>
+                                <div className="course-detail-desc">
+                                    {course.description || course.department || "Chưa có mô tả."}
+                                </div>
+                            </div>
+
+                            {/* Syllabus list dạng folder */}
+                            <div className="syllabus-folder-list">
+                                {syllabi.length === 0 ? (
+                                    <div className="lec-empty">Chưa có giáo trình nào.</div>
+                                ) : (
+                                    syllabi.map((s) => (
+                                        <div key={s.id} className="syllabus-folder">
+                                            <div className="syllabus-folder-icon">📁</div>
+                                            <div className="syllabus-folder-name">{s.title}</div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </>
                     )}
                 </div>
             </div>

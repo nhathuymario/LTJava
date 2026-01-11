@@ -114,8 +114,32 @@
 
 
  /*3 class dưới của syllabus*/
-.folder-card {
-    border: 1px solid #ececf2;
+.course-detail-header {
+    padding: 10px 0 18px;
+}
+
+.course-detail-title {
+    font-size: 36px;
+    font-weight: 850;
+    color: #2b2b2b;
+    margin-top: 8px;
+}
+
+.course-detail-desc {
+    margin-top: 8px;
+    color: #6b6f76;
+    font-size: 14px;
+}
+
+.syllabus-folder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 6px 0 18px;
+}
+
+.syllabus-folder {
+    border: 1px solid #e9e9ee;
     border-radius: 16px;
     padding: 16px;
     display: flex;
@@ -124,7 +148,7 @@
     background: #fff;
 }
 
-.folder-icon {
+.syllabus-folder-icon {
     width: 46px;
     height: 46px;
     border-radius: 12px;
@@ -134,7 +158,8 @@
     font-size: 20px;
 }
 
-.folder-title {
+.syllabus-folder-name {
     font-size: 18px;
     font-weight: 750;
 }
+

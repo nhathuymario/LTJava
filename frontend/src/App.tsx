@@ -3,10 +3,12 @@ import Header from './components/Header'
 import LoginPage from './pages/LoginPage'
 import AdminPage from './pages/admin/AdminPage'
 import AAPage from './pages/aa'
-import LecturerPage from './pages/lecturer'
+// import LecturerPage from './pages/lecturer'
 import HodPage from './pages/hod'
 import PrincipalPage from './pages/principal'
 import RequireAuth from './RequireAuth'
+import LecturerRoutes from './routes/LecturerRoutes'
+
 
 function AppLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -30,7 +32,7 @@ export default function App() {
                     <Route path="/aa" element={<AppLayout><AAPage /></AppLayout>} />
                 </Route>
                 <Route element={<RequireAuth allowedRoles={['LECTURER', 'ROLE_LECTURER']} />}>
-                    <Route path="/lecturer" element={<AppLayout><LecturerPage /></AppLayout>} />
+                    <Route path="/lecturer/*" element={<AppLayout><LecturerRoutes /></AppLayout>} />
                 </Route>
                 <Route element={<RequireAuth allowedRoles={['HOD', 'ROLE_HOD']} />}>
                     <Route path="/hod" element={<AppLayout><HodPage /></AppLayout>} />

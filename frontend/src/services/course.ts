@@ -7,6 +7,7 @@ export type Course = {
     credits?: number;
     department?: string;
     lecturerId?: number;
+    description?: string;
 };
 
 export async function getCourseById(id: number): Promise<Course> {
