@@ -16,6 +16,7 @@ import com.example.LTJava.syllabus.service.SyllabusService;
 
 @RestController
 @RequestMapping("/api/syllabus")
+@PreAuthorize("hasRole('LECTURER')")
 public class SyllabusController {
 
     private final SyllabusService syllabusService;
@@ -25,7 +26,6 @@ public class SyllabusController {
     }
 
     // Lecturer tạo syllabus => luôn DRAFT
-    @PreAuthorize("hasRole('LECTURER')")
     @PostMapping
     public ResponseEntity<Syllabus> create(
             @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -37,7 +37,6 @@ public class SyllabusController {
     }
 
     // Lecturer submit: DRAFT -> SUBMITTED
-    @PreAuthorize("hasRole('LECTURER')")
     @PutMapping("/{id}/submit")
     public ResponseEntity<Syllabus> submit(
             @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -48,7 +47,6 @@ public class SyllabusController {
     }
 
     // Lecturer resubmit: REQUESTEDIT/REJECTED -> SUBMITTED
-    @PreAuthorize("hasRole('LECTURER')")
     @PutMapping("/{id}/resubmit")
     public ResponseEntity<Syllabus> resubmit(
             @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -59,28 +57,24 @@ public class SyllabusController {
     }
 
     // Lecturer xem syllabus của mình
-    @PreAuthorize("hasRole('LECTURER')")
     @GetMapping("/my")
     public List<Syllabus> mySyllabus(@AuthenticationPrincipal CustomUserDetails user) {
         return syllabusService.getMySyllabus(user.getUser().getId());
     }
 
     // Lecturer xem syllabus theo course
-    @PreAuthorize("hasRole('LECTURER')")
     @GetMapping("/course/{courseId}")
     public List<Syllabus> getByCourse(@PathVariable Long courseId) {
         return syllabusService.getByCourseId(courseId);
     }
 
     // Lecturer xem chi tiết (có thể siết lại: chỉ owner mới xem)
-    @PreAuthorize("hasRole('LECTURER')")
     @GetMapping("/{id}")
     public Syllabus getById(@PathVariable Long id) {
         return syllabusService.getById(id);
     }
 
     // (Optional) Lecturer lọc theo status - nếu muốn giữ
-    @PreAuthorize("hasRole('LECTURER')")
     @GetMapping("/status/{status}")
     public List<Syllabus> getByStatus(@PathVariable SyllabusStatus status) {
         return syllabusService.getByStatus(status);

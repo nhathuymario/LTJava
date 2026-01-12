@@ -1,4 +1,3 @@
-// src/services/hodSyllabus.ts
 import {api} from "./api"; // giống các service khác của bạn
 
 export type SyllabusStatus =

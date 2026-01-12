@@ -6,9 +6,10 @@ import { hasRole, getToken } from "../../services/auth";
 import { getCourseById, type Course } from "../../services/course";
 import {
     getSyllabusByCourse,
-    submitSyllabusApi,
+    resubmitSyllabus,
+    submitSyllabus,
     type Syllabus
-} from "../../services/syllabus";
+} from "../../services/lecturer";
 
 export default function LecturerCourseDetailPage() {
     const nav = useNavigate();
@@ -26,27 +27,42 @@ export default function LecturerCourseDetailPage() {
         setOpenMenuId(prev => (prev === id ? null : id));
     };
 
-    const submitSyllabus = async (syllabusId: number) => {
+    const handleSubmitSyllabus = async (syllabusId: number) => {
         if (!window.confirm("Bạn chắc chắn muốn submit syllabus này cho HoD?")) return;
 
         try {
-            await submitSyllabusApi(syllabusId);
+            await submitSyllabus(syllabusId);
 
             setSyllabi(prev =>
                 prev.map(s =>
-                    s.id === syllabusId
-                        ? { ...s, status: "SUBMITTED" }
-                        : s
+                    s.id === syllabusId ? { ...s, status: "SUBMITTED" } : s
                 )
             );
 
             setOpenMenuId(null);
-        } catch (err) {
-            alert("Submit thất bại");
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Submit thất bại");
         }
     };
 
 
+    const handleResubmitSyllabus = async (syllabusId: number) => {
+        if (!window.confirm("Bạn chắc chắn muốn gửi lại syllabus này cho HoD?")) return;
+
+        try {
+            await resubmitSyllabus(syllabusId);
+
+            setSyllabi(prev =>
+                prev.map(s =>
+                    s.id === syllabusId ? { ...s, status: "SUBMITTED" } : s
+                )
+            );
+
+            setOpenMenuId(null);
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Resubmit thất bại");
+        }
+    };
 
 
     const isLecturer = hasRole("LECTURER");
@@ -140,19 +156,33 @@ export default function LecturerCourseDetailPage() {
                                                 >
                                                     ⋮
                                                 </button>
-
                                                 {openMenuId === s.id && (
                                                     <div className="syllabus-menu">
                                                         {s.status === "DRAFT" && (
                                                             <button
                                                                 className="syllabus-menu-item"
-                                                                onClick={() => submitSyllabus(s.id)}
+                                                                onClick={() => handleSubmitSyllabus(s.id)}
                                                             >
                                                                 📤 Submit to HoD
                                                             </button>
                                                         )}
+
+                                                        {(s.status === "REQUESTEDIT" || s.status === "REJECTED") && (
+                                                            <button
+                                                                className="syllabus-menu-item"
+                                                                onClick={() => handleResubmitSyllabus(s.id)}
+                                                            >
+                                                                🔁 Resubmit to HoD
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
+                                                {/*{s.editNote && (*/}
+                                                {/*    <div className="syllabus-note">*/}
+                                                {/*        Ghi chú: {s.editNote}*/}
+                                                {/*    </div>*/}
+                                                {/*)}*/}
+
                                             </div>
                                         </div>
 
