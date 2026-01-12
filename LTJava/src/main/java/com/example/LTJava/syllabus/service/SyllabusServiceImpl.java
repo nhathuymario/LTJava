@@ -71,15 +71,47 @@ public class SyllabusServiceImpl implements SyllabusService {
         Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
                 .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
 
-        if (syllabus.getStatus() != SyllabusStatus.REJECTED) {
-            throw new RuntimeException("Chỉ syllabus ở trạng thái REJECTED mới được resubmit");
+        // ✅ Cho phép gửi lại khi bị yêu cầu sửa hoặc bị từ chối
+        if (syllabus.getStatus() != SyllabusStatus.REQUESTEDIT
+                && syllabus.getStatus() != SyllabusStatus.REJECTED) {
+            throw new RuntimeException("Chỉ syllabus ở trạng thái REQUESTEDIT hoặc REJECTED mới được resubmit");
         }
 
         syllabus.setStatus(SyllabusStatus.SUBMITTED);
-        syllabus.setVersion(syllabus.getVersion() + 1); // optional: tăng version khi gửi lại
+        syllabus.setVersion(syllabus.getVersion() + 1); // optional
         syllabus.setEditNote(null);
         return syllabusRepository.save(syllabus);
     }
+
+
+    @Override
+    public Syllabus approveSyllabus(Long syllabusId, Long hodId) {
+        Syllabus syllabus = syllabusRepository.findById(syllabusId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại"));
+
+        if (syllabus.getStatus() != SyllabusStatus.SUBMITTED) {
+            throw new RuntimeException("Chỉ syllabus SUBMITTED mới được HoD duyệt");
+        }
+
+        syllabus.setStatus(SyllabusStatus.HOD_APPROVED);
+        return syllabusRepository.save(syllabus);
+    }
+
+
+    @Override
+    public Syllabus rejectByHod(Long syllabusId, Long hodId, String reason) {
+        Syllabus syllabus = syllabusRepository.findById(syllabusId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại"));
+
+        if (syllabus.getStatus() != SyllabusStatus.SUBMITTED) {
+            throw new RuntimeException("Chỉ syllabus SUBMITTED mới được từ chối");
+        }
+
+        syllabus.setStatus(SyllabusStatus.REJECTED);
+        syllabus.setEditNote(reason); // dùng editNote làm lý do
+        return syllabusRepository.save(syllabus);
+    }
+
 
     @Override
     public List<Syllabus> getAll() {
@@ -98,10 +130,17 @@ public class SyllabusServiceImpl implements SyllabusService {
     }
 
     // 🔥 METHOD BẮT BUỘC – KHÔNG THIẾU – KHÔNG SAI TYPE
+//    @Override
+//    public List<Syllabus> getByStatus(SyllabusStatus status) {
+//        return syllabusRepository.findByStatus(status);
+//    }
+
     @Override
     public List<Syllabus> getByStatus(SyllabusStatus status) {
         return syllabusRepository.findByStatus(status);
     }
+
+
 
     // get syllabus theo trạng thái
     @Override
@@ -111,26 +150,55 @@ public class SyllabusServiceImpl implements SyllabusService {
 
     // duyệt syllabus 
     @Override
-    public Syllabus approveSyllabus(Long syllabusId, Long hodId) {
+    public Syllabus approveByAa(Long syllabusId, Long aaId) {
         Syllabus syllabus = syllabusRepository.findById(syllabusId)
                 .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại"));
 
-        if (syllabus.getStatus() != SyllabusStatus.SUBMITTED) {
-            throw new RuntimeException("Syllabus không ở trạng thái chờ duyệt");
+        if (syllabus.getStatus() != SyllabusStatus.HOD_APPROVED) {
+            throw new RuntimeException("Chỉ syllabus HOD_APPROVED mới được AA duyệt");
         }
 
-        syllabus.setStatus(SyllabusStatus.APPROVED);
+        syllabus.setStatus(SyllabusStatus.AA_APPROVED);
         return syllabusRepository.save(syllabus);
     }
 
+    @Override
+    public Syllabus publish(Long syllabusId, Long aaId) {
+        Syllabus syllabus = syllabusRepository.findById(syllabusId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại"));
+
+        if (syllabus.getStatus() != SyllabusStatus.AA_APPROVED) {
+            throw new RuntimeException("Chỉ syllabus AA_APPROVED mới được publish");
+        }
+
+        syllabus.setStatus(SyllabusStatus.PUBLISHED);
+        return syllabusRepository.save(syllabus);
+    }
+
+
+
     // yêu cầu chính sửa
+    @Override
+    public Syllabus moveToDraftForEdit(Long syllabusId, Long lecturerId) {
+        Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
+
+        if (syllabus.getStatus() != SyllabusStatus.REQUESTEDIT) {
+            throw new RuntimeException("Chỉ syllabus REQUESTEDIT mới được chuyển về DRAFT để chỉnh sửa");
+        }
+
+        syllabus.setStatus(SyllabusStatus.DRAFT);
+        return syllabusRepository.save(syllabus);
+    }
+
+
     @Override
     public Syllabus requestEditSyllabus(Long syllabusId, Long hodId, String editNote) {
         Syllabus syllabus = syllabusRepository.findById(syllabusId)
                 .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại"));
 
         if (syllabus.getStatus() != SyllabusStatus.SUBMITTED) {
-            throw new RuntimeException("Syllabus không ở trạng thái chờ duyệt");
+            throw new RuntimeException("Chỉ syllabus SUBMITTED mới được yêu cầu chỉnh sửa");
         }
 
         if (editNote == null || editNote.trim().isEmpty()) {
@@ -142,6 +210,23 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         return syllabusRepository.save(syllabus);
     }
+
+
+    @Override
+    public Syllabus rejectByAa(Long syllabusId, Long aaId, String reason) {
+        Syllabus syllabus = syllabusRepository.findById(syllabusId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại"));
+
+        if (syllabus.getStatus() != SyllabusStatus.HOD_APPROVED
+                && syllabus.getStatus() != SyllabusStatus.AA_APPROVED) {
+            throw new RuntimeException("Chỉ syllabus HOD_APPROVED hoặc AA_APPROVED mới được AA reject");
+        }
+
+        syllabus.setStatus(SyllabusStatus.REJECTED);
+        syllabus.setEditNote(reason);
+        return syllabusRepository.save(syllabus);
+    }
+
 
     //để tạm check thông tin
     @Override
