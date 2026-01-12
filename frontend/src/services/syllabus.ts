@@ -10,6 +10,11 @@ export type Syllabus = {
     note?: string;
 };
 
+export async function submitSyllabusApi(id: number) {
+    return api.post(`/syllabi/${id}/submit`);
+}
+
+
 export async function getSyllabusByCourse(courseId: number): Promise<Syllabus[]> {
     // nếu baseURL api.ts = http://localhost:8081/api => "/syllabus/course/{id}"
     // nếu baseURL = http://localhost:8081          => "/api/syllabus/course/{id}"

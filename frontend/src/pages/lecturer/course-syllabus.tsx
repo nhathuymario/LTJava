@@ -4,7 +4,11 @@ import "./lecturer.css";
 
 import { hasRole, getToken } from "../../services/auth";
 import { getCourseById, type Course } from "../../services/course";
-import { getSyllabusByCourse, type Syllabus } from "../../services/syllabus";
+import {
+    getSyllabusByCourse,
+    submitSyllabusApi,
+    type Syllabus
+} from "../../services/syllabus";
 
 export default function LecturerCourseDetailPage() {
     const nav = useNavigate();
@@ -15,6 +19,35 @@ export default function LecturerCourseDetailPage() {
     const [syllabi, setSyllabi] = useState<Syllabus[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+// menu 3 chấm
+    const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+
+    const toggleMenu = (id: number) => {
+        setOpenMenuId(prev => (prev === id ? null : id));
+    };
+
+    const submitSyllabus = async (syllabusId: number) => {
+        if (!window.confirm("Bạn chắc chắn muốn submit syllabus này cho HoD?")) return;
+
+        try {
+            await submitSyllabusApi(syllabusId);
+
+            setSyllabi(prev =>
+                prev.map(s =>
+                    s.id === syllabusId
+                        ? { ...s, status: "SUBMITTED" }
+                        : s
+                )
+            );
+
+            setOpenMenuId(null);
+        } catch (err) {
+            alert("Submit thất bại");
+        }
+    };
+
+
+
 
     const isLecturer = hasRole("LECTURER");
 
@@ -86,9 +119,43 @@ export default function LecturerCourseDetailPage() {
                                 ) : (
                                     syllabi.map((s) => (
                                         <div key={s.id} className="syllabus-folder">
-                                            <div className="syllabus-folder-icon">📁</div>
-                                            <div className="syllabus-folder-name">{s.title}</div>
+                                            <div className="syllabus-left">
+                                                <div className="syllabus-folder-icon">📁</div>
+                                                <div className="syllabus-folder-name">
+                                                    {s.title}
+                                                    <span className={`syllabus-status status-${s.status?.toLowerCase()}`}>
+                {s.status}
+            </span>
+                                                </div>
+                                            </div>
+
+                                            {/* 3 chấm bên phải */}
+                                            <div className="syllabus-actions">
+                                                <button
+                                                    className="syllabus-more"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleMenu(s.id);
+                                                    }}
+                                                >
+                                                    ⋮
+                                                </button>
+
+                                                {openMenuId === s.id && (
+                                                    <div className="syllabus-menu">
+                                                        {s.status === "DRAFT" && (
+                                                            <button
+                                                                className="syllabus-menu-item"
+                                                                onClick={() => submitSyllabus(s.id)}
+                                                            >
+                                                                📤 Submit to HoD
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
+
                                     ))
                                 )}
                             </div>

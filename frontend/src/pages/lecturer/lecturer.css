@@ -163,3 +163,71 @@
     font-weight: 750;
 }
 
+/*syllabus version 2*/
+.syllabus-folder {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.syllabus-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.syllabus-actions {
+    position: relative;
+}
+
+.syllabus-more {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.syllabus-menu {
+    position: absolute;
+    right: 0;
+    top: 28px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    min-width: 160px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.syllabus-menu-item {
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.syllabus-menu-item:hover {
+    background: #f5f5f5;
+}
+
+/* Status badge */
+.syllabus-status {
+    margin-left: 8px;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.status-draft {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-submitted {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
