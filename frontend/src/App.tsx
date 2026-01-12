@@ -8,6 +8,7 @@ import HodPage from './pages/hod'
 import PrincipalPage from './pages/principal'
 import RequireAuth from './RequireAuth'
 import LecturerRoutes from './routes/LecturerRoutes'
+import HodCourseDetailPage from "./pages/hod/course-detail"
 
 
 function AppLayout({ children }: { children: React.ReactNode }) {
@@ -34,9 +35,11 @@ export default function App() {
                 <Route element={<RequireAuth allowedRoles={['LECTURER', 'ROLE_LECTURER']} />}>
                     <Route path="/lecturer/*" element={<AppLayout><LecturerRoutes /></AppLayout>} />
                 </Route>
-                <Route element={<RequireAuth allowedRoles={['HOD', 'ROLE_HOD']} />}>
+                <Route element={<RequireAuth allowedRoles={["HOD", "ROLE_HOD"]} />}>
                     <Route path="/hod" element={<AppLayout><HodPage /></AppLayout>} />
+                    <Route path="/hod/courses/:courseId" element={<AppLayout><HodCourseDetailPage /></AppLayout>} />
                 </Route>
+
                 <Route element={<RequireAuth allowedRoles={['PRINCIPAL', 'ROLE_PRINCIPAL']} />}>
                     <Route path="/principal" element={<AppLayout><PrincipalPage /></AppLayout>} />
                 </Route>
