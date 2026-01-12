@@ -9,6 +9,7 @@ import PrincipalPage from './pages/principal'
 import RequireAuth from './RequireAuth'
 import LecturerRoutes from './routes/LecturerRoutes'
 import HodCourseDetailPage from "./pages/hod/course-detail"
+import AACourseDetailPage from "./pages/aa/course-detail"
 
 
 function AppLayout({ children }: { children: React.ReactNode }) {
@@ -29,8 +30,9 @@ export default function App() {
                 <Route element={<RequireAuth allowedRoles={['SYSTEM_ADMIN', 'ROLE_SYSTEM_ADMIN']} />}>
                     <Route path="/admin" element={<AppLayout><AdminPage /></AppLayout>} />
                 </Route>
-                <Route element={<RequireAuth allowedRoles={['AA', 'ROLE_AA']} />}>
+                <Route element={<RequireAuth allowedRoles={["AA", "ROLE_AA"]} />}>
                     <Route path="/aa" element={<AppLayout><AAPage /></AppLayout>} />
+                    <Route path="/aa/courses/:courseId" element={<AppLayout><AACourseDetailPage /></AppLayout>} />
                 </Route>
                 <Route element={<RequireAuth allowedRoles={['LECTURER', 'ROLE_LECTURER']} />}>
                     <Route path="/lecturer/*" element={<AppLayout><LecturerRoutes /></AppLayout>} />

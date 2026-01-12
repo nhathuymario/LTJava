@@ -23,31 +23,34 @@ export async function login(username: string, password: string) {
     const roles = data.roles && data.roles.length > 0 ? data.roles : (token ? extractRolesFromJwt(token) : [])
 
     if (token) {
-        localStorage.setItem('token', token)
-        localStorage.setItem('accessToken', token)
+        sessionStorage.setItem('token', token)
+        sessionStorage.setItem('accessToken', token)
         ;(api as any).defaults = (api as any).defaults || {}
         ;(api as any).defaults.headers = (api as any).defaults.headers || {}
         ;(api as any).defaults.headers.common = (api as any).defaults.headers.common || {}
         ;(api as any).defaults.headers.common.Authorization = `Bearer ${token}`
     }
 
-    localStorage.setItem('roles', JSON.stringify(roles))
-    localStorage.setItem('username', data.username ?? '')
+    sessionStorage.setItem('roles', JSON.stringify(roles))
+    sessionStorage.setItem('username', data.username ?? '')
     return { ...data, roles, token }
 }
 
-export function getToken() { return localStorage.getItem('token') || localStorage.getItem('accessToken') }
+// export function getToken() { return sessionStorage.getItem('token') || sessionStorage.getItem('accessToken') }
+export function getToken() {
+    return sessionStorage.getItem('token') || sessionStorage.getItem('accessToken')
+}
 export function getRoles(): string[] {
-    try { return JSON.parse(localStorage.getItem('roles') || '[]') } catch { return [] }
+    try { return JSON.parse(sessionStorage.getItem('roles') || '[]') } catch { return [] }
 }
 export function hasRole(role: string): boolean {
     const roles = getRoles()
     return roles.includes(role) || roles.includes(`ROLE_${role}`)
 }
 export function logout() {
-    localStorage.removeItem('token')
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('roles')
-    localStorage.removeItem('username')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('accessToken')
+    sessionStorage.removeItem('roles')
+    sessionStorage.removeItem('username')
     window.location.href = '/login'
 }

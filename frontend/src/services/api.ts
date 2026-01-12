@@ -12,9 +12,9 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
     const token =
-        localStorage.getItem('token') ||
-        localStorage.getItem('accessToken') ||
-        localStorage.getItem('jwt')
+        sessionStorage.getItem('token') ||
+        sessionStorage.getItem('accessToken') ||
+        sessionStorage.getItem('jwt')
 
     console.log('token:', token)
     if (token) {
