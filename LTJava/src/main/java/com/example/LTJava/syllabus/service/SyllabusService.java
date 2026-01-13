@@ -3,7 +3,9 @@ package com.example.LTJava.syllabus.service;
 import java.util.List;
 
 import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
+import com.example.LTJava.syllabus.entity.Notification;
 import com.example.LTJava.syllabus.entity.Syllabus;
+import com.example.LTJava.syllabus.entity.SyllabusHistory;
 import com.example.LTJava.syllabus.entity.SyllabusStatus;
 
 public interface SyllabusService {
@@ -42,4 +44,20 @@ public interface SyllabusService {
 
     // Xem chi tiết
     Syllabus getSyllabusDetailPublic(Long id);
+
+
+    // 1. Lấy lịch sử
+    List<SyllabusHistory> getHistory(Long syllabusId);
+
+    // 2. So sánh phiên bản
+    List<String> compareVersions(Long syllabusId, Long historyId);
+
+    // 1. Đăng ký theo dõi môn học
+    void subscribeCourse(Long userId, Long courseId);
+
+    // 2. Lấy danh sách thông báo
+    List<Notification> getMyNotifications(Long userId);
+
+
+
 }

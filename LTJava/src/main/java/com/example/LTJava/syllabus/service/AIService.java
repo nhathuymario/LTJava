@@ -2,11 +2,11 @@ package com.example.LTJava.syllabus.service;
 
 import com.example.LTJava.syllabus.dto.ai.GeminiRequest;
 import com.example.LTJava.syllabus.dto.ai.GeminiResponse;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class AIService {
@@ -20,6 +20,7 @@ public class AIService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper(); // Dùng để đọc JSON
 
+    // Hàm trả về mảng String: [0] là Tóm tắt, [1] là Keywords
     public String[] processSyllabusContent(String title, String description) {
         // 1. Prompt yêu cầu trả về JSON chuẩn
         String prompt = "Bạn là chuyên gia tóm tắt giáo trình. \n" +
@@ -31,10 +32,12 @@ public class AIService {
                 "{ \"summary\": \"...nội dung tóm tắt...\", \"keywords\": \"...từ khóa...\" }";
 
         try {
+            // 2. Gọi API Google
             String finalUrl = apiUrl + "?key=" + apiKey;
             GeminiRequest request = new GeminiRequest(prompt);
             GeminiResponse response = restTemplate.postForObject(finalUrl, request, GeminiResponse.class);
 
+            // 3. Xử lý kết quả trả về
             if (response != null && !response.getCandidates().isEmpty()) {
                 String rawText = response.getCandidates().get(0).getContent().getParts().get(0).getText();
 
@@ -55,8 +58,6 @@ public class AIService {
         }
         return new String[]{"Lỗi xử lý AI", ""};
     }
-
-    // ... (Code cũ giữ nguyên) ...
 
     // --- HÀM MỚI: VIẾT THÔNG BÁO ---
     public String createNotificationMessage(String courseName, String summary) {
@@ -80,4 +81,8 @@ public class AIService {
         // Fallback nếu AI lỗi
         return "🔥 Giáo trình môn " + courseName + " đã có cập nhật mới. Vào xem ngay!";
     }
+
+
+
+
 }

@@ -73,6 +73,26 @@ public class Syllabus {
     @Column(columnDefinition = "TEXT")
     private String editNote; // nội dung yêu cầu chỉnh sửa
 
+    @Column(columnDefinition = "TEXT")
+    private String aiSummary;
+
+    @Column(columnDefinition = "TEXT")
+    private String keywords;
+
+
+    // --- Getter & Setter cho Keywords ---
+    public String getKeywords() { return keywords; }
+
+    public void setKeywords(String keywords) { this.keywords = keywords; }
+
+    // --- GETTER & SETTER CHO AI SUMMARY ---
+    public String getAiSummary() {
+        return aiSummary;
+    }
+
+    public void setAiSummary(String aiSummary) {
+        this.aiSummary = aiSummary;
+    }
 
     // getters & setters
     public Long getId() {
