@@ -33,4 +33,13 @@ public interface SyllabusService {
 
     // ✅ nếu bạn muốn AA reject thì PHẢI có dòng này
     Syllabus rejectByAa(Long syllabusId, Long aaId, String reason);
+
+    // --- 3. PHẦN CỦA SINH VIÊN ---
+
+    // Tìm kiếm nâng cao (3 tham số: keyword, năm, kỳ)
+    // (Đây là hàm thay thế hoàn toàn cho searchSyllabusPublic cũ)
+    List<Syllabus> searchSyllabus(String keyword, String year, String semester);
+
+    // Xem chi tiết
+    Syllabus getSyllabusDetailPublic(Long id);
 }

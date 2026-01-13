@@ -2,10 +2,11 @@ package com.example.LTJava.syllabus.service;
 
 import java.util.List;
 
+import com.example.LTJava.syllabus.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
+import com.example.LTJava.syllabus.exception.ResourceNotFoundException;
 import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
 import com.example.LTJava.syllabus.entity.Course;
 import com.example.LTJava.syllabus.entity.Syllabus;
@@ -233,4 +234,27 @@ public class SyllabusServiceImpl implements SyllabusService {
     public List<Syllabus> getMySyllabus(Long lecturerId) {
         return syllabusRepository.findByCreatedBy_Id(lecturerId);
     }
-}
+
+    // --- TRIỂN KHAI LOGIC CHO SINH VIÊN ---
+
+    // 3.HÀM SEARCH (Của Sinh viên)
+    @Override
+    public List<Syllabus> searchSyllabus(String keyword, String year, String semester) {
+        return syllabusRepository.searchForStudent(keyword, year, semester);
+    }
+
+    @Override
+    public Syllabus getSyllabusDetailPublic(Long id) {
+        Syllabus syllabus = syllabusRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Syllabus not found"));
+
+        // Quan trọng: Sinh viên chỉ xem được bài ĐÃ XUẤT BẢN
+        if (syllabus.getStatus() != SyllabusStatus.PUBLISHED) {
+            throw new ResourceNotFoundException("Syllabus is not available publicly.");
+        }
+        return syllabus;
+
+
+    }
+
+    }

@@ -7,7 +7,7 @@ import {
 import { hasRole } from '../../services/auth'
 import './admin.css'
 
-const ROLE_OPTIONS = ['SYSTEM_ADMIN', 'LECTURER', 'AA', 'STUDENT'] as const
+const ROLE_OPTIONS = ['SYSTEM_ADMIN', 'LECTURER', 'AA', 'STUDENT', 'PRINCIPAL'] as const
 
 function toDDMMYYYY(value: string) {
     const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
@@ -23,7 +23,7 @@ export default function AdminPage() {
     const [fullName, setFullName] = useState('')
     const [cccd, setCccd] = useState('')
     const [dob, setDob] = useState('')
-    const [newRole, setNewRole] = useState<'SYSTEM_ADMIN' | 'LECTURER' | 'AA' | 'STUDENT'>('STUDENT')
+    const [newRole, setNewRole] = useState<'SYSTEM_ADMIN' | 'LECTURER' | 'AA' | 'STUDENT'|'PRINCIPAL'>('STUDENT')
     const [excelFile, setExcelFile] = useState<File | null>(null)
     const [importResult, setImportResult] = useState<any>(null) // hoặc type ImportUsersResult nếu bạn export type
 
