@@ -26,6 +26,7 @@ public class SyllabusHistory {
     private String semester;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status",nullable = false)
     private SyllabusStatus status;
 
     private Integer version; // Phiên bản tại thời điểm đó (v1, v2...)

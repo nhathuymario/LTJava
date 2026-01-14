@@ -15,7 +15,7 @@ import com.example.LTJava.syllabus.entity.SyllabusStatus;
 import com.example.LTJava.syllabus.service.SyllabusService;
 
 @RestController
-@RequestMapping("/api/syllabus")
+@RequestMapping("/api/lecturer/syllabus")
 @PreAuthorize("hasRole('LECTURER')")
 public class SyllabusController {
 
@@ -25,7 +25,6 @@ public class SyllabusController {
         this.syllabusService = syllabusService;
     }
 
-    // Lecturer tạo syllabus => luôn DRAFT
     @PostMapping
     public ResponseEntity<Syllabus> create(
             @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -36,7 +35,6 @@ public class SyllabusController {
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    // Lecturer submit: DRAFT -> SUBMITTED
     @PutMapping("/{id}/submit")
     public ResponseEntity<Syllabus> submit(
             @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -46,7 +44,6 @@ public class SyllabusController {
         return ResponseEntity.ok(syllabusService.submitSyllabus(id, lecturerId));
     }
 
-    // Lecturer resubmit: REQUESTEDIT/REJECTED -> SUBMITTED
     @PutMapping("/{id}/resubmit")
     public ResponseEntity<Syllabus> resubmit(
             @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -56,37 +53,32 @@ public class SyllabusController {
         return ResponseEntity.ok(syllabusService.resubmitSyllabus(id, lecturerId));
     }
 
-    // Lecturer xem syllabus của mình
+    @PutMapping("/{id}/move-to-draft")
+    public ResponseEntity<Syllabus> moveToDraft(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long id
+    ) {
+        Long lecturerId = currentUser.getUser().getId();
+        return ResponseEntity.ok(syllabusService.moveToDraftForEdit(id, lecturerId));
+    }
+
     @GetMapping("/my")
-    public List<Syllabus> mySyllabus(@AuthenticationPrincipal CustomUserDetails user) {
-        return syllabusService.getMySyllabus(user.getUser().getId());
+    public ResponseEntity<List<Syllabus>> mySyllabus(@AuthenticationPrincipal CustomUserDetails user) {
+        return ResponseEntity.ok(syllabusService.getMySyllabus(user.getUser().getId()));
     }
 
-    // Lecturer xem syllabus theo course
-    @GetMapping("/course/{courseId}")
-    public List<Syllabus> getByCourse(@PathVariable Long courseId) {
-        return syllabusService.getByCourseId(courseId);
-    }
-
-    // Lecturer xem chi tiết (có thể siết lại: chỉ owner mới xem)
     @GetMapping("/{id}")
-    public Syllabus getById(@PathVariable Long id) {
-        return syllabusService.getById(id);
+    public ResponseEntity<Syllabus> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(syllabusService.getById(id));
     }
 
-    // (Optional) Lecturer lọc theo status - nếu muốn giữ
+    @GetMapping("/course/{courseId}")
+    public ResponseEntity<List<Syllabus>> getByCourse(@PathVariable Long courseId) {
+        return ResponseEntity.ok(syllabusService.getByCourseId(courseId));
+    }
+
     @GetMapping("/status/{status}")
-    public List<Syllabus> getByStatus(@PathVariable SyllabusStatus status) {
-        return syllabusService.getByStatus(status);
+    public ResponseEntity<List<Syllabus>> getByStatus(@PathVariable SyllabusStatus status) {
+        return ResponseEntity.ok(syllabusService.getByStatus(status));
     }
-
-    // ❌ getAll: thường không nên cho LECTURER xem toàn hệ thống
-    // Nếu cần thì chuyển quyền ADMIN hoặc bỏ hẳn.
-    /*
-    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
-    @GetMapping
-    public List<Syllabus> getAll() {
-        return syllabusService.getAll();
-    }
-    */
 }
