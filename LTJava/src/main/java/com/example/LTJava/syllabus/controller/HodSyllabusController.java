@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import com.example.LTJava.syllabus.service.SyllabusServiceImpl;
+
 import com.example.LTJava.auth.security.CustomUserDetails;
 import com.example.LTJava.syllabus.dto.RequestEditSyllabusRequest;
 import com.example.LTJava.syllabus.entity.Syllabus;
@@ -24,23 +24,20 @@ public class HodSyllabusController {
         this.syllabusService = syllabusService;
     }
 
-    // HOD xem list theo status (mặc định nên dùng SUBMITTED)
     @GetMapping
-    public List<Syllabus> listByStatus(@RequestParam SyllabusStatus status) {
-        return syllabusService.getByStatus(status);
+    public ResponseEntity<List<Syllabus>> listByStatus(@RequestParam SyllabusStatus status) {
+        return ResponseEntity.ok(syllabusService.getByStatus(status));
     }
 
-    // HOD Approve: SUBMITTED -> HOD_APPROVED
     @PutMapping("/{id}/approve")
     public ResponseEntity<Syllabus> approve(
             @AuthenticationPrincipal CustomUserDetails currentUser,
             @PathVariable Long id
     ) {
         Long hodId = currentUser.getUser().getId();
-        return ResponseEntity.ok(syllabusService.approveSyllabus(id, hodId));
+        return ResponseEntity.ok(syllabusService.approveByHod(id, hodId));
     }
 
-    // HOD Request edit: SUBMITTED -> REQUESTEDIT
     @PutMapping("/{id}/request-edit")
     public ResponseEntity<Syllabus> requestEdit(
             @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -48,10 +45,9 @@ public class HodSyllabusController {
             @RequestBody RequestEditSyllabusRequest request
     ) {
         Long hodId = currentUser.getUser().getId();
-        return ResponseEntity.ok(syllabusService.requestEditSyllabus(id, hodId, request.getNote()));
+        return ResponseEntity.ok(syllabusService.requestEditByHod(id, hodId, request.getNote()));
     }
 
-    // ✅ HOD Reject: SUBMITTED -> REJECTED
     @PutMapping("/{id}/reject")
     public ResponseEntity<Syllabus> reject(
             @AuthenticationPrincipal CustomUserDetails currentUser,

@@ -24,13 +24,11 @@ public class AaSyllabusController {
         this.syllabusService = syllabusService;
     }
 
-    // AA xem danh sách theo status (vd HOD_APPROVED, AA_APPROVED)
     @GetMapping
-    public List<Syllabus> listByStatus(@RequestParam SyllabusStatus status) {
-        return syllabusService.getByStatus(status);
+    public ResponseEntity<List<Syllabus>> listByStatus(@RequestParam SyllabusStatus status) {
+        return ResponseEntity.ok(syllabusService.getByStatus(status));
     }
 
-    // AA approve: HOD_APPROVED -> AA_APPROVED
     @PutMapping("/{id}/approve")
     public ResponseEntity<Syllabus> approve(
             @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -40,17 +38,6 @@ public class AaSyllabusController {
         return ResponseEntity.ok(syllabusService.approveByAa(id, aaId));
     }
 
-    // AA publish: AA_APPROVED -> PUBLISHED
-    @PutMapping("/{id}/publish")
-    public ResponseEntity<Syllabus> publish(
-            @AuthenticationPrincipal CustomUserDetails currentUser,
-            @PathVariable Long id
-    ) {
-        Long aaId = currentUser.getUser().getId();
-        return ResponseEntity.ok(syllabusService.publish(id, aaId));
-    }
-
-    // (Optional) AA reject: HOD_APPROVED/AA_APPROVED -> REJECTED
     @PutMapping("/{id}/reject")
     public ResponseEntity<Syllabus> reject(
             @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -59,7 +46,6 @@ public class AaSyllabusController {
     ) {
         Long aaId = currentUser.getUser().getId();
         String reason = (request == null ? null : request.getNote());
-        // Nếu bạn chưa làm method này thì comment lại
         return ResponseEntity.ok(syllabusService.rejectByAa(id, aaId, reason));
     }
 }
