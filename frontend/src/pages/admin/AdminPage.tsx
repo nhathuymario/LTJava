@@ -5,7 +5,7 @@ import {
     importUsersExcel,
 } from '../../services/admin'
 import { hasRole } from '../../services/auth'
-import './admin.css'
+import '../../assets/css/admin.css'
 
 const ROLE_OPTIONS = ['SYSTEM_ADMIN', 'LECTURER', 'AA', 'STUDENT', 'PRINCIPAL'] as const
 

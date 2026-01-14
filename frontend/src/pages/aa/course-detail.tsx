@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import "../lecturer/lecturer.css";
+import "../../assets/css/aa.css";
 
 import { hasRole, getToken } from "../../services/auth";
 import { aaApi } from "../../services/aa";
