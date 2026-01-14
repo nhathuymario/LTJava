@@ -1,30 +1,25 @@
-import {api} from "./api"; // giống các service khác của bạn
+// src/services/hod.ts
+import { api } from "./api";
+import type { NoteRequest, Syllabus, SyllabusStatus } from "./syllabus";
 
-export type SyllabusStatus =
-    | "DRAFT"
-    | "SUBMITTED"
-    | "HOD_APPROVED"
-    | "AA_APPROVED"
-    | "PUBLISHED"
-    | "REQUESTEDIT"
-    | "REJECTED";
+export const hodApi = {
+    listByStatus: (status: SyllabusStatus) =>
+        api.get<Syllabus[]>("/hod/syllabus", { params: { status } }).then((r) => r.data),
 
-// bạn có thể dùng type Syllabus hiện có trong services/syllabus nếu đã chuẩn
-export type Syllabus = any;
+    approve: (id: number) =>
+        api.put<Syllabus>(`/hod/syllabus/${id}/approve`).then((r) => r.data),
 
-export async function hodListSyllabusByStatus(status: SyllabusStatus) {
-    const res = await api.get(`/hod/syllabus`, { params: { status } });
-    return res.data;
-}
+    requestEdit: (id: number, note: string) =>
+        api.put<Syllabus>(`/hod/syllabus/${id}/request-edit`, { note } satisfies NoteRequest).then((r) => r.data),
 
-export async function hodApproveSyllabus(id: number) {
-    return api.put(`/hod/syllabus/${id}/approve`);
-}
+    reject: (id: number, reason?: string) =>
+        api.put<Syllabus>(`/hod/syllabus/${id}/reject`, reason ? ({ note: reason } satisfies NoteRequest) : {}).then((r) => r.data),
+};
 
-export async function hodRequestEditSyllabus(id: number, note: string) {
-    return api.put(`/hod/syllabus/${id}/request-edit`, { note });
-}
+// backward compatible (để page cũ không crash)
+export const hodListSyllabusByStatus = hodApi.listByStatus;
+export const hodApproveSyllabus = hodApi.approve;
+export const hodRequestEditSyllabus = hodApi.requestEdit;
+export const hodRejectSyllabus = hodApi.reject;
 
-export async function hodRejectSyllabus(id: number, note?: string) {
-    return api.put(`/hod/syllabus/${id}/reject`, note ? { note } : {});
-}
+export type { Syllabus, SyllabusStatus };

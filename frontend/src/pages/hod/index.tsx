@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../lecturer/lecturer.css"; // dùng chung CSS hiện tại (đổi lại nếu bạn thật sự có hod.css)
+import "../lecturer/lecturer.css";
 
 import { hasRole, getToken } from "../../services/auth";
-import { hodListSyllabusByStatus, type Syllabus } from "../../services/hod";
+import { hodApi } from "../../services/hod";
+import type { Syllabus } from "../../services/syllabus";
 
 type SortKey = "name_asc" | "name_desc";
 
@@ -45,7 +46,8 @@ export default function HodPage() {
             setLoading(true);
             setError(null);
             try {
-                const data = await hodListSyllabusByStatus("SUBMITTED");
+                // HoD chỉ duyệt những syllabus SUBMITTED
+                const data = await hodApi.listByStatus("SUBMITTED");
                 setItems((data || []) as Syllabus[]);
             } catch (err: any) {
                 const status = err?.response?.status;
@@ -62,7 +64,6 @@ export default function HodPage() {
         })();
     }, [isHod]);
 
-    // Group syllabus thành "course list"
     const courses = useMemo(() => {
         const map = new Map<number, CourseGroup>();
 
@@ -78,13 +79,12 @@ export default function HodPage() {
                     name: c.name,
                     department: c.department,
                     count: 0,
-                    syllabi: [] as Syllabus[], // ✅ fix never[]
+                    syllabi: [] as Syllabus[],
                 };
 
             cur.count += 1;
             cur.syllabi.push(s);
 
-            // set lại info (phòng khi cái đầu thiếu)
             cur.code = cur.code || c.code;
             cur.name = cur.name || c.name;
             cur.department = cur.department || c.department;
@@ -94,16 +94,13 @@ export default function HodPage() {
 
         let list = Array.from(map.values());
 
-        // search
-        const norm = (x: string) => x.toLowerCase().trim();
-        const key = norm(q);
+        const key = q.toLowerCase().trim();
         if (key) {
             list = list.filter((x) =>
                 `${x.code || ""} ${x.name || ""} ${x.department || ""}`.toLowerCase().includes(key)
             );
         }
 
-        // sort
         list.sort((a, b) => {
             const an = (a.name || "").toLowerCase();
             const bn = (b.name || "").toLowerCase();
@@ -122,8 +119,8 @@ export default function HodPage() {
                     <h2 className="lec-section-title">Các course đang chờ duyệt (SUBMITTED)</h2>
 
                     <div className="lec-toolbar">
-                        <select className="lec-select" defaultValue="all" disabled>
-                            <option value="all">SUBMITTED</option>
+                        <select className="lec-select" defaultValue="SUBMITTED" disabled>
+                            <option value="SUBMITTED">SUBMITTED</option>
                         </select>
 
                         <input
@@ -133,11 +130,7 @@ export default function HodPage() {
                             onChange={(e) => setQ(e.target.value)}
                         />
 
-                        <select
-                            className="lec-select"
-                            value={sort}
-                            onChange={(e) => setSort(e.target.value as SortKey)}
-                        >
+                        <select className="lec-select" value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
                             <option value="name_asc">Sort by course name</option>
                             <option value="name_desc">Sort Z → A</option>
                         </select>
@@ -155,11 +148,7 @@ export default function HodPage() {
                                     <div
                                         key={c.courseId}
                                         className="course-row"
-                                        onClick={() =>
-                                            nav(`/hod/courses/${c.courseId}`, {
-                                                state: { course: c, syllabi: c.syllabi },
-                                            })
-                                        }
+                                        onClick={() => nav(`/hod/courses/${c.courseId}`, { state: { course: c, syllabi: c.syllabi } })}
                                         style={{ cursor: "pointer" }}
                                     >
                                         <div className={`course-thumb thumb-${idx % 4}`} />
@@ -169,16 +158,11 @@ export default function HodPage() {
                                                 [{c.code || "NO_CODE"}] - {c.name || `Course #${c.courseId}`}
                                             </div>
                                             <div className="course-sub">
-                                                {c.department ? `[CQ]_${c.department}` : "Chưa có khoa/department"} •{" "}
-                                                {c.count} syllabus
+                                                {c.department ? `[CQ]_${c.department}` : "Chưa có khoa/department"} • {c.count} syllabus
                                             </div>
                                         </div>
 
-                                        <button
-                                            className="course-more"
-                                            title="More"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
+                                        <button className="course-more" title="More" onClick={(e) => e.stopPropagation()}>
                                             ⋮
                                         </button>
                                     </div>

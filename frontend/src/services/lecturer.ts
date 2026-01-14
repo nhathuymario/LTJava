@@ -1,69 +1,45 @@
-// src/services/lecturer.ts
+
 import { api } from "./api";
+import type { CreateSyllabusRequest, Syllabus, SyllabusHistory, SyllabusStatus } from "./syllabus";
 
-/* ======================
- * TYPES
- * ====================== */
+export const lecturerApi = {
+    createSyllabus: (payload: CreateSyllabusRequest) =>
+        api.post<Syllabus>("/lecturer/syllabus", payload).then((r) => r.data),
 
-export type SyllabusStatus =
-    | "DRAFT"
-    | "SUBMITTED"
-    | "REQUESTEDIT"
-    | "REJECTED";
+    mySyllabi: () =>
+        api.get<Syllabus[]>("/lecturer/syllabus/my").then((r) => r.data),
 
-export type Syllabus = {
-    id: number;
-    title: string;
-    description?: string;
-    academicYear?: string;
-    semester?: string;
-    version?: number;
-    status: SyllabusStatus;
-    editNote?: string | null;
+    getById: (id: number) =>
+        api.get<Syllabus>(`/lecturer/syllabus/${id}`).then((r) => r.data),
+
+    getByCourse: (courseId: number) =>
+        api.get<Syllabus[]>(`/lecturer/syllabus/course/${courseId}`).then((r) => r.data),
+
+    getByStatus: (status: SyllabusStatus) =>
+        api.get<Syllabus[]>(`/lecturer/syllabus/status/${status}`).then((r) => r.data),
+
+    submit: (id: number) =>
+        api.put<Syllabus>(`/lecturer/syllabus/${id}/submit`).then((r) => r.data),
+
+    resubmit: (id: number) =>
+        api.put<Syllabus>(`/lecturer/syllabus/${id}/resubmit`).then((r) => r.data),
+
+    moveToDraft: (id: number) =>
+        api.put<Syllabus>(`/lecturer/syllabus/${id}/move-to-draft`).then((r) => r.data),
+
+    // nếu bạn có endpoint history/compare thì dùng, không có thì có thể bỏ
+    getHistory: (syllabusId: number) =>
+        api.get<SyllabusHistory[]>(`/lecturer/syllabus/${syllabusId}/history`).then((r) => r.data),
+
+    compareVersions: (syllabusId: number, historyId: number) =>
+        api.get<string[]>(`/lecturer/syllabus/${syllabusId}/compare/${historyId}`).then((r) => r.data),
 };
 
-export type CreateSyllabusRequest = {
-    courseId: number;
-    title: string;
-    description?: string;
-    academicYear?: string;
-    semester?: string;
-};
+// backward compatible (nếu page cũ còn dùng)
+export const createSyllabus = lecturerApi.createSyllabus;
+export const submitSyllabus = lecturerApi.submit;
+export const resubmitSyllabus = lecturerApi.resubmit;
+export const moveToDraft = lecturerApi.moveToDraft;
+export const getMySyllabi = lecturerApi.mySyllabi;
 
-/* ======================
- * LECTURER APIs
- * ====================== */
-
-/** Tạo syllabus (DRAFT) */
-export async function createSyllabus(
-    body: CreateSyllabusRequest
-): Promise<Syllabus> {
-    const { data } = await api.post("/syllabus/create", body);
-    return data;
-}
-
-/** Submit: DRAFT -> SUBMITTED */
-export async function submitSyllabus(id: number): Promise<Syllabus> {
-    const { data } = await api.put(`/syllabus/${id}/submit`);
-    return data;
-}
-
-/** Resubmit: REQUESTEDIT/REJECTED -> SUBMITTED */
-export async function resubmitSyllabus(id: number): Promise<Syllabus> {
-    const { data } = await api.put(`/syllabus/${id}/resubmit`);
-    return data;
-}
-
-/** Xem syllabus của chính mình */
-export async function getMySyllabus(): Promise<Syllabus[]> {
-    const { data } = await api.get("/syllabus/my");
-    return data;
-}
-
-/** Xem syllabus theo course */
-export async function getSyllabusByCourse(
-    courseId: number
-): Promise<Syllabus[]> {
-    const { data } = await api.get(`/syllabus/course/${courseId}`);
-    return data;
-}
+export type { Syllabus, SyllabusStatus };

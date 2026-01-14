@@ -17,8 +17,6 @@ export default function LecturerPage() {
     const [q, setQ] = useState("");
     const [sort, setSort] = useState<SortKey>("name_asc");
 
-    const fullName = localStorage.getItem("fullName") || "Giảng viên";
-
     const isLecturer = hasRole("LECTURER");
 
     const fetchCourses = async () => {
@@ -30,7 +28,6 @@ export default function LecturerPage() {
         } catch (err: any) {
             const status = err?.response?.status;
             const resp = err?.response?.data;
-            console.error("GET /course/my failed:", status, resp);
 
             if (status === 401 || status === 403) {
                 setError("Phiên đăng nhập hết hạn hoặc bạn không có quyền LECTURER.");
@@ -44,11 +41,10 @@ export default function LecturerPage() {
     };
 
     useEffect(() => {
-        const token = getToken?.() || localStorage.getItem("token"); // tùy auth.ts bạn lưu token tên gì
+        const token = getToken?.() || localStorage.getItem("token");
         if (!token) {
             setError("Bạn chưa đăng nhập (thiếu token).");
             setLoading(false);
-            // nav("/login"); // nếu bạn muốn auto chuyển trang
             return;
         }
         if (!isLecturer) {
@@ -78,9 +74,7 @@ export default function LecturerPage() {
     return (
         <div className="lec-page">
             <div className="lec-container">
-                <h1 className="lec-title">
-                    Khóa học của tôi
-                </h1>
+                <h1 className="lec-title">Khóa học của tôi</h1>
 
                 <div className="lec-card">
                     <h2 className="lec-section-title">Tổng quan về khóa học</h2>
@@ -129,18 +123,13 @@ export default function LecturerPage() {
                                                 [{c.code}] - {c.name}
                                             </div>
                                             <div className="course-sub">
-                                                {c.department ? `[CQ]_${c.department}` : "[CQ]_HKI2024-2025_Trung Tâm NN, CNTT và ĐTNV"}
+                                                {c.department ? `[CQ]_${c.department}` : "Chưa có khoa/department"}
                                             </div>
                                         </div>
 
-                                        <button
-                                            className="course-more"
-                                            title="More"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
+                                        <button className="course-more" title="More" onClick={(e) => e.stopPropagation()}>
                                             ⋮
                                         </button>
-
                                     </div>
                                 ))
                             )}

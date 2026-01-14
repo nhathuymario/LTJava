@@ -3,13 +3,8 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "../lecturer/lecturer.css";
 
 import { hasRole, getToken } from "../../services/auth";
-import {
-    hodApproveSyllabus,
-    hodListSyllabusByStatus,
-    hodRejectSyllabus,
-    hodRequestEditSyllabus,
-    type Syllabus,
-} from "../../services/hod";
+import { hodApi } from "../../services/hod";
+import type { Syllabus } from "../../services/syllabus";
 
 export default function HodCourseDetailPage() {
     const nav = useNavigate();
@@ -17,7 +12,7 @@ export default function HodCourseDetailPage() {
     const id = Number(courseId);
 
     const loc = useLocation() as any;
-    const initialCourse = loc.state?.course; // từ HodPage truyền sang
+    const initialCourse = loc.state?.course;
     const initialSyllabi: Syllabus[] = loc.state?.syllabi || [];
 
     const [syllabi, setSyllabi] = useState<Syllabus[]>(initialSyllabi);
@@ -27,7 +22,6 @@ export default function HodCourseDetailPage() {
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
     const isHod = hasRole("HOD");
-
     const toggleMenu = (sid: number) => setOpenMenuId((p) => (p === sid ? null : sid));
 
     useEffect(() => {
@@ -48,14 +42,14 @@ export default function HodCourseDetailPage() {
             return;
         }
 
-        // Nếu refresh trang → không còn state → fetch lại SUBMITTED và filter theo courseId
+        // Refresh trang -> fetch lại SUBMITTED và filter theo courseId
         if (initialSyllabi.length > 0) return;
 
         (async () => {
             setLoading(true);
             setError(null);
             try {
-                const list = await hodListSyllabusByStatus("SUBMITTED");
+                const list = await hodApi.listByStatus("SUBMITTED");
                 const filtered = (list || []).filter((s: any) => Number(s?.course?.id) === id);
                 setSyllabi(filtered);
             } catch (err: any) {
@@ -69,44 +63,49 @@ export default function HodCourseDetailPage() {
     }, [id, isHod, initialSyllabi.length]);
 
     const approve = async (sid: number) => {
-        if (!window.confirm("Duyệt syllabus này?")) return;
+        if (!window.confirm("HoD duyệt syllabus này?")) return;
         try {
-            await hodApproveSyllabus(sid);
+            await hodApi.approve(sid);
             setSyllabi((prev) => prev.map((s: any) => (s.id === sid ? { ...s, status: "HOD_APPROVED" } : s)));
             setOpenMenuId(null);
-        } catch {
-            alert("Approve thất bại");
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Approve thất bại");
         }
     };
 
     const requestEdit = async (sid: number) => {
         const note = window.prompt("Nhập nội dung yêu cầu chỉnh sửa:");
         if (!note || !note.trim()) return;
+
         try {
-            await hodRequestEditSyllabus(sid, note.trim());
-            setSyllabi((prev) => prev.map((s: any) => (s.id === sid ? { ...s, status: "REQUESTEDIT", editNote: note.trim() } : s)));
+            await hodApi.requestEdit(sid, note.trim());
+            setSyllabi((prev) =>
+                prev.map((s: any) => (s.id === sid ? { ...s, status: "REQUESTEDIT", editNote: note.trim() } : s))
+            );
             setOpenMenuId(null);
-        } catch {
-            alert("Request edit thất bại");
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Request edit thất bại");
         }
     };
 
     const reject = async (sid: number) => {
         const note = window.prompt("Lý do từ chối (có thể bỏ trống):") || "";
         if (!window.confirm("Từ chối syllabus này?")) return;
+
         try {
-            await hodRejectSyllabus(sid, note.trim() || undefined);
-            setSyllabi((prev) => prev.map((s: any) => (s.id === sid ? { ...s, status: "REJECTED", editNote: note.trim() } : s)));
+            await hodApi.reject(sid, note.trim());
+            setSyllabi((prev) =>
+                prev.map((s: any) => (s.id === sid ? { ...s, status: "REJECTED", editNote: note.trim() } : s))
+            );
             setOpenMenuId(null);
-        } catch {
-            alert("Reject thất bại");
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Reject thất bại");
         }
     };
 
-    const courseTitle =
-        initialCourse
-            ? `[${initialCourse.code || "NO_CODE"}] - ${initialCourse.name || `Course #${id}`}`
-            : `Course #${id}`;
+    const courseTitle = initialCourse
+        ? `[${initialCourse.code || "NO_CODE"}] - ${initialCourse.name || `Course #${id}`}`
+        : `Course #${id}`;
 
     return (
         <div className="lec-page">
@@ -118,9 +117,7 @@ export default function HodCourseDetailPage() {
 
                     <div className="course-detail-header">
                         <div className="course-detail-title">{courseTitle}</div>
-                        <div className="course-detail-desc">
-                            HoD duyệt các syllabus đang SUBMITTED cho course này
-                        </div>
+                        <div className="course-detail-desc">HoD duyệt các syllabus đang SUBMITTED cho course này</div>
                     </div>
 
                     {loading && <div className="lec-empty">Đang tải...</div>}

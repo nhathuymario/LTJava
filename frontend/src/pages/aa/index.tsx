@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "../lecturer/lecturer.css";
 
 import { hasRole, getToken } from "../../services/auth";
-import { aaListSyllabusByStatus, type Syllabus, type SyllabusStatus } from "../../services/aa";
+import { aaApi } from "../../services/aa";
+import type { Syllabus, SyllabusStatus } from "../../services/syllabus";
 
 type SortKey = "name_asc" | "name_desc";
 
@@ -26,6 +27,7 @@ export default function AAPage() {
     const [q, setQ] = useState("");
     const [sort, setSort] = useState<SortKey>("name_asc");
 
+    // AA chủ yếu xử lý HOD_APPROVED -> AA_APPROVED
     const [status, setStatus] = useState<SyllabusStatus>("HOD_APPROVED");
 
     const isAA = hasRole("AA");
@@ -47,7 +49,7 @@ export default function AAPage() {
             setLoading(true);
             setError(null);
             try {
-                const data = await aaListSyllabusByStatus(status);
+                const data = await aaApi.listByStatus(status);
                 setItems((data || []) as Syllabus[]);
             } catch (err: any) {
                 const statusCode = err?.response?.status;
@@ -113,7 +115,7 @@ export default function AAPage() {
     return (
         <div className="lec-page">
             <div className="lec-container">
-                <h1 className="lec-title">AA • Duyệt & Xuất bản giáo trình</h1>
+                <h1 className="lec-title">AA • Duyệt học thuật giáo trình</h1>
 
                 <div className="lec-card">
                     <h2 className="lec-section-title">Danh sách course theo trạng thái syllabus</h2>
@@ -125,8 +127,9 @@ export default function AAPage() {
                             onChange={(e) => setStatus(e.target.value as SyllabusStatus)}
                         >
                             <option value="HOD_APPROVED">HOD_APPROVED (chờ AA duyệt)</option>
-                            <option value="AA_APPROVED">AA_APPROVED (chờ publish)</option>
-                            <option value="PUBLISHED">PUBLISHED</option>
+                            <option value="AA_APPROVED">AA_APPROVED (đã duyệt • chờ Principal)</option>
+                            <option value="REJECTED">REJECTED</option>
+                            <option value="REQUESTEDIT">REQUESTEDIT</option>
                         </select>
 
                         <input

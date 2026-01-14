@@ -3,14 +3,8 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "../lecturer/lecturer.css";
 
 import { hasRole, getToken } from "../../services/auth";
-import {
-    aaApproveSyllabus,
-    aaListSyllabusByStatus,
-    aaPublishSyllabus,
-    aaRejectSyllabus,
-    type Syllabus,
-    type SyllabusStatus,
-} from "../../services/aa";
+import { aaApi } from "../../services/aa";
+import type { Syllabus, SyllabusStatus } from "../../services/syllabus";
 
 export default function AACourseDetailPage() {
     const nav = useNavigate();
@@ -56,7 +50,7 @@ export default function AACourseDetailPage() {
             setLoading(true);
             setError(null);
             try {
-                const list = await aaListSyllabusByStatus(initialStatus);
+                const list = await aaApi.listByStatus(initialStatus);
                 const filtered = (list || []).filter((s: any) => Number(s?.course?.id) === id);
                 setSyllabi(filtered);
             } catch (err: any) {
@@ -72,22 +66,11 @@ export default function AACourseDetailPage() {
     const approve = async (sid: number) => {
         if (!window.confirm("AA duyệt syllabus này?")) return;
         try {
-            await aaApproveSyllabus(sid);
+            await aaApi.approve(sid);
             setSyllabi((prev) => prev.map((s: any) => (s.id === sid ? { ...s, status: "AA_APPROVED" } : s)));
             setOpenMenuId(null);
-        } catch {
-            alert("Approve thất bại");
-        }
-    };
-
-    const publish = async (sid: number) => {
-        if (!window.confirm("Xuất bản syllabus này cho sinh viên?")) return;
-        try {
-            await aaPublishSyllabus(sid);
-            setSyllabi((prev) => prev.map((s: any) => (s.id === sid ? { ...s, status: "PUBLISHED" } : s)));
-            setOpenMenuId(null);
-        } catch {
-            alert("Publish thất bại");
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Approve thất bại");
         }
     };
 
@@ -95,18 +78,19 @@ export default function AACourseDetailPage() {
         const note = window.prompt("Lý do reject (có thể bỏ trống):") || "";
         if (!window.confirm("Reject syllabus này?")) return;
         try {
-            await aaRejectSyllabus(sid, note.trim() || undefined);
-            setSyllabi((prev) => prev.map((s: any) => (s.id === sid ? { ...s, status: "REJECTED", editNote: note.trim() } : s)));
+            await aaApi.reject(sid, note.trim());
+            setSyllabi((prev) =>
+                prev.map((s: any) => (s.id === sid ? { ...s, status: "REJECTED", editNote: note.trim() } : s))
+            );
             setOpenMenuId(null);
-        } catch {
-            alert("Reject thất bại");
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Reject thất bại");
         }
     };
 
-    const courseTitle =
-        initialCourse
-            ? `[${initialCourse.code || "NO_CODE"}] - ${initialCourse.name || `Course #${id}`}`
-            : `Course #${id}`;
+    const courseTitle = initialCourse
+        ? `[${initialCourse.code || "NO_CODE"}] - ${initialCourse.name || `Course #${id}`}`
+        : `Course #${id}`;
 
     return (
         <div className="lec-page">
@@ -165,18 +149,8 @@ export default function AACourseDetailPage() {
                                                         </>
                                                     )}
 
-                                                    {s.status === "AA_APPROVED" && (
-                                                        <>
-                                                            <button className="syllabus-menu-item" onClick={() => publish(s.id)}>
-                                                                📢 Publish
-                                                            </button>
-                                                            <button className="syllabus-menu-item" onClick={() => reject(s.id)}>
-                                                                ❌ Reject
-                                                            </button>
-                                                        </>
-                                                    )}
-
-                                                    {s.status !== "HOD_APPROVED" && s.status !== "AA_APPROVED" && (
+                                                    {/* AA không publish nữa -> Principal publish */}
+                                                    {s.status !== "HOD_APPROVED" && (
                                                         <button className="syllabus-menu-item" onClick={() => setOpenMenuId(null)}>
                                                             Đóng
                                                         </button>

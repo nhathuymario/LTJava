@@ -1,29 +1,21 @@
-import {api} from "./api";
 
-export type SyllabusStatus =
-    | "DRAFT"
-    | "SUBMITTED"
-    | "HOD_APPROVED"
-    | "AA_APPROVED"
-    | "PUBLISHED"
-    | "REQUESTEDIT"
-    | "REJECTED";
+import { api } from "./api";
+import type { NoteRequest, Syllabus, SyllabusStatus } from "./syllabus";
 
-export type Syllabus = any;
+export const aaApi = {
+    listByStatus: (status: SyllabusStatus) =>
+        api.get<Syllabus[]>("/aa/syllabus", { params: { status } }).then((r) => r.data),
 
-export async function aaListSyllabusByStatus(status: SyllabusStatus) {
-    const res = await api.get(`/aa/syllabus`, { params: { status } });
-    return res.data;
-}
+    approve: (id: number) =>
+        api.put<Syllabus>(`/aa/syllabus/${id}/approve`).then((r) => r.data),
 
-export async function aaApproveSyllabus(id: number) {
-    return api.put(`/aa/syllabus/${id}/approve`);
-}
+    reject: (id: number, reason?: string) =>
+        api.put<Syllabus>(`/aa/syllabus/${id}/reject`, reason ? ({ note: reason } satisfies NoteRequest) : {}).then((r) => r.data),
+};
 
-export async function aaPublishSyllabus(id: number) {
-    return api.put(`/aa/syllabus/${id}/publish`);
-}
+// backward compatible (nếu page cũ còn dùng)
+export const aaListSyllabusByStatus = aaApi.listByStatus;
+export const aaApproveSyllabus = aaApi.approve;
+export const aaRejectSyllabus = aaApi.reject;
 
-export async function aaRejectSyllabus(id: number, note?: string) {
-    return api.put(`/aa/syllabus/${id}/reject`, note ? { note } : {});
-}
+export type { Syllabus, SyllabusStatus };

@@ -4,12 +4,9 @@ import "./lecturer.css";
 
 import { hasRole, getToken } from "../../services/auth";
 import { getCourseById, type Course } from "../../services/course";
-import {
-    getSyllabusByCourse,
-    resubmitSyllabus,
-    submitSyllabus,
-    type Syllabus
-} from "../../services/lecturer";
+
+import { lecturerApi } from "../../services/lecturer";
+import type { Syllabus } from "../../services/syllabus";
 
 export default function LecturerCourseDetailPage() {
     const nav = useNavigate();
@@ -20,50 +17,10 @@ export default function LecturerCourseDetailPage() {
     const [syllabi, setSyllabi] = useState<Syllabus[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-// menu 3 chấm
+
+    // menu 3 chấm
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-
-    const toggleMenu = (id: number) => {
-        setOpenMenuId(prev => (prev === id ? null : id));
-    };
-
-    const handleSubmitSyllabus = async (syllabusId: number) => {
-        if (!window.confirm("Bạn chắc chắn muốn submit syllabus này cho HoD?")) return;
-
-        try {
-            await submitSyllabus(syllabusId);
-
-            setSyllabi(prev =>
-                prev.map(s =>
-                    s.id === syllabusId ? { ...s, status: "SUBMITTED" } : s
-                )
-            );
-
-            setOpenMenuId(null);
-        } catch (err: any) {
-            alert(err?.response?.data?.message || "Submit thất bại");
-        }
-    };
-
-
-    const handleResubmitSyllabus = async (syllabusId: number) => {
-        if (!window.confirm("Bạn chắc chắn muốn gửi lại syllabus này cho HoD?")) return;
-
-        try {
-            await resubmitSyllabus(syllabusId);
-
-            setSyllabi(prev =>
-                prev.map(s =>
-                    s.id === syllabusId ? { ...s, status: "SUBMITTED" } : s
-                )
-            );
-
-            setOpenMenuId(null);
-        } catch (err: any) {
-            alert(err?.response?.data?.message || "Resubmit thất bại");
-        }
-    };
-
+    const toggleMenu = (sid: number) => setOpenMenuId((prev) => (prev === sid ? null : sid));
 
     const isLecturer = hasRole("LECTURER");
 
@@ -91,7 +48,7 @@ export default function LecturerCourseDetailPage() {
             try {
                 const [c, s] = await Promise.all([
                     getCourseById(id),
-                    getSyllabusByCourse(id),
+                    lecturerApi.getByCourse(id), // ✅ mới
                 ]);
                 setCourse(c);
                 setSyllabi(s);
@@ -104,6 +61,30 @@ export default function LecturerCourseDetailPage() {
             }
         })();
     }, [id, isLecturer]);
+
+    const handleSubmitSyllabus = async (syllabusId: number) => {
+        if (!window.confirm("Bạn chắc chắn muốn submit syllabus này cho HoD?")) return;
+
+        try {
+            await lecturerApi.submit(syllabusId); // ✅ mới
+            setSyllabi((prev) => prev.map((s) => (s.id === syllabusId ? { ...s, status: "SUBMITTED" } : s)));
+            setOpenMenuId(null);
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Submit thất bại");
+        }
+    };
+
+    const handleResubmitSyllabus = async (syllabusId: number) => {
+        if (!window.confirm("Bạn chắc chắn muốn gửi lại syllabus này cho HoD?")) return;
+
+        try {
+            await lecturerApi.resubmit(syllabusId); // ✅ mới
+            setSyllabi((prev) => prev.map((s) => (s.id === syllabusId ? { ...s, status: "SUBMITTED" } : s)));
+            setOpenMenuId(null);
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Resubmit thất bại");
+        }
+    };
 
     return (
         <div className="lec-page">
@@ -133,19 +114,18 @@ export default function LecturerCourseDetailPage() {
                                 {syllabi.length === 0 ? (
                                     <div className="lec-empty">Chưa có giáo trình nào.</div>
                                 ) : (
-                                    syllabi.map((s) => (
+                                    syllabi.map((s: any) => (
                                         <div key={s.id} className="syllabus-folder">
                                             <div className="syllabus-left">
                                                 <div className="syllabus-folder-icon">📁</div>
                                                 <div className="syllabus-folder-name">
                                                     {s.title}
-                                                    <span className={`syllabus-status status-${s.status?.toLowerCase()}`}>
-                {s.status}
-            </span>
+                                                    <span className={`syllabus-status status-${String(s.status || "").toLowerCase()}`}>
+                            {s.status}
+                          </span>
                                                 </div>
                                             </div>
 
-                                            {/* 3 chấm bên phải */}
                                             <div className="syllabus-actions">
                                                 <button
                                                     className="syllabus-more"
@@ -156,36 +136,37 @@ export default function LecturerCourseDetailPage() {
                                                 >
                                                     ⋮
                                                 </button>
+
                                                 {openMenuId === s.id && (
                                                     <div className="syllabus-menu">
                                                         {s.status === "DRAFT" && (
-                                                            <button
-                                                                className="syllabus-menu-item"
-                                                                onClick={() => handleSubmitSyllabus(s.id)}
-                                                            >
+                                                            <button className="syllabus-menu-item" onClick={() => handleSubmitSyllabus(s.id)}>
                                                                 📤 Submit to HoD
                                                             </button>
                                                         )}
 
                                                         {(s.status === "REQUESTEDIT" || s.status === "REJECTED") && (
-                                                            <button
-                                                                className="syllabus-menu-item"
-                                                                onClick={() => handleResubmitSyllabus(s.id)}
-                                                            >
+                                                            <button className="syllabus-menu-item" onClick={() => handleResubmitSyllabus(s.id)}>
                                                                 🔁 Resubmit to HoD
+                                                            </button>
+                                                        )}
+
+                                                        {(s.status !== "DRAFT" && s.status !== "REQUESTEDIT" && s.status !== "REJECTED") && (
+                                                            <button className="syllabus-menu-item" onClick={() => setOpenMenuId(null)}>
+                                                                Đóng
                                                             </button>
                                                         )}
                                                     </div>
                                                 )}
-                                                {/*{s.editNote && (*/}
-                                                {/*    <div className="syllabus-note">*/}
-                                                {/*        Ghi chú: {s.editNote}*/}
-                                                {/*    </div>*/}
-                                                {/*)}*/}
 
+                                                {/* Nếu muốn hiện ghi chú reject/requestedit */}
+                                                {s.editNote && (
+                                                    <div className="syllabus-note" style={{ marginTop: 6, fontSize: 13, opacity: 0.9 }}>
+                                                        Ghi chú: {s.editNote}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-
                                     ))
                                 )}
                             </div>
