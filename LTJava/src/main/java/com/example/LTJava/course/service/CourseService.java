@@ -6,7 +6,12 @@ import com.example.LTJava.course.entity.Course1;
 import java.util.List;
 
 public interface CourseService {
-    Course1 create(CreateCourseRequest req, Long lecturerId);
+    Course1 create(CreateCourseRequest req);
+
+    Course1 update(Long id, CreateCourseRequest req);  // dùng lại DTO cho nhanh
+    void delete(Long id);
+
+    Course1 assignLecturer(Long id, Long lecturerId);
 
     List<Course1> getMyCourses(Long lecturerId);
 

@@ -5,6 +5,7 @@ import com.example.LTJava.course.dto.CreateCourseRequest;
 import com.example.LTJava.course.entity.Course1;
 import com.example.LTJava.course.service.CourseService;
 //import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,27 +25,29 @@ public class CourseController {
         this.courseService = courseService;
     }
 
-//    @PreAuthorize("hasRole('LECTURER')")
-//    @PostMapping("/create")
-//    public ResponseEntity<Course1> create(@RequestBody CreateCourseRequest req) {
-//        Course1 created = courseService.create(req);
-//        return new ResponseEntity<>(created, HttpStatus.CREATED);
-//    }
-
-    @PreAuthorize("hasRole('LECTURER')")
+    @PreAuthorize("hasRole('AA')")
     @PostMapping("/create")
-    public ResponseEntity<Course1> create(@RequestBody CreateCourseRequest req, Authentication authentication) {
-        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-
-        // DEBUG tạm để biết chắc có id không
-        System.out.println("principal=" + principal);
-        System.out.println("username=" + authentication.getName());
-
-        Long lecturerId = principal.getId(); // nếu dòng này null -> lỗi của CustomUserDetails/JWT
-        System.out.println("lecturerId=" + lecturerId);
-
-        Course1 created = courseService.create(req, lecturerId);
+    public ResponseEntity<Course1> create(@RequestBody CreateCourseRequest req) {
+        Course1 created = courseService.create(req);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasRole('AA')")
+    @PutMapping("/{id}")
+    public Course1 update(@PathVariable Long id, @RequestBody CreateCourseRequest req) {
+        return courseService.update(id, req);
+    }
+
+    @PreAuthorize("hasRole('AA')")
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        courseService.delete(id);
+    }
+
+    @PreAuthorize("hasRole('AA')")
+    @PutMapping("/{id}/assign/{lecturerId}")
+    public Course1 assignLecturer(@PathVariable Long id, @PathVariable Long lecturerId) {
+        return courseService.assignLecturer(id, lecturerId);
     }
 
     @PreAuthorize("hasRole('LECTURER')")
@@ -58,16 +61,13 @@ public class CourseController {
 
 
     // ✅ Xem tất cả môn học
-    @PreAuthorize("hasRole('LECTURER')")
+    @PreAuthorize("hasAnyRole('LECTURER','AA')")
     @GetMapping
-    public List<Course1> getAllCourses() {
-        return courseService.getAll();
-    }
+    public List<Course1> getAllCourses() { return courseService.getAll(); }
 
     // ✅ Xem chi tiết môn học
-    @PreAuthorize("hasRole('LECTURER')")
+    @PreAuthorize("hasAnyRole('LECTURER','AA')")
     @GetMapping("/{id}")
-    public Course1 getCourseById(@PathVariable Long id) {
-        return courseService.getById(id);
-    }
+    public Course1 getCourseById(@PathVariable Long id) { return courseService.getById(id); }
+
 }

@@ -104,9 +104,6 @@ export default function LecturerCourseDetailPage() {
                                 <div className="course-detail-title">
                                     [{course.code}] - {course.name}
                                 </div>
-                                <div className="course-detail-desc">
-                                    {course.description || course.department || "Chưa có mô tả."}
-                                </div>
                             </div>
 
                             {/* Syllabus list dạng folder */}

@@ -2,6 +2,7 @@ package com.example.LTJava.syllabus.service;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
 
 import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
 import com.example.LTJava.syllabus.entity.*;
@@ -10,6 +11,7 @@ import com.example.LTJava.syllabus.repository.*;
 import com.example.LTJava.user.entity.User;
 import com.example.LTJava.user.repository.UserRepository;
 
+import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ public class SyllabusServiceImpl implements SyllabusService {
         this.syllabusRepository = syllabusRepository;
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
+
     }
 
     // =========================
@@ -194,6 +197,38 @@ public class SyllabusServiceImpl implements SyllabusService {
     // =========================
     // AA
     // =========================
+
+    @Override
+    public void setCourseRelations(SetCourseRelationsRequest req) {
+        Course course = courseRepository.findById(req.getCourseId())
+                .orElseThrow(() -> new RuntimeException("Course syllabus không tồn tại: " + req.getCourseId()));
+
+        // ✅ clear old
+        course.getPrerequisites().clear();
+        course.getParallelCourses().clear();
+        course.getSupplementaryCourses().clear();
+
+        // ✅ add new
+        addMany(course.getPrerequisites(), req.getPrerequisiteIds(), req.getCourseId());
+        addMany(course.getParallelCourses(), req.getParallelIds(), req.getCourseId());
+        addMany(course.getSupplementaryCourses(), req.getSupplementaryIds(), req.getCourseId());
+
+        courseRepository.save(course);
+    }
+
+    private void addMany(Set<Course> target, List<Long> ids, Long selfId) {
+        if (ids == null) return;
+
+        for (Long id : ids) {
+            if (id == null) continue;
+            if (id.equals(selfId)) continue; // ✅ tránh tự tham chiếu
+
+            Course related = courseRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Related course không tồn tại: " + id));
+
+            target.add(related);
+        }
+    }
 
     @Override
     public Syllabus approveByAa(Long syllabusId, Long aaId) {

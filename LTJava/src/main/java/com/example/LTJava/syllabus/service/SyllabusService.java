@@ -3,6 +3,7 @@ package com.example.LTJava.syllabus.service;
 import java.util.List;
 
 import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
+import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
 import com.example.LTJava.syllabus.entity.Notification;
 import com.example.LTJava.syllabus.entity.Syllabus;
 import com.example.LTJava.syllabus.entity.SyllabusHistory;
@@ -42,7 +43,7 @@ public interface SyllabusService {
     // =========================
     Syllabus approveByAa(Long syllabusId, Long aaId);
     Syllabus rejectByAa(Long syllabusId, Long aaId, String reason);
-
+    void setCourseRelations(SetCourseRelationsRequest req);
     // =========================
     // 5) PRINCIPAL (AA_APPROVED -> PRINCIPAL_APPROVED / REJECTED)
     // =========================

@@ -2,6 +2,7 @@ package com.example.LTJava.syllabus.controller;
 
 import java.util.List;
 
+import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -48,4 +49,10 @@ public class AaSyllabusController {
         String reason = (request == null ? null : request.getNote());
         return ResponseEntity.ok(syllabusService.rejectByAa(id, aaId, reason));
     }
+
+    @PutMapping("/courses/relations")
+    public void setRelations(@RequestBody SetCourseRelationsRequest req) {
+        syllabusService.setCourseRelations(req);
+    }
+
 }

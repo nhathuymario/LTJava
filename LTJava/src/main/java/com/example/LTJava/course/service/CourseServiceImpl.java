@@ -17,7 +17,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Course1 create(CreateCourseRequest req, Long lecturerId) {
+    public Course1 create(CreateCourseRequest req) {
         if (req.getCode() == null || req.getCode().isBlank()) {
             throw new RuntimeException("Course code không được để trống");
         }
@@ -33,7 +33,7 @@ public class CourseServiceImpl implements CourseService {
         c.setName(req.getName());
         c.setCredits(req.getCredits());
         c.setDepartment(req.getDepartment());
-        c.setLecturerId(lecturerId); // ✅ GIỜ THÌ ĐÚNG
+        c.setLecturerId(req.getLecturerId()); // ✅ GIỜ THÌ ĐÚNG
 
         return courseRepository.save(c);
     }
@@ -53,4 +53,30 @@ public class CourseServiceImpl implements CourseService {
         return courseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Course không tồn tại"));
     }
+
+    @Override
+    public Course1 update(Long id, CreateCourseRequest req) {
+        Course1 c = getById(id);
+        if (req.getCode()!=null && !req.getCode().isBlank()) c.setCode(req.getCode());
+        if (req.getName()!=null && !req.getName().isBlank()) c.setName(req.getName());
+        c.setCredits(req.getCredits());
+        c.setDepartment(req.getDepartment());
+        // lecturerId có thể cho đổi qua API assign riêng (khuyên) hoặc cho update luôn
+        return courseRepository.save(c);
+    }
+
+    @Override
+    public void delete(Long id) {
+        if (!courseRepository.existsById(id)) throw new RuntimeException("Course không tồn tại");
+        courseRepository.deleteById(id);
+    }
+
+    @Override
+    public Course1 assignLecturer(Long id, Long lecturerId) {
+        Course1 c = getById(id);
+        c.setLecturerId(lecturerId);
+        return courseRepository.save(c);
+    }
+
+
 }
