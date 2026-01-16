@@ -1,11 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logout, getRoles } from '../services/auth'
+import '../assets/css/components/Header.css'
+
+import { HEADER_ACTIONS } from '../config/headerActions'
+import { filterActionsByRoles } from '../utils/filterByRoles'
 
 type HeaderProps = {
     username?: string
     onProfile?: () => void
-    showMenu?: boolean // mặc định true, có thể tắt trên trang login
+    showMenu?: boolean
 }
 
 export default function Header({ username, onProfile, showMenu = true }: HeaderProps) {
@@ -18,7 +22,7 @@ export default function Header({ username, onProfile, showMenu = true }: HeaderP
         setRoles(getRoles())
     }, [])
 
-    // Đóng menu khi click ngoài
+    // đóng menu khi click ngoài
     useEffect(() => {
         const handler = (e: MouseEvent) => {
             if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
@@ -27,103 +31,66 @@ export default function Header({ username, onProfile, showMenu = true }: HeaderP
         return () => document.removeEventListener('click', handler)
     }, [])
 
-    const handleLogout = () => {
-        logout()
-    }
+    const handleLogout = () => logout()
 
     const handleProfile = () => {
         if (onProfile) onProfile()
-        else nav('/profile', { replace: false }) // bạn có thể đổi route
+        else nav('/profile')
+        setOpen(false)
+    }
+
+    const handleGo = (to: string) => {
+        nav(to)
         setOpen(false)
     }
 
     const displayName = username || localStorage.getItem('username') || 'Tài khoản'
     const badge = roles.join(', ') || 'No role'
 
+    const visibleActions = useMemo(
+        () => filterActionsByRoles(HEADER_ACTIONS, roles),
+        [roles]
+    )
+
     return (
-        <header style={styles.header}>
-            <div style={styles.brand} onClick={() => nav('/')}>
-                <span style={{ color: '#0b6b5c', fontWeight: 700 }}>UTH</span>
-                <span style={{ marginLeft: 6, color: '#333' }}>Elearning</span>
+        <header className="header">
+            <div className="brand" onClick={() => nav('/')}>
+                <span className="brand-main">UTH</span>
+                <span className="brand-sub">Elearning</span>
             </div>
+
             {showMenu && (
-                <div ref={ref} style={styles.userBox}>
-                    <button style={styles.userBtn} onClick={() => setOpen(!open)}>
-                        <div style={styles.avatar}>{displayName.charAt(0).toUpperCase()}</div>
-                        <div style={{ textAlign: 'left' }}>
-                            <div style={{ fontWeight: 600, fontSize: 14 }}>{displayName}</div>
-                            <div style={{ fontSize: 12, color: '#666', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {badge}
-                            </div>
+                <div ref={ref} className="user-box">
+                    <button className="user-btn" onClick={() => setOpen(!open)}>
+                        <div className="avatar">{displayName.charAt(0).toUpperCase()}</div>
+
+                        <div className="user-text">
+                            <div className="username">{displayName}</div>
+                            <div className="role">{badge}</div>
                         </div>
-                        <span style={styles.caret}>{open ? '▲' : '▼'}</span>
+
+                        <span className="caret">{open ? '▲' : '▼'}</span>
                     </button>
+
                     {open && (
-                        <div style={styles.menu}>
-                            <div style={styles.menuItem} onClick={handleProfile}>Xem thông tin</div>
-                            <div style={{ ...styles.menuItem, color: '#c0392b' }} onClick={handleLogout}>Đăng xuất</div>
+                        <div className="menu">
+                            {/* ✅ Actions theo role */}
+                            {visibleActions.map(a => (
+                                <div key={a.key} className="menu-item" onClick={() => handleGo(a.to)}>
+                                    {a.icon ? `${a.icon} ` : ''}{a.label}
+                                </div>
+                            ))}
+
+                            {/* separator nếu có action */}
+                            {visibleActions.length > 0 && <div className="menu-sep" />}
+
+                            {/* Common */}
+                            <div className="menu-item" onClick={handleProfile}>Xem thông tin</div>
+                            <div className="menu-item logout" onClick={handleLogout}>Đăng xuất</div>
                         </div>
                     )}
                 </div>
             )}
         </header>
     )
-}
-
-const styles: Record<string, React.CSSProperties> = {
-    header: {
-        height: 56,
-        padding: '0 16px',
-        borderBottom: '1px solid #eee',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: '#fff',
-        position: 'sticky',
-        top: 0,
-        zIndex: 99,
-    },
-    brand: {
-        display: 'flex',
-        alignItems: 'center',
-        fontSize: 18,
-        fontWeight: 700,
-        cursor: 'pointer',
-    },
-    userBox: { position: 'relative' },
-    userBtn: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        padding: '6px 10px',
-        border: '1px solid #ddd',
-        borderRadius: 10,
-        background: '#fff',
-        cursor: 'pointer',
-    },
-    avatar: {
-        width: 28, height: 28, borderRadius: '50%',
-        background: '#0b6b5c', color: '#fff',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontWeight: 700, fontSize: 14,
-    },
-    caret: { marginLeft: 4, fontSize: 12, color: '#555' },
-    menu: {
-        position: 'absolute',
-        right: 0,
-        marginTop: 6,
-        minWidth: 160,
-        background: '#fff',
-        border: '1px solid #ddd',
-        borderRadius: 10,
-        boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
-        overflow: 'hidden',
-        zIndex: 100,
-    },
-    menuItem: {
-        padding: '10px 12px',
-        cursor: 'pointer',
-        fontSize: 14,
-        borderBottom: '1px solid #f1f1f1',
-    },
 }

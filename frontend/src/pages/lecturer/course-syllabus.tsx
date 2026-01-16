@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../../assets/css/lecturer.css";
+import "../../assets/css/pages/lecturer.css";
 
 import { hasRole, getToken } from "../../services/auth";
 import { getCourseById, type Course } from "../../services/course";

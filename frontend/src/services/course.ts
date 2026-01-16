@@ -7,7 +7,7 @@ export type Course = {
     credits?: number;
     department?: string;
     lecturerId?: number;
-    description?: string;
+    // description?: string;
 };
 
 export async function getCourseById(id: number): Promise<Course> {
@@ -15,6 +15,11 @@ export async function getCourseById(id: number): Promise<Course> {
     return data;
 }
 
+export async function createCourse(payload: any) {
+    // nếu api.ts baseURL đã là /api thì dùng "/course/create"
+    const { data } = await api.post("/course/create", payload);
+    return data;
+}
 
 export async function getMyCourses(): Promise<Course[]> {
     // nếu api.ts baseURL = http://localhost:8081/api  => "/course/my" là đúng

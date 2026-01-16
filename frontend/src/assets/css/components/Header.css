@@ -1,0 +1,113 @@
+.header {
+    height: 56px;
+    padding: 0 16px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 99;
+}
+
+/* Brand */
+.brand {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.brand-main {
+    color: #0b6b5c;
+}
+
+.brand-sub {
+    margin-left: 6px;
+    color: #333;
+}
+
+/* User box */
+.user-box {
+    position: relative;
+}
+
+.user-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #0b6b5c;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.user-text {
+    text-align: left;
+}
+
+.username {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.role {
+    font-size: 12px;
+    color: #666;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.caret {
+    margin-left: 4px;
+    font-size: 12px;
+    color: #555;
+}
+
+/* Dropdown menu */
+.menu {
+    position: absolute;
+    right: 0;
+    margin-top: 6px;
+    min-width: 160px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    z-index: 100;
+}
+
+.menu-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.menu-item:hover {
+    background: #f7f7f7;
+}
+
+.menu-item.logout {
+    color: #c0392b;
+    border-bottom: none;
+}

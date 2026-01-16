@@ -1,27 +1,19 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Header from './components/Header'
-import LoginPage from './pages/LoginPage'
-import AdminPage from './pages/admin/AdminPage'
-import AAPage from './pages/aa'
-import StudentPage from './pages/student'
-import LecturerPage from './pages/lecturer'
-// import LecturerPage from './pages/lecturer'
-import HodPage from './pages/hod'
-import PrincipalPage from './pages/principal'
-import RequireAuth from './RequireAuth'
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import LoginPage from "./pages/LoginPage"
+import RequireAuth from "./RequireAuth"
+import AppLayout from "./AppLayout" // hoặc để cùng file cũng được
+
+import AdminPage from "./pages/admin/AdminPage"
+import AAPage from "./pages/aa"
+import StudentPage from "./pages/student"
+import LecturerPage from "./pages/lecturer"
+import HodPage from "./pages/hod"
+import PrincipalPage from "./pages/principal"
+
 import HodCourseDetailPage from "./pages/hod/course-detail"
 import AACourseDetailPage from "./pages/aa/course-detail"
-import LecturerCoureseDetailPage from './pages/lecturer/course-syllabus'
-
-
-function AppLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <>
-            <Header />
-            {children}
-        </>
-    )
-}
+import LecturerCoureseDetailPage from "./pages/lecturer/course-syllabus"
+import LecturerCoursesIndexPage from "./pages/lecturer/courses/new"
 
 export default function App() {
     return (
@@ -29,28 +21,50 @@ export default function App() {
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
 
-                <Route element={<RequireAuth allowedRoles={['SYSTEM_ADMIN', 'ROLE_SYSTEM_ADMIN']} />}>
-                    <Route path="/admin" element={<AppLayout><AdminPage /></AppLayout>} />
+                {/* ADMIN */}
+                <Route element={<RequireAuth allowedRoles={["SYSTEM_ADMIN", "ROLE_SYSTEM_ADMIN"]} />}>
+                    <Route element={<AppLayout />}>
+                        <Route path="/admin" element={<AdminPage />} />
+                    </Route>
                 </Route>
+
+                {/* AA */}
                 <Route element={<RequireAuth allowedRoles={["AA", "ROLE_AA"]} />}>
-                    <Route path="/aa" element={<AppLayout><AAPage /></AppLayout>} />
-                    <Route path="/aa/courses/:courseId" element={<AppLayout><AACourseDetailPage /></AppLayout>} />
+                    <Route element={<AppLayout />}>
+                        <Route path="/aa" element={<AAPage />} />
+                        <Route path="/aa/courses/:courseId" element={<AACourseDetailPage />} />
+                    </Route>
                 </Route>
-                <Route element={<RequireAuth allowedRoles={['LECTURER', 'ROLE_LECTURER']} />}>
-                    <Route path="/lecturer" element={<AppLayout><LecturerPage/></AppLayout>} />
-                    <Route path="/lecturer/courses/:courseId" element={<AppLayout><LecturerCoureseDetailPage/></AppLayout>} />
+
+                {/* LECTURER */}
+                <Route element={<RequireAuth allowedRoles={["LECTURER", "ROLE_LECTURER"]} />}>
+                    <Route element={<AppLayout />}>
+                        <Route path="/lecturer" element={<LecturerPage />} />
+                        <Route path="/lecturer/courses" element={<LecturerCoursesIndexPage />} />
+                        <Route path="/lecturer/courses/:courseId" element={<LecturerCoureseDetailPage />} />
+                    </Route>
                 </Route>
+
+                {/* HOD */}
                 <Route element={<RequireAuth allowedRoles={["HOD", "ROLE_HOD"]} />}>
-                    <Route path="/hod" element={<AppLayout><HodPage /></AppLayout>} />
-                    <Route path="/hod/courses/:courseId" element={<AppLayout><HodCourseDetailPage /></AppLayout>} />
+                    <Route element={<AppLayout />}>
+                        <Route path="/hod" element={<HodPage />} />
+                        <Route path="/hod/courses/:courseId" element={<HodCourseDetailPage />} />
+                    </Route>
                 </Route>
 
-                <Route element={<RequireAuth allowedRoles={['STUDENT', 'ROLE_STUDENT']} />}>
-                    <Route path="/student" element={<AppLayout><StudentPage/></AppLayout>} />
+                {/* STUDENT */}
+                <Route element={<RequireAuth allowedRoles={["STUDENT", "ROLE_STUDENT"]} />}>
+                    <Route element={<AppLayout />}>
+                        <Route path="/student" element={<StudentPage />} />
+                    </Route>
                 </Route>
 
-                <Route element={<RequireAuth allowedRoles={['PRINCIPAL', 'ROLE_PRINCIPAL']} />}>
-                    <Route path="/principal" element={<AppLayout><PrincipalPage /></AppLayout>} />
+                {/* PRINCIPAL */}
+                <Route element={<RequireAuth allowedRoles={["PRINCIPAL", "ROLE_PRINCIPAL"]} />}>
+                    <Route element={<AppLayout />}>
+                        <Route path="/principal" element={<PrincipalPage />} />
+                    </Route>
                 </Route>
             </Routes>
         </BrowserRouter>

@@ -1,0 +1,113 @@
+.lec-courses {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+/* Header */
+.lec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.lec-header h2 {
+    margin: 0;
+}
+
+/* Actions */
+.lec-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Buttons */
+.btn-primary {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #0b6b5c;
+    background: #0b6b5c;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+}
+
+.btn-outline {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-outline:hover {
+    background: #f7f7f7;
+}
+
+/* State */
+.lec-state {
+    margin-top: 16px;
+}
+
+.lec-error {
+    margin-top: 16px;
+    color: #c0392b;
+}
+
+/* Grid */
+.course-grid {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+/* Card */
+.course-card {
+    padding: 14px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    background: #fff;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Card content */
+.course-title {
+    font-weight: 800;
+    font-size: 16px;
+}
+
+.course-desc {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.course-meta {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #888;
+    display: flex;
+    gap: 10px;
+}
+
+/* Empty */
+.course-empty {
+    padding: 16px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    background: #fff;
+}

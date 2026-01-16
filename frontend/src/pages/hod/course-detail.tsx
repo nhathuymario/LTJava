@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import "../../assets/css/hod.css";
+import "../../assets/css/pages/hod.css";
 
 import { hasRole, getToken } from "../../services/auth";
 import { hodApi } from "../../services/hod";

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/css/aa.css";
+import "../../assets/css/pages/aa.css";
 
 import { hasRole, getToken } from "../../services/auth";
 import { aaApi } from "../../services/aa";
