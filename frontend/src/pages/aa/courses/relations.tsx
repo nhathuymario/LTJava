@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import Header from "../../../components/Header"
 import { hasRole } from "../../../services/auth"
 import { getAllCourses, type Course } from "../../../services/course"
 import {api} from "../../../services/api"
@@ -74,7 +73,7 @@ export default function AaCourseRelationsPage() {
 
     return (
         <>
-            <Header />
+
             <div style={{ maxWidth: 900, margin: "0 auto", padding: 16 }}>
                 <h2 style={{ marginTop: 0 }}>AA - Set tiên quyết / song hành / bổ trợ</h2>
 

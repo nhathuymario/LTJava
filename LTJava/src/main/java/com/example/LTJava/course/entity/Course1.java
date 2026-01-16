@@ -22,7 +22,10 @@ public class Course1 {
     private Integer credits;  // VD: 3
     private String department; // VD: CS
 
-    @Column(name = "lecturer_id", nullable = false)
+    @Column(nullable = false)
     private Long lecturerId;
+
+    @Column(nullable = false)
+    private String lecturerUsername;
 
 }

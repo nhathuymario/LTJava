@@ -1,17 +1,14 @@
 package com.example.LTJava.course.controller;
 
-import com.example.LTJava.auth.security.CustomUserDetails;
+import com.example.LTJava.course.dto.AssignLecturerRequest;
 import com.example.LTJava.course.dto.CreateCourseRequest;
 import com.example.LTJava.course.entity.Course1;
 import com.example.LTJava.course.service.CourseService;
-//import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
-import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
-
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,6 +22,7 @@ public class CourseController {
         this.courseService = courseService;
     }
 
+    // ✅ AA: create/update/delete/assign
     @PreAuthorize("hasRole('AA')")
     @PostMapping("/create")
     public ResponseEntity<Course1> create(@RequestBody CreateCourseRequest req) {
@@ -45,29 +43,29 @@ public class CourseController {
     }
 
     @PreAuthorize("hasRole('AA')")
-    @PutMapping("/{id}/assign/{lecturerId}")
-    public Course1 assignLecturer(@PathVariable Long id, @PathVariable Long lecturerId) {
-        return courseService.assignLecturer(id, lecturerId);
+    @PutMapping("/{id}/assign")
+    public Course1 assignLecturer(@PathVariable Long id, @RequestBody AssignLecturerRequest req) {
+        return courseService.assignLecturer(id, req);
     }
 
+    // ✅ Lecturer: chỉ xem course của mình theo username trong JWT
     @PreAuthorize("hasRole('LECTURER')")
     @GetMapping("/my")
-    public List<Course1> getMyCourses(Authentication authentication) {
-        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-        Long lecturerId = principal.getId();
-
-        return courseService.getMyCourses(lecturerId);
+    public List<Course1> myCourses(Authentication auth) {
+        String username = auth.getName(); // JWT sub
+        return courseService.getByLecturerUsername(username);
     }
 
-
-    // ✅ Xem tất cả môn học
+    // ✅ Xem tất cả / chi tiết: AA + Lecturer
     @PreAuthorize("hasAnyRole('LECTURER','AA')")
     @GetMapping
-    public List<Course1> getAllCourses() { return courseService.getAll(); }
+    public List<Course1> getAllCourses() {
+        return courseService.getAll();
+    }
 
-    // ✅ Xem chi tiết môn học
     @PreAuthorize("hasAnyRole('LECTURER','AA')")
     @GetMapping("/{id}")
-    public Course1 getCourseById(@PathVariable Long id) { return courseService.getById(id); }
-
+    public Course1 getCourseById(@PathVariable Long id) {
+        return courseService.getById(id);
+    }
 }

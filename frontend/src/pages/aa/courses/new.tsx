@@ -4,16 +4,24 @@ import "../../../assets/css/pages/lecturer.css"
 import { hasRole } from "../../../services/auth"
 import { createCourse } from "../../../services/course"
 
+type FormState = {
+    code: string
+    name: string
+    credits: number
+    department: string
+    lecturerUsername: string // ✅ gán bằng USER (username = CCCD)
+}
+
 export default function AACreateCoursePage() {
     const nav = useNavigate()
     const isAA = hasRole("AA")
 
-    const [form, setForm] = useState({
+    const [form, setForm] = useState<FormState>({
         code: "",
         name: "",
         credits: 3,
         department: "",
-        lecturerId: "", // ✅ AA gán course cho lecturer
+        lecturerUsername: "",
     })
 
     const [loading, setLoading] = useState(false)
@@ -31,7 +39,7 @@ export default function AACreateCoursePage() {
         )
     }
 
-    const onChange = (k: keyof typeof form, v: any) => {
+    const onChange = <K extends keyof FormState>(k: K, v: FormState[K]) => {
         setForm((p) => ({ ...p, [k]: v }))
     }
 
@@ -43,19 +51,21 @@ export default function AACreateCoursePage() {
             setError("Vui lòng nhập Code và Tên môn học.")
             return
         }
-        if (!form.lecturerId.trim()) {
-            setError("Vui lòng nhập LecturerId để gán môn học cho giảng viên.")
+
+        if (!form.lecturerUsername.trim()) {
+            setError("Vui lòng nhập Username (CCCD) của giảng viên.")
             return
         }
 
         try {
             setLoading(true)
+
             await createCourse({
                 code: form.code.trim(),
                 name: form.name.trim(),
                 credits: Number(form.credits) || 0,
                 department: form.department.trim(),
-                lecturerId: Number(form.lecturerId), // ✅ theo yêu cầu “gán course cho lecturer”
+                lecturerUsername: form.lecturerUsername.trim(), // ✅ USER
             })
 
             nav("/aa", { replace: true })
@@ -90,7 +100,6 @@ export default function AACreateCoursePage() {
                                 className="lec-search"
                                 value={form.code}
                                 onChange={(e) => onChange("code", e.target.value)}
-                                placeholder="VD: IT001"
                             />
                         </label>
 
@@ -100,7 +109,6 @@ export default function AACreateCoursePage() {
                                 className="lec-search"
                                 value={form.name}
                                 onChange={(e) => onChange("name", e.target.value)}
-                                placeholder="VD: Lập trình Java"
                             />
                         </label>
 
@@ -111,7 +119,9 @@ export default function AACreateCoursePage() {
                                 type="number"
                                 min={0}
                                 value={form.credits}
-                                onChange={(e) => onChange("credits", e.target.value)}
+                                onChange={(e) =>
+                                    onChange("credits", Number(e.target.value))
+                                }
                             />
                         </label>
 
@@ -120,18 +130,21 @@ export default function AACreateCoursePage() {
                             <input
                                 className="lec-search"
                                 value={form.department}
-                                onChange={(e) => onChange("department", e.target.value)}
-                                placeholder="VD: CNTT"
+                                onChange={(e) =>
+                                    onChange("department", e.target.value)
+                                }
                             />
                         </label>
 
                         <label style={{ display: "grid", gap: 6 }}>
-                            <span>LecturerId (gán cho giảng viên)</span>
+                            <span>Lecturer Username (CCCD)</span>
                             <input
                                 className="lec-search"
-                                value={form.lecturerId}
-                                onChange={(e) => onChange("lecturerId", e.target.value)}
-                                placeholder="VD: 1001"
+                                value={form.lecturerUsername}
+                                onChange={(e) =>
+                                    onChange("lecturerUsername", e.target.value)
+                                }
+                                placeholder="VD: 012345678999"
                             />
                         </label>
 

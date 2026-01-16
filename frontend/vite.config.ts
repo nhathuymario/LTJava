@@ -8,6 +8,7 @@ export default defineConfig({
             '/api': {
                 target: 'http://localhost:8081', // cổng backend của bạn
                 changeOrigin: true,
+                secure: false,
                 // Nếu backend KHÔNG có prefix /api, bật rewrite:
                 // rewrite: (p) => p.replace(/^\/api/, ''),
             },

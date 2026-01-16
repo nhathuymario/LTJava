@@ -10,5 +10,6 @@ public class CreateCourseRequest {
     private Integer credits;
     private String department;
 
-    private Long lecturerId; // ✅ AA gán course cho lecturer
+    private String lecturerUsername;
+
 }
