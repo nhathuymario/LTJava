@@ -12,8 +12,10 @@ import PrincipalPage from "./pages/principal"
 
 import HodCourseDetailPage from "./pages/hod/course-detail"
 import AACourseDetailPage from "./pages/aa/course-detail"
+import AaCourseRelationsPage from "./pages/aa/courses/relations"
+import AACourseNew from "./pages/aa/courses/new"
 import LecturerCoureseDetailPage from "./pages/lecturer/course-syllabus"
-import LecturerCoursesIndexPage from "./pages/lecturer/courses/new"
+
 
 export default function App() {
     return (
@@ -32,7 +34,9 @@ export default function App() {
                 <Route element={<RequireAuth allowedRoles={["AA", "ROLE_AA"]} />}>
                     <Route element={<AppLayout />}>
                         <Route path="/aa" element={<AAPage />} />
+                        <Route path="/aa/courses/new" element={<AACourseNew />} />
                         <Route path="/aa/courses/:courseId" element={<AACourseDetailPage />} />
+                        <Route path="/aa/courses/relations" element={<AaCourseRelationsPage />} /> {/* set tiên quyết/song hành/bổ trợ */}
                     </Route>
                 </Route>
 
@@ -40,8 +44,7 @@ export default function App() {
                 <Route element={<RequireAuth allowedRoles={["LECTURER", "ROLE_LECTURER"]} />}>
                     <Route element={<AppLayout />}>
                         <Route path="/lecturer" element={<LecturerPage />} />
-                        <Route path="/lecturer/courses" element={<LecturerCoursesIndexPage />} />
-                        <Route path="/lecturer/courses/:courseId" element={<LecturerCoureseDetailPage />} />
+                        <Route path="/lecturer/courses/:courseId" element={<LecturerCoureseDetailPage/>} />
                     </Route>
                 </Route>
 

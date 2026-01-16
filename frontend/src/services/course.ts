@@ -20,6 +20,11 @@ export async function createCourse(payload: any) {
     const { data } = await api.post("/course/create", payload);
     return data;
 }
+// ✅ THÊM HÀM NÀY
+export async function getAllCourses() {
+    const { data } = await api.get<Course[]>("/course")
+    return data
+}
 
 export async function getMyCourses(): Promise<Course[]> {
     // nếu api.ts baseURL = http://localhost:8081/api  => "/course/my" là đúng
