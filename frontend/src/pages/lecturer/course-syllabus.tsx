@@ -86,6 +86,51 @@ export default function LecturerCourseDetailPage() {
         }
     };
 
+    const handleMoveToDraft = async (syllabusId: number) => {
+        if (!window.confirm("Chuyển syllabus về DRAFT để sửa?")) return;
+
+        try {
+            await lecturerApi.moveToDraft(syllabusId);
+            setSyllabi((prev) =>
+                prev.map((s) => (s.id === syllabusId ? { ...s, status: "DRAFT" } : s))
+            );
+            setOpenMenuId(null);
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Move to draft thất bại");
+        }
+    };
+
+
+    const handleEditSyllabus = async (s: Syllabus) => {
+        try {
+            // nếu đang REQUESTEDIT/REJECTED thì chuyển về DRAFT trước
+            if (s.status === "REQUESTEDIT" || s.status === "REJECTED") {
+                await lecturerApi.moveToDraft(s.id);
+                setSyllabi((prev) =>
+                    prev.map((x) => (x.id === s.id ? { ...x, status: "DRAFT" } : x))
+                );
+            }
+
+            setOpenMenuId(null);
+            nav(`/lecturer/syllabus/${s.id}/edit`, { state: { courseId: id } });
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Không thể chuyển về DRAFT để sửa");
+        }
+    };
+
+    const handleDeleteSyllabus = async (sid: number) => {
+        if (!window.confirm("Xóa syllabus này? (chỉ xóa được khi DRAFT)")) return;
+
+        try {
+            await lecturerApi.deleteSyllabus(sid);
+            setSyllabi((prev) => prev.filter((x) => x.id !== sid));
+            setOpenMenuId(null);
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Xóa thất bại");
+        }
+    };
+
+
     return (
         <div className="lec-page">
             <div className="lec-container">
@@ -137,24 +182,61 @@ export default function LecturerCourseDetailPage() {
                                                 {openMenuId === s.id && (
                                                     <div className="syllabus-menu">
                                                         {s.status === "DRAFT" && (
-                                                            <button className="syllabus-menu-item" onClick={() => handleSubmitSyllabus(s.id)}>
-                                                                📤 Submit to HoD
-                                                            </button>
+                                                            <>
+                                                                <button
+                                                                    className="syllabus-menu-item"
+                                                                    onClick={() => handleEditSyllabus(s)}
+                                                                >
+                                                                    ✏️ Sửa
+                                                                </button>
+
+                                                                <button
+                                                                    className="syllabus-menu-item danger"
+                                                                    onClick={() => handleDeleteSyllabus(s.id)}
+                                                                >
+                                                                    🗑️ Xóa
+                                                                </button>
+
+                                                                <button
+                                                                    className="syllabus-menu-item"
+                                                                    onClick={() => handleSubmitSyllabus(s.id)}
+                                                                >
+                                                                    📤 Submit to HoD
+                                                                </button>
+                                                            </>
                                                         )}
 
                                                         {(s.status === "REQUESTEDIT" || s.status === "REJECTED") && (
-                                                            <button className="syllabus-menu-item" onClick={() => handleResubmitSyllabus(s.id)}>
-                                                                🔁 Resubmit to HoD
-                                                            </button>
+                                                            <>
+                                                                <button
+                                                                    className="syllabus-menu-item"
+                                                                    onClick={() => handleMoveToDraft(s.id)}
+                                                                >
+                                                                    ✏️ Move to draft để sửa
+                                                                </button>
+
+                                                                <button
+                                                                    className="syllabus-menu-item"
+                                                                    onClick={() => handleResubmitSyllabus(s.id)}
+                                                                >
+                                                                    🔁 Resubmit to HoD
+                                                                </button>
+                                                            </>
                                                         )}
 
-                                                        {(s.status !== "DRAFT" && s.status !== "REQUESTEDIT" && s.status !== "REJECTED") && (
-                                                            <button className="syllabus-menu-item" onClick={() => setOpenMenuId(null)}>
-                                                                Đóng
-                                                            </button>
-                                                        )}
+                                                        {s.status !== "DRAFT" &&
+                                                            s.status !== "REQUESTEDIT" &&
+                                                            s.status !== "REJECTED" && (
+                                                                <button
+                                                                    className="syllabus-menu-item"
+                                                                    onClick={() => setOpenMenuId(null)}
+                                                                >
+                                                                    Đóng
+                                                                </button>
+                                                            )}
                                                     </div>
                                                 )}
+
 
                                                 {/* Nếu muốn hiện ghi chú reject/requestedit */}
                                                 {s.editNote && (

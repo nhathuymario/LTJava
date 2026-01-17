@@ -28,7 +28,7 @@ export interface Syllabus {
     academicYear?: string
     semester?: string
     status: SyllabusStatus
-    version?: number
+    version: number
     editNote?: string | null
 
     aiSummary?: string | null
@@ -36,6 +36,9 @@ export interface Syllabus {
 
     course?: Course
     createdBy?: User
+
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface CreateSyllabusRequest {
@@ -52,15 +55,16 @@ export interface NoteRequest {
 
 export interface SyllabusHistory {
     id: number
-    syllabusId?: number
+    syllabusId: number
     title: string
     description?: string
     academicYear?: string
     semester?: string
     status: SyllabusStatus
-    version?: number
+    version: number
     updatedAt?: string
-    updatedBy?: string
+    // ✅ backend hay trả object user, không phải string
+    updatedBy?: User | null;
 }
 
 export interface Notification {

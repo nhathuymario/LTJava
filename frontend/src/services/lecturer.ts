@@ -6,6 +6,13 @@ export const lecturerApi = {
     createSyllabus: (payload: CreateSyllabusRequest) =>
         api.post<Syllabus>("/lecturer/syllabus", payload).then((r) => r.data),
 
+    updateSyllabus: (id: number, payload: CreateSyllabusRequest) =>
+        api.put<Syllabus>(`/lecturer/syllabus/${id}`, payload).then((r) => r.data),
+
+    deleteSyllabus: (id: number) =>
+        api.delete<void>(`/lecturer/syllabus/${id}`).then((r) => r.data),
+
+
     mySyllabi: () =>
         api.get<Syllabus[]>("/lecturer/syllabus/my").then((r) => r.data),
 
