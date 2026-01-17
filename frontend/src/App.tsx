@@ -16,6 +16,7 @@ import AaCourseRelationsPage from "./pages/aa/courses/relations"
 import AACourseNew from "./pages/aa/courses/new"
 import LecturerCoureseDetailPage from "./pages/lecturer/course-syllabus"
 import LecturerSyllabusNewPage  from "./pages/lecturer/syllabus/new";
+import PrincipalCourseDetailPage from "./pages/principal/course-detail";
 
 export default function App() {
     return (
@@ -68,6 +69,7 @@ export default function App() {
                 <Route element={<RequireAuth allowedRoles={["PRINCIPAL", "ROLE_PRINCIPAL"]} />}>
                     <Route element={<AppLayout />}>
                         <Route path="/principal" element={<PrincipalPage />} />
+                        <Route path="/principal/courses/:courseId" element={<PrincipalCourseDetailPage />} />
                     </Route>
                 </Route>
             </Routes>

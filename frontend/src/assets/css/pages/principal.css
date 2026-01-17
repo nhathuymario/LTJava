@@ -1,0 +1,83 @@
+.principal-toolbar {
+    align-items: center;
+}
+
+.principal-tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.principal-tab {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.principal-tab.active {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+}
+
+.principal-refresh {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.principal-view {
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.principal-sub {
+    display: flex;
+    gap: 12px;
+    opacity: 0.85;
+}
+
+.principal-tip {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+    color: #666;
+    font-size: 13px;
+}
+
+.principal-badges {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.principal-badge {
+    padding: 6px 10px;
+    border: 1px solid #eee;
+    border-radius: 999px;
+    background: #fafafa;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.syllabus-menu-item.danger {
+    color: #b00020;
+}
+/* làm nút refresh giống icon nhỏ */
+.lec-toolbar .btn-outline {
+    width: 44px;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+}
