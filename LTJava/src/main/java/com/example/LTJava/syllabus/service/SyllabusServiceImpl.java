@@ -272,7 +272,11 @@ public class SyllabusServiceImpl implements SyllabusService {
         }
 
         syllabus.setStatus(SyllabusStatus.PRINCIPAL_APPROVED);
-        return syllabusRepository.save(syllabus);
+//        return syllabusRepository.save(syllabus);
+        Syllabus saved = syllabusRepository.save(syllabus);
+        saveHistory(saved);
+
+        return saved;
     }
 
     @Override
@@ -306,7 +310,6 @@ public class SyllabusServiceImpl implements SyllabusService {
         }
 
         syllabus.setStatus(SyllabusStatus.PUBLISHED);
-        syllabus.setVersion(syllabus.getVersion() + 1);
 
         // AI notification content
         String notiContent = aiService.createNotificationMessage(
@@ -333,7 +336,10 @@ public class SyllabusServiceImpl implements SyllabusService {
             }
         }
 
-        return syllabusRepository.save(syllabus);
+        Syllabus saved = syllabusRepository.save(syllabus);
+        saveHistory(saved);
+
+        return saved;
     }
 
     // =========================

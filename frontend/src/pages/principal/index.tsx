@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom"; // ✅ thêm useSearchParams
 import "../../assets/css/pages/hod.css";
 
 import { hasRole, getToken } from "../../services/auth";
@@ -21,7 +21,14 @@ type CourseGroup = {
 export default function PrincipalPage() {
     const nav = useNavigate();
 
-    const [viewStatus, setViewStatus] = useState<ViewStatus>("AA_APPROVED");
+    // ✅ Đọc/ghi query param: /principal?status=AA_APPROVED|PRINCIPAL_APPROVED|PUBLISHED
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // ✅ Lấy status từ URL (nếu không có thì mặc định AA_APPROVED)
+    const urlStatus = (searchParams.get("status") || "AA_APPROVED") as ViewStatus;
+
+    // ✅ Local state dùng để render (sẽ sync theo urlStatus)
+    const [viewStatus, setViewStatus] = useState<ViewStatus>(urlStatus);
 
     const [items, setItems] = useState<Syllabus[]>([]);
     const [loading, setLoading] = useState(true);
@@ -32,6 +39,12 @@ export default function PrincipalPage() {
 
     const isPrincipal = hasRole("PRINCIPAL");
 
+    // ✅ Mỗi khi urlStatus đổi (do user đổi select hoặc back/forward), đồng bộ lại viewStatus
+    useEffect(() => {
+        setViewStatus(urlStatus);
+    }, [urlStatus]);
+
+    // ✅ Fetch data theo urlStatus (nguồn chân lý là URL)
     useEffect(() => {
         const token = getToken?.() || localStorage.getItem("token");
         if (!token) {
@@ -49,7 +62,7 @@ export default function PrincipalPage() {
             setLoading(true);
             setError(null);
             try {
-                const data = await principalApi.listByStatus(viewStatus);
+                const data = await principalApi.listByStatus(urlStatus);
                 setItems((data || []) as Syllabus[]);
             } catch (err: any) {
                 const status = err?.response?.status;
@@ -61,15 +74,16 @@ export default function PrincipalPage() {
                         resp?.message ||
                         resp ||
                         err?.message ||
-                        `Không tải được danh sách syllabus ${viewStatus}`;
+                        `Không tải được danh sách syllabus ${urlStatus}`;
                     setError(typeof msg === "string" ? msg : "Không tải được dữ liệu");
                 }
             } finally {
                 setLoading(false);
             }
         })();
-    }, [isPrincipal, viewStatus]);
+    }, [isPrincipal, urlStatus]);
 
+    // ✅ Group syllabus theo course để hiển thị list course
     const courses = useMemo(() => {
         const map = new Map<number, CourseGroup>();
 
@@ -100,6 +114,7 @@ export default function PrincipalPage() {
 
         let list = Array.from(map.values());
 
+        // ✅ Search
         const key = q.toLowerCase().trim();
         if (key) {
             list = list.filter((x) =>
@@ -109,6 +124,7 @@ export default function PrincipalPage() {
             );
         }
 
+        // ✅ Sort
         list.sort((a, b) => {
             const an = (a.name || "").toLowerCase();
             const bn = (b.name || "").toLowerCase();
@@ -118,6 +134,7 @@ export default function PrincipalPage() {
         return list;
     }, [items, q, sort]);
 
+    // ✅ Title/empty text theo tab đang chọn
     const title =
         viewStatus === "AA_APPROVED"
             ? "Các course đang chờ duyệt (AA_APPROVED)"
@@ -141,11 +158,14 @@ export default function PrincipalPage() {
                     <h2 className="lec-section-title">{title}</h2>
 
                     <div className="lec-toolbar">
-                        {/* ✅ chọn trạng thái */}
+                        {/* ✅ Select đổi tab: ghi vào URL để khi quay lại vẫn giữ đúng tab */}
                         <select
                             className="lec-select"
                             value={viewStatus}
-                            onChange={(e) => setViewStatus(e.target.value as ViewStatus)}
+                            onChange={(e) => {
+                                const next = e.target.value as ViewStatus;
+                                setSearchParams({ status: next }); // ✅ URL là nguồn chân lý
+                            }}
                         >
                             <option value="AA_APPROVED">AA_APPROVED</option>
                             <option value="PRINCIPAL_APPROVED">PRINCIPAL_APPROVED</option>
@@ -183,6 +203,7 @@ export default function PrincipalPage() {
                                         className="course-row"
                                         onClick={() =>
                                             nav(`/principal/courses/${c.courseId}`, {
+                                                // ✅ truyền viewStatus để trang detail biết quay về tab nào
                                                 state: { course: c, syllabi: c.syllabi, viewStatus },
                                             })
                                         }
@@ -192,14 +213,11 @@ export default function PrincipalPage() {
 
                                         <div className="course-info">
                                             <div className="course-name">
-                                                [{c.code || "NO_CODE"}] -{" "}
-                                                {c.name || `Course #${c.courseId}`}
+                                                [{c.code || "NO_CODE"}] - {c.name || `Course #${c.courseId}`}
                                             </div>
                                             <div className="course-sub">
-                                                {c.department
-                                                    ? `[CQ]_${c.department}`
-                                                    : "Chưa có khoa/department"}{" "}
-                                                • {c.count} syllabus
+                                                {c.department ? `[CQ]_${c.department}` : "Chưa có khoa/department"} •{" "}
+                                                {c.count} syllabus
                                             </div>
                                         </div>
 

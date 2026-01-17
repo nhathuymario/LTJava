@@ -8,13 +8,14 @@ import type { Syllabus } from "../../services/syllabus";
 
 export default function PrincipalCourseDetailPage() {
     const nav = useNavigate();
+    const loc = useLocation() as any; // ✅ khai báo trước khi dùng
     const { courseId } = useParams();
     const id = Number(courseId);
 
-    const loc = useLocation() as any;
-    const initialCourse = loc.state?.course;
+    // ✅ lấy viewStatus để quay lại đúng tab
+    const viewStatus = (loc.state?.viewStatus as string) || "AA_APPROVED";
 
-    // NOTE: initialSyllabi từ list principal thường chỉ AA_APPROVED
+    const initialCourse = loc.state?.course;
     const initialSyllabi: Syllabus[] = loc.state?.syllabi || [];
 
     const [syllabi, setSyllabi] = useState<Syllabus[]>(initialSyllabi);
@@ -31,15 +32,14 @@ export default function PrincipalCourseDetailPage() {
         setLoading(true);
         setError(null);
         try {
-            // ✅ Principal cần thấy cả AA_APPROVED (để approve/reject)
-            // ✅ và PRINCIPAL_APPROVED (để publish/reject)
-            const [aa, pa] = await Promise.all([
+            // ✅ lấy cả 3 để detail xem được đầy đủ
+            const [aa, pa, pub] = await Promise.all([
                 principalApi.listByStatus("AA_APPROVED"),
                 principalApi.listByStatus("PRINCIPAL_APPROVED"),
                 principalApi.listByStatus("PUBLISHED"),
             ]);
 
-            const merged = [...(aa || []), ...(pa || [])]
+            const merged = [...(aa || []), ...(pa || []), ...(pub || [])]
                 .filter((s: any) => Number(s?.course?.id) === id)
                 .sort((a: any, b: any) => Number(b.id) - Number(a.id));
 
@@ -72,8 +72,6 @@ export default function PrincipalCourseDetailPage() {
             return;
         }
 
-        // Refresh trang -> phải fetch lại từ server
-        // Còn nếu đã có initialSyllabi thì vẫn nên fetch để lấy PRINCIPAL_APPROVED trong course
         fetchAll();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, isPrincipal]);
@@ -82,14 +80,11 @@ export default function PrincipalCourseDetailPage() {
         if (!window.confirm("Principal duyệt syllabus này?")) return;
         try {
             await principalApi.approve(sid);
-
-            // ✅ update local: AA_APPROVED -> PRINCIPAL_APPROVED
             setSyllabi((prev) =>
                 prev.map((s: any) =>
                     s.id === sid ? { ...s, status: "PRINCIPAL_APPROVED" } : s
                 )
             );
-
             setOpenMenuId(null);
         } catch (err: any) {
             alert(err?.response?.data?.message || "Approve thất bại");
@@ -100,14 +95,9 @@ export default function PrincipalCourseDetailPage() {
         if (!window.confirm("Public syllabus này?")) return;
         try {
             await principalApi.publish(sid);
-
-            // ✅ update local: PRINCIPAL_APPROVED -> PUBLISHED
             setSyllabi((prev) =>
-                prev.map((s: any) =>
-                    s.id === sid ? { ...s, status: "PUBLISHED" } : s
-                )
+                prev.map((s: any) => (s.id === sid ? { ...s, status: "PUBLISHED" } : s))
             );
-
             setOpenMenuId(null);
         } catch (err: any) {
             alert(err?.response?.data?.message || "Publish thất bại");
@@ -120,15 +110,11 @@ export default function PrincipalCourseDetailPage() {
 
         try {
             await principalApi.reject(sid, note.trim());
-
             setSyllabi((prev) =>
                 prev.map((s: any) =>
-                    s.id === sid
-                        ? { ...s, status: "REJECTED", editNote: note.trim() }
-                        : s
+                    s.id === sid ? { ...s, status: "REJECTED", editNote: note.trim() } : s
                 )
             );
-
             setOpenMenuId(null);
         } catch (err: any) {
             alert(err?.response?.data?.message || "Reject thất bại");
@@ -136,18 +122,23 @@ export default function PrincipalCourseDetailPage() {
     };
 
     const courseTitle = initialCourse
-        ? `[${initialCourse.code || "NO_CODE"}] - ${initialCourse.name || `Course #${id}`}`
+        ? `[${initialCourse.code || "NO_CODE"}] - ${
+            initialCourse.name || `Course #${id}`
+        }`
         : `Course #${id}`;
 
     const emptyText = useMemo(() => {
-        return "Course này không có syllabus cần xử lý (AA_APPROVED / PRINCIPAL_APPROVED).";
+        return "Course này không có syllabus cần xử lý (AA_APPROVED / PRINCIPAL_APPROVED / PUBLISHED).";
     }, []);
 
     return (
         <div className="lec-page">
             <div className="lec-container">
                 <div className="lec-card">
-                    <button className="lec-link" onClick={() => nav("/principal")}>
+                    <button
+                        className="lec-link"
+                        onClick={() => nav(`/principal?status=${viewStatus}`)}
+                    >
                         ← Quay lại
                     </button>
 
@@ -155,7 +146,7 @@ export default function PrincipalCourseDetailPage() {
                         <div className="course-detail-title">{courseTitle}</div>
                         <div className="course-detail-desc">
                             Principal xử lý syllabus <b>AA_APPROVED</b> (Approve/Reject) và{" "}
-                            <b>PRINCIPAL_APPROVED</b> (Publish/Reject)
+                            <b>PRINCIPAL_APPROVED</b> (Publish/Reject). <b>PUBLISHED</b> là đã public.
                         </div>
                     </div>
 
