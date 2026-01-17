@@ -10,6 +10,7 @@ import com.example.LTJava.syllabus.exception.ResourceNotFoundException;
 import com.example.LTJava.syllabus.repository.*;
 import com.example.LTJava.user.entity.User;
 import com.example.LTJava.user.repository.UserRepository;
+import com.example.LTJava.syllabus.repository.SyllabusHistoryRepository;
 
 import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +66,43 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         return syllabusRepository.save(syllabus);
     }
+
+    @Override
+    public Syllabus updateSyllabus(Long syllabusId, CreateSyllabusRequest request, Long lecturerId) {
+        Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
+
+        // ✅ chỉ cho sửa khi DRAFT
+        if (syllabus.getStatus() != SyllabusStatus.DRAFT) {
+            throw new RuntimeException("Chỉ syllabus ở trạng thái DRAFT mới được chỉnh sửa");
+        }
+
+        // ✅ không tăng version ở đây
+        syllabus.setTitle(request.getTitle());
+        syllabus.setDescription(request.getDescription());
+        syllabus.setAcademicYear(request.getAcademicYear());
+        syllabus.setSemester(request.getSemester());
+
+        // (không đổi courseId ở update; nếu muốn cho đổi course thì validate thêm)
+        return syllabusRepository.save(syllabus);
+    }
+
+    @Override
+    public void deleteSyllabus(Long syllabusId, Long lecturerId) {
+        Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
+
+        // ✅ chỉ cho xóa khi DRAFT
+        if (syllabus.getStatus() != SyllabusStatus.DRAFT) {
+            throw new RuntimeException("Chỉ syllabus ở trạng thái DRAFT mới được xóa");
+        }
+
+        // ✅ nếu có syllabus_history FK -> syllabus thì cần xóa history trước (nếu không cascade)
+         historyRepository.deleteBySyllabusId(syllabusId);
+
+        syllabusRepository.delete(syllabus);
+    }
+
 
     @Override
     public Syllabus submitSyllabus(Long syllabusId, Long lecturerId) {

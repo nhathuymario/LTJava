@@ -34,6 +34,25 @@ public class SyllabusController {
         Syllabus created = syllabusService.createSyllabus(request, lecturerId);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<Syllabus> update(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long id,
+            @RequestBody CreateSyllabusRequest request
+    ) {
+        Long lecturerId = currentUser.getUser().getId();
+        return ResponseEntity.ok(syllabusService.updateSyllabus(id, request, lecturerId));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long id
+    ) {
+        Long lecturerId = currentUser.getUser().getId();
+        syllabusService.deleteSyllabus(id, lecturerId);
+        return ResponseEntity.noContent().build();
+    }
 
     @PutMapping("/{id}/submit")
     public ResponseEntity<Syllabus> submit(

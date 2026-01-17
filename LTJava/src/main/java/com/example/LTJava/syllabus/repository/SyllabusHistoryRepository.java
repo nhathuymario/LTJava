@@ -9,4 +9,6 @@ import java.util.List;
 public interface SyllabusHistoryRepository extends JpaRepository<SyllabusHistory, Long> {
     // Lấy lịch sử của 1 giáo trình, sắp xếp mới nhất lên đầu
     List<SyllabusHistory> findBySyllabusIdOrderByUpdatedAtDesc(Long syllabusId);
+
+    void deleteBySyllabusId(Long syllabusId);
 }

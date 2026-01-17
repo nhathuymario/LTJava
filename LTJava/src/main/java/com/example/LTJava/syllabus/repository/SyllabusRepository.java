@@ -21,6 +21,7 @@ public interface SyllabusRepository extends JpaRepository<Syllabus, Long> {
 
 
 
+
     // 2. Cho Sinh viên: Tìm kiếm giáo trình đã PUBLISHED
     // 2. Cho Sinh viên: Tìm kiếm NÂNG CAO (Thêm năm học và học kỳ)
     // Logic: Tìm status PUBLISHED + (Keyword OR null) + (Year OR null) + (Semester OR null)
