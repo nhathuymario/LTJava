@@ -1,0 +1,96 @@
+.syllabus-new-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.syllabus-new-page h2 {
+    margin-bottom: 12px;
+}
+
+.error-box {
+    background: #ffe8e8;
+    border: 1px solid #ffb3b3;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    color: #8a1f1f;
+}
+
+.syllabus-form {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.form-grid label,
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.form-grid span {
+    color: #c00;
+}
+
+.syllabus-form input,
+.syllabus-form textarea,
+.syllabus-form select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+
+.syllabus-form textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.form-group {
+    margin-top: 12px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.form-actions button {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.form-actions button:disabled {
+    cursor: not-allowed;
+    background: #999;
+    color: #fff;
+}
+
+.form-actions button:not(.cancel) {
+    background: #111;
+    color: #fff;
+}
+
+.form-actions .cancel {
+    background: #fff;
+}
+
+.hint {
+    margin-top: 10px;
+    color: #666;
+    font-size: 13px;
+}

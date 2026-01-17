@@ -1,0 +1,233 @@
+.lec-page {
+    background: #fff;
+    min-height: 100vh;
+    padding: 24px 0;
+}
+
+.lec-container {
+    width: min(1200px, calc(100% - 48px));
+    margin: 0 auto;
+}
+
+.lec-title {
+    font-size: 40px;
+    margin: 0 0 18px 0;
+    font-weight: 800;
+    color: #2b2b2b;
+}
+
+.wave { font-size: 24px; vertical-align: middle; }
+
+.lec-card {
+    border: 1px solid #e9e9ee;
+    border-radius: 14px;
+    padding: 18px 18px 8px;
+}
+
+.lec-section-title {
+    font-size: 20px;
+    margin: 0 0 14px 0;
+    font-weight: 750;
+}
+
+.lec-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.lec-search {
+    flex: 1;
+    border: 1px solid #d9d9e3;
+    padding: 10px 12px;
+    border-radius: 10px;
+    outline: none;
+}
+
+.lec-select {
+    border: 1px solid #d9d9e3;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.lec-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.course-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 56px;
+    gap: 16px;
+    padding: 14px 0;
+    border-top: 1px solid #eeeeee;
+    align-items: center;
+}
+
+.course-thumb {
+    width: 130px;
+    height: 64px;
+    border-radius: 10px;
+    background: #f3f3f7;
+}
+
+/* fake pattern giống ảnh (không cần ảnh thật vẫn ra đẹp) */
+.thumb-0 { background: repeating-radial-gradient(circle at 20% 30%, #f6d68a 0, #f6d68a 8px, #f3c46a 8px, #f3c46a 16px); }
+.thumb-1 { background: repeating-linear-gradient(135deg, #1f7bd6 0, #1f7bd6 10px, #2e8fe8 10px, #2e8fe8 20px); }
+.thumb-2 { background: repeating-linear-gradient(90deg, #6dde7f 0, #6dde7f 10px, #53c56a 10px, #53c56a 20px); }
+.thumb-3 { background: repeating-linear-gradient(0deg, #1fbbaa 0, #1fbbaa 10px, #16a596 10px, #16a596 20px); }
+
+.course-info { display: flex; flex-direction: column; gap: 6px; }
+
+.course-name {
+    font-weight: 750;
+    font-size: 16px;
+    color: #202123;
+}
+
+.course-sub {
+    color: #6b6f76;
+    font-size: 14px;
+}
+
+.course-more {
+    width: 40px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    display: grid;
+    place-items: center;
+    color: #6b6f76;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.course-more:hover { background: #f3f3f7; }
+
+.lec-empty {
+    color: #6b6f76;
+    padding: 14px 0 18px;
+}
+
+
+ /*3 class dưới của syllabus*/
+.course-detail-header {
+    padding: 10px 0 18px;
+}
+
+.course-detail-title {
+    font-size: 36px;
+    font-weight: 850;
+    color: #2b2b2b;
+    margin-top: 8px;
+}
+
+.course-detail-desc {
+    margin-top: 8px;
+    color: #6b6f76;
+    font-size: 14px;
+}
+
+.syllabus-folder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 6px 0 18px;
+}
+
+.syllabus-folder {
+    border: 1px solid #e9e9ee;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+}
+
+.syllabus-folder-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: #eef3ff;
+    font-size: 20px;
+}
+
+.syllabus-folder-name {
+    font-size: 18px;
+    font-weight: 750;
+}
+
+/*syllabus version 2*/
+.syllabus-folder {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.syllabus-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.syllabus-actions {
+    position: relative;
+}
+
+.syllabus-more {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.syllabus-menu {
+    position: absolute;
+    right: 0;
+    top: 28px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    min-width: 160px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.syllabus-menu-item {
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.syllabus-menu-item:hover {
+    background: #f5f5f5;
+}
+
+/* Status badge */
+.syllabus-status {
+    margin-left: 8px;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.status-draft {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-submitted {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+

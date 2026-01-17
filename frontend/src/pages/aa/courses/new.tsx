@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import "../../../assets/css/pages/lecturer.css"
+import "../../../assets/css/pages/aacourses.css"
 import { hasRole } from "../../../services/auth"
 import { createCourse } from "../../../services/course"
 

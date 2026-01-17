@@ -11,7 +11,7 @@ export const HEADER_ACTIONS: HeaderAction[] = [
     {
         key: 'lecturer-create-syllabus',
         label: 'Tạo giáo trình',
-        to: '/lecturer/syllabus',
+        to: '/lecturer/syllabus/new',
         roles: ['LECTURER'],
         icon: '📚',
     },

@@ -1,6 +1,6 @@
 import { api } from './api'
 
-export type RoleName = 'SYSTEM_ADMIN' | 'LECTURER' | 'AA' | 'STUDENT'|'PRINCIPAL'
+export type RoleName = 'SYSTEM_ADMIN' | 'LECTURER' | 'AA' | 'STUDENT'|'PRINCIPAL'|'HOD'
 
 export type User = {
     id: number

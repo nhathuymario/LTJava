@@ -15,7 +15,7 @@ import AACourseDetailPage from "./pages/aa/course-detail"
 import AaCourseRelationsPage from "./pages/aa/courses/relations"
 import AACourseNew from "./pages/aa/courses/new"
 import LecturerCoureseDetailPage from "./pages/lecturer/course-syllabus"
-
+import LecturerSyllabusNewPage  from "./pages/lecturer/syllabus/new";
 
 export default function App() {
     return (
@@ -45,6 +45,7 @@ export default function App() {
                     <Route element={<AppLayout />}>
                         <Route path="/lecturer" element={<LecturerPage />} />
                         <Route path="/lecturer/courses/:courseId" element={<LecturerCoureseDetailPage/>} />
+                        <Route path="/lecturer/syllabus/new" element={<LecturerSyllabusNewPage />} />
                     </Route>
                 </Route>
 
