@@ -22,6 +22,13 @@ public class Course1 {
     private Integer credits;  // VD: 3
     private String department; // VD: CS
 
+    @Column(name = "academic_year")
+    private String academicYear;   // VD: "2025-2026"
+
+
+    @Column(name = "semester")
+    private String semester;       // VD: "1" | "2" | "Summer"
+
     @Column(nullable = false)
     private Long lecturerId;
 

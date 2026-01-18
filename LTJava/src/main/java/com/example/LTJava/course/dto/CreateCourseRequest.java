@@ -12,4 +12,6 @@ public class CreateCourseRequest {
 
     private String lecturerUsername;
 
+    private String academicYear;
+    private String semester;
 }

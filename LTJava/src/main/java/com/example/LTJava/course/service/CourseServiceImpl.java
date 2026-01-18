@@ -33,6 +33,17 @@ public class CourseServiceImpl implements CourseService {
             throw new RuntimeException("Course name không được để trống");
         }
 
+        // ✅ NEW validate academicYear / semester
+        if (req.getAcademicYear() == null || req.getAcademicYear().isBlank()) {
+            throw new RuntimeException("Năm học (academicYear) không được để trống");
+        }
+        if (req.getSemester() == null || req.getSemester().isBlank()) {
+            throw new RuntimeException("Học kỳ (semester) không được để trống");
+        }
+
+        String academicYear = req.getAcademicYear().trim();
+        String semester = req.getSemester().trim();
+
         String code = req.getCode().trim();
         if (courseRepository.existsByCode(code)) {
             throw new RuntimeException("Course code đã tồn tại");
@@ -60,12 +71,17 @@ public class CourseServiceImpl implements CourseService {
         c.setCredits(req.getCredits());
         c.setDepartment(req.getDepartment());
 
+        // ✅ NEW set năm học + học kỳ
+        c.setAcademicYear(academicYear);
+        c.setSemester(semester);
+
         // ✅ set cả 2 để DB không lỗi NOT NULL
         c.setLecturerId(lecturer.getId());
         c.setLecturerUsername(lecturer.getUsername()); // chuẩn DB
 
         return courseRepository.save(c);
     }
+
 
 
 
@@ -87,9 +103,18 @@ public class CourseServiceImpl implements CourseService {
         if (req.getCredits() != null) c.setCredits(req.getCredits());
         if (req.getDepartment() != null) c.setDepartment(req.getDepartment());
 
+        // ✅ NEW update academicYear / semester (nếu có gửi)
+        if (req.getAcademicYear() != null && !req.getAcademicYear().isBlank()) {
+            c.setAcademicYear(req.getAcademicYear().trim());
+        }
+        if (req.getSemester() != null && !req.getSemester().isBlank()) {
+            c.setSemester(req.getSemester().trim());
+        }
+
         // ❗ không đổi lecturer ở đây — đổi qua endpoint assign cho rõ nghiệp vụ
         return courseRepository.save(c);
     }
+
 
     @Override
     public void delete(Long id) {

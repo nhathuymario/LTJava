@@ -10,6 +10,9 @@ type FormState = {
     credits: number
     department: string
     lecturerUsername: string // ✅ gán bằng USER (username = CCCD)
+
+    academicYear: string // ✅ NEW: năm học (VD: 2025-2026)
+    semester: string // ✅ NEW: học kỳ (1 | 2 | Summer...)
 }
 
 export default function AACreateCoursePage() {
@@ -22,6 +25,8 @@ export default function AACreateCoursePage() {
         credits: 3,
         department: "",
         lecturerUsername: "",
+        academicYear: "",
+        semester: "",
     })
 
     const [loading, setLoading] = useState(false)
@@ -57,6 +62,16 @@ export default function AACreateCoursePage() {
             return
         }
 
+        // ✅ validate năm học / học kỳ
+        if (!form.academicYear.trim()) {
+            setError("Vui lòng nhập Năm học (VD: 2025-2026).")
+            return
+        }
+        if (!form.semester.trim()) {
+            setError("Vui lòng chọn Học kỳ.")
+            return
+        }
+
         try {
             setLoading(true)
 
@@ -66,6 +81,9 @@ export default function AACreateCoursePage() {
                 credits: Number(form.credits) || 0,
                 department: form.department.trim(),
                 lecturerUsername: form.lecturerUsername.trim(), // ✅ USER
+
+                academicYear: form.academicYear.trim(), // ✅ NEW
+                semester: form.semester.trim(), // ✅ NEW
             })
 
             nav("/aa", { replace: true })
@@ -119,9 +137,7 @@ export default function AACreateCoursePage() {
                                 type="number"
                                 min={0}
                                 value={form.credits}
-                                onChange={(e) =>
-                                    onChange("credits", Number(e.target.value))
-                                }
+                                onChange={(e) => onChange("credits", Number(e.target.value))}
                             />
                         </label>
 
@@ -130,10 +146,34 @@ export default function AACreateCoursePage() {
                             <input
                                 className="lec-search"
                                 value={form.department}
-                                onChange={(e) =>
-                                    onChange("department", e.target.value)
-                                }
+                                onChange={(e) => onChange("department", e.target.value)}
                             />
+                        </label>
+
+                        {/* ✅ NEW: Năm học */}
+                        <label style={{ display: "grid", gap: 6 }}>
+                            <span>Năm học</span>
+                            <input
+                                className="lec-search"
+                                value={form.academicYear}
+                                onChange={(e) => onChange("academicYear", e.target.value)}
+                                placeholder="VD: 2025-2026"
+                            />
+                        </label>
+
+                        {/* ✅ NEW: Học kỳ */}
+                        <label style={{ display: "grid", gap: 6 }}>
+                            <span>Học kỳ</span>
+                            <select
+                                className="lec-select"
+                                value={form.semester}
+                                onChange={(e) => onChange("semester", e.target.value)}
+                            >
+                                <option value="">-- Chọn học kỳ --</option>
+                                <option value="1">Học kỳ 1</option>
+                                <option value="2">Học kỳ 2</option>
+                                <option value="Summer">Hè (Summer)</option>
+                            </select>
                         </label>
 
                         <label style={{ display: "grid", gap: 6 }}>
@@ -141,9 +181,7 @@ export default function AACreateCoursePage() {
                             <input
                                 className="lec-search"
                                 value={form.lecturerUsername}
-                                onChange={(e) =>
-                                    onChange("lecturerUsername", e.target.value)
-                                }
+                                onChange={(e) => onChange("lecturerUsername", e.target.value)}
                                 placeholder="VD: 012345678999"
                             />
                         </label>
