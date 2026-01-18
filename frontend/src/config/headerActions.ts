@@ -15,10 +15,19 @@ export const HEADER_ACTIONS: HeaderAction[] = [
         roles: ['LECTURER'],
         icon: '📚',
     },
+    // ✅ AA
     { key:"aa-create-course", label:"Tạo môn học", to:"/aa/courses/new", roles:["AA"], icon:"➕" },
     { key:"aa-set-relations", label:"Set tiên quyết", to:"/aa/courses/relations", roles:["AA"], icon:"🧩" },
 
+    // ✅ STUDENT
+    {
+        key: 'student-register-course',
+        label: 'Đăng ký môn học',
+        to: '/student/courses/register',
+        roles: ['STUDENT'],
+        icon: '📝',
+    },
 
     // Ví dụ sau này thêm:
     // { key:'admin-users', label:'Quản lý user', to:'/admin/users', roles:['ADMIN'], icon:'🛠️' },
-]
+];

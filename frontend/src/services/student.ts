@@ -5,6 +5,7 @@ export type Course = {
     id: number;
     code?: string;
     name?: string;
+    department?: string;
 };
 
 export const studentApi = {
@@ -12,6 +13,9 @@ export const studentApi = {
 
     publishedByCourse: (courseId: number) =>
         api.get<Syllabus[]>(`/student/syllabus/course/${courseId}`).then((r) => r.data),
+
+    availableCourses: () =>
+        api.get<Course[]>("/student/syllabus/available").then(r => r.data),
 
     detail: (id: number) =>
         api.get<Syllabus>(`/student/syllabus/${id}`).then((r) => r.data),

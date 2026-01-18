@@ -21,6 +21,7 @@ import PrincipalCourseDetailPage from "./pages/principal/course-detail";
 import StudentCourseSyllabusPage from "./pages/student/course-syllabus"
 import StudentSyllabusDetailPage from "./pages/student/syllabus/syllabus-detail"
 import StudentNotificationsPage from "./pages/student/notifications/notifications"
+import StudentRegisterCoursePage from "./pages/student/courses/register-course"
 
 
 export default function App() {
@@ -70,6 +71,7 @@ export default function App() {
                         <Route path="/student" element={<StudentPage />} />
                         <Route path="/student/courses/:courseId" element={<StudentCourseSyllabusPage />} />
                         <Route path="/student/syllabus/:syllabusId" element={<StudentSyllabusDetailPage />} />
+                        <Route path="/student/courses/register" element={<StudentRegisterCoursePage />} />
                         <Route path="/student/notifications" element={<StudentNotificationsPage />} />
                     </Route>
                 </Route>
