@@ -4,10 +4,7 @@ import java.util.List;
 
 import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
 import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
-import com.example.LTJava.syllabus.entity.Notification;
-import com.example.LTJava.syllabus.entity.Syllabus;
-import com.example.LTJava.syllabus.entity.SyllabusHistory;
-import com.example.LTJava.syllabus.entity.SyllabusStatus;
+import com.example.LTJava.syllabus.entity.*;
 
 public interface SyllabusService {
 
@@ -63,7 +60,8 @@ public interface SyllabusService {
     // =========================
     List<Syllabus> searchSyllabus(String keyword, String year, String semester);
     Syllabus getSyllabusDetailPublic(Long id);
-
+    List<Course> getMySubscribedCourses(Long userId);
+    List<Syllabus> getPublishedByCourseForStudent(Long userId, Long courseId);
     // =========================
     // 8) HISTORY / VERSIONING
     // =========================

@@ -355,7 +355,7 @@ public class SyllabusServiceImpl implements SyllabusService {
                 syllabus.getAiSummary()
         );
 
-        List<Subscription> subs = subRepo.findByCourseId(syllabus.getCourse().getId());
+        List<Subscription> subs = subRepo.findByCourse_Id(syllabus.getCourse().getId());
         for (Subscription sub : subs) {
             notiRepo.save(new Notification(sub.getUser(), notiContent));
         }
@@ -401,6 +401,33 @@ public class SyllabusServiceImpl implements SyllabusService {
     }
 
     // =========================
+// STUDENT - MY COURSES
+// =========================
+
+    @Override
+    public List<Course> getMySubscribedCourses(Long userId) {
+        List<Subscription> subs = subRepo.findByUser_Id(userId);
+
+        List<Course> courses = new ArrayList<>();
+        for (Subscription s : subs) {
+            courses.add(s.getCourse());
+        }
+        return courses;
+    }
+
+    @Override
+    public List<Syllabus> getPublishedByCourseForStudent(Long userId, Long courseId) {
+        // check student đã subscribe course chưa
+        if (!subRepo.existsByUser_IdAndCourse_Id(userId, courseId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn chưa đăng ký môn này");
+        }
+
+        // lấy syllabus public theo course
+        return syllabusRepository.findByCourse_IdAndStatus(courseId, SyllabusStatus.PUBLISHED);
+    }
+
+
+    // =========================
     // HISTORY
     // =========================
 
@@ -444,7 +471,7 @@ public class SyllabusServiceImpl implements SyllabusService {
 
     @Override
     public void subscribeCourse(Long userId, Long courseId) {
-        if (subRepo.existsByUserIdAndCourseId(userId, courseId)) {
+        if (subRepo.existsByUser_IdAndCourse_Id(userId, courseId)) {
             throw new RuntimeException("Bạn đã đăng ký môn này rồi!");
         }
 

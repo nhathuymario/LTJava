@@ -2,6 +2,7 @@ package com.example.LTJava.syllabus.controller;
 
 import java.util.List;
 
+import com.example.LTJava.syllabus.entity.SyllabusStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,19 +23,39 @@ public class StudentSyllabusController {
         this.syllabusService = syllabusService;
     }
 
+    // NEW: danh sách course mà student đã subscribe/đăng ký
+    @GetMapping("/my-courses")
+    public ResponseEntity<?> myCourses(@AuthenticationPrincipal CustomUserDetails currentUser) {
+        Long userId = currentUser.getUser().getId();
+        return ResponseEntity.ok(syllabusService.getMySubscribedCourses(userId));
+    }
+
+    // NEW: syllabus public của 1 course (chỉ cho phép nếu student đã subscribe course đó)
+    @GetMapping("/course/{courseId}")
+    public ResponseEntity<List<Syllabus>> publishedByCourse(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long courseId
+    ) {
+        Long userId = currentUser.getUser().getId();
+        return ResponseEntity.ok(syllabusService.getPublishedByCourseForStudent(userId, courseId));
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<Syllabus>> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String academicYear,
             @RequestParam(required = false) String semester
     ) {
+        // NOTE: nếu muốn search cũng chỉ giới hạn trong course đã đăng ký,
+        // thì đổi sang syllabusService.searchMySubscribedSyllabus(userId, keyword, academicYear, semester)
         return ResponseEntity.ok(syllabusService.searchSyllabus(keyword, academicYear, semester));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public ResponseEntity<Syllabus> detail(@PathVariable Long id) {
         return ResponseEntity.ok(syllabusService.getSyllabusDetailPublic(id));
     }
+
 
     @PostMapping("/subscribe/{courseId}")
     public ResponseEntity<String> subscribe(

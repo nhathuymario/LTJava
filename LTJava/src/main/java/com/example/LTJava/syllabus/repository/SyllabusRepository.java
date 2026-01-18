@@ -19,6 +19,7 @@ public interface SyllabusRepository extends JpaRepository<Syllabus, Long> {
 
     List<Syllabus> findByCourseId(Long courseId);
 
+    List<Syllabus> findByCourse_IdAndStatus(Long courseId, SyllabusStatus status);
 
 
 
