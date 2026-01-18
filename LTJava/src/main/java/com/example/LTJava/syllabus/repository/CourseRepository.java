@@ -12,15 +12,23 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     // ✅ Courses mà user CHƯA subscribe
     @Query("""
-        select c
-        from Course c
-        where c.id not in (
-            select s.course.id
-            from Subscription s
-            where s.user.id = :userId
+        SELECT c
+        FROM Course c
+        WHERE
+            (:year IS NULL OR c.academicYear = :year)
+        AND (:semester IS NULL OR c.semester = :semester)
+        AND c.id NOT IN (
+            SELECT s.course.id
+            FROM Subscription s
+            WHERE s.user.id = :userId
         )
+        ORDER BY c.code ASC
     """)
-    List<Course> findAvailableCoursesForStudent(@Param("userId") Long userId);
+    List<Course> findAvailableCoursesForStudent(
+            @Param("userId") Long userId,
+            @Param("year") String year,
+            @Param("semester") String semester
+    );
 
 
     Optional<Course> findByCode(String code);

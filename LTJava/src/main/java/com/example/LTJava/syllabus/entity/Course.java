@@ -19,6 +19,12 @@ public class Course {
     @Column(nullable = false, length = 255)
     private String name;           // Introduction to Programming
 
+    @Column(name = "academic_year", length = 20)
+    private String academicYear; // vd: "2025-2026"
+
+    @Column(name = "semester", length = 20)
+    private String semester;     // vd: "1" | "2" | "Summer"
+
     private Integer credits;       // số tín chỉ
 
     private String department;     // tên khoa, tạm đơn giản
@@ -58,6 +64,12 @@ public class Course {
     private Set<Course> supplementaryCourses;
 
     // getters & setters
+    public String getAcademicYear() { return academicYear; }
+    public void setAcademicYear(String academicYear) { this.academicYear = academicYear; }
+
+    public String getSemester() { return semester; }
+    public void setSemester(String semester) { this.semester = semester; }
+
     public Long getId() {
         return id;
     }

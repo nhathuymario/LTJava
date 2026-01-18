@@ -36,11 +36,13 @@ public class StudentSyllabusController {
 
     @GetMapping("/available")
     public ResponseEntity<List<Course>> availableCourses(
-            @AuthenticationPrincipal CustomUserDetails currentUser
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @RequestParam(required = false) String academicYear,
+            @RequestParam(required = false) String semester
     ) {
         Long userId = currentUser.getUser().getId();
         return ResponseEntity.ok(
-                courseRepository.findAvailableCoursesForStudent(userId)
+                courseRepository.findAvailableCoursesForStudent(userId, academicYear, semester)
         );
     }
 
