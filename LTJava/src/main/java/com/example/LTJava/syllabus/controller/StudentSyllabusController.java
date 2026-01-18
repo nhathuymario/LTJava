@@ -2,7 +2,9 @@ package com.example.LTJava.syllabus.controller;
 
 import java.util.List;
 
+import com.example.LTJava.syllabus.entity.Course;
 import com.example.LTJava.syllabus.entity.SyllabusStatus;
+import com.example.LTJava.syllabus.repository.CourseRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,9 +20,11 @@ import com.example.LTJava.syllabus.service.SyllabusService;
 public class StudentSyllabusController {
 
     private final SyllabusService syllabusService;
+    private final CourseRepository courseRepository;
 
-    public StudentSyllabusController(SyllabusService syllabusService) {
+    public StudentSyllabusController(SyllabusService syllabusService, CourseRepository courseRepository) {
         this.syllabusService = syllabusService;
+        this.courseRepository = courseRepository;
     }
 
     // NEW: danh sách course mà student đã subscribe/đăng ký
@@ -28,6 +32,16 @@ public class StudentSyllabusController {
     public ResponseEntity<?> myCourses(@AuthenticationPrincipal CustomUserDetails currentUser) {
         Long userId = currentUser.getUser().getId();
         return ResponseEntity.ok(syllabusService.getMySubscribedCourses(userId));
+    }
+
+    @GetMapping("/available")
+    public ResponseEntity<List<Course>> availableCourses(
+            @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
+        Long userId = currentUser.getUser().getId();
+        return ResponseEntity.ok(
+                courseRepository.findAvailableCoursesForStudent(userId)
+        );
     }
 
     // NEW: syllabus public của 1 course (chỉ cho phép nếu student đã subscribe course đó)
