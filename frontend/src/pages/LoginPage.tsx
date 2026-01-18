@@ -24,6 +24,7 @@ export default function LoginPage() {
             else if (roles.includes('LECTURER') || roles.includes('ROLE_LECTURER')) navigate('/lecturer', { replace: true })
             else if (roles.includes('HOD') || roles.includes('ROLE_HOD')) navigate('/hod', { replace: true })
             else if (roles.includes('PRINCIPAL') || roles.includes('ROLE_PRINCIPAL')) navigate('/principal', { replace: true })
+            else if (roles.includes("STUDENT") || roles.includes("ROLE_STUDENT")) navigate("/student", { replace: true });
             else navigate(from || '/login', { replace: true })
         } catch (err: any) {
             const msg = err?.response?.data?.message || err?.response?.data || err?.message || 'Đăng nhập thất bại'

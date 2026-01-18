@@ -18,6 +18,9 @@ import LecturerCoureseDetailPage from "./pages/lecturer/course-syllabus"
 import LecturerSyllabusNewPage  from "./pages/lecturer/syllabus/new";
 import LecturerSyllabusEdit  from "./pages/lecturer/syllabus/edit";
 import PrincipalCourseDetailPage from "./pages/principal/course-detail";
+import StudentCourseSyllabusPage from "./pages/student/course-syllabus"
+import StudentSyllabusDetailPage from "./pages/student/syllabus/syllabus-detail"
+import StudentNotificationsPage from "./pages/student/notifications/notifications"
 
 
 export default function App() {
@@ -65,6 +68,9 @@ export default function App() {
                 <Route element={<RequireAuth allowedRoles={["STUDENT", "ROLE_STUDENT"]} />}>
                     <Route element={<AppLayout />}>
                         <Route path="/student" element={<StudentPage />} />
+                        <Route path="/student/courses/:courseId" element={<StudentCourseSyllabusPage />} />
+                        <Route path="/student/syllabus/:syllabusId" element={<StudentSyllabusDetailPage />} />
+                        <Route path="/student/notifications" element={<StudentNotificationsPage />} />
                     </Route>
                 </Route>
 
