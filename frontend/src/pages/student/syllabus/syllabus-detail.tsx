@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../../assets/css/pages/lecturer.css";
 import { hasRole, getToken } from "../../../services/auth";
@@ -7,16 +7,26 @@ import { studentApi } from "../../../services/student";
 
 export default function StudentSyllabusDetailPage() {
     const nav = useNavigate();
-    const { id } = useParams();
-    const sid = Number(id);
+
+    // ✅ Route: /student/syllabus/:syllabusId
+    const { syllabusId } = useParams<{ syllabusId: string }>();
+
+    // ✅ parse id an toàn
+    const sid = useMemo(() => {
+        const n = Number(syllabusId);
+        return Number.isFinite(n) ? n : NaN;
+    }, [syllabusId]);
 
     const [data, setData] = useState<Syllabus | null>(null);
     const [loading, setLoading] = useState(true);
     const [err, setErr] = useState<string | null>(null);
+
     const isStudent = hasRole("STUDENT");
 
     useEffect(() => {
         const token = getToken?.() || localStorage.getItem("token");
+
+        // ✅ auth guard
         if (!token) {
             setErr("Bạn chưa đăng nhập (thiếu token).");
             setLoading(false);
@@ -28,6 +38,13 @@ export default function StudentSyllabusDetailPage() {
             return;
         }
 
+        // ✅ validate param
+        if (!Number.isFinite(sid)) {
+            setErr("Syllabus ID không hợp lệ.");
+            setLoading(false);
+            return;
+        }
+
         (async () => {
             setLoading(true);
             setErr(null);
@@ -35,12 +52,16 @@ export default function StudentSyllabusDetailPage() {
                 const res = await studentApi.detail(sid);
                 setData(res);
             } catch (e: any) {
-                setErr(e?.response?.data?.message || e?.message || "Không tải được chi tiết syllabus");
+                setErr(
+                    e?.response?.data?.message ||
+                    e?.message ||
+                    "Không tải được chi tiết syllabus"
+                );
             } finally {
                 setLoading(false);
             }
         })();
-    }, [sid,isStudent]);
+    }, [sid, isStudent]);
 
     return (
         <div className="lec-page">
@@ -72,7 +93,9 @@ export default function StudentSyllabusDetailPage() {
 
                             <div className="lec-card" style={{ marginBottom: 12 }}>
                                 <h3 className="lec-section-title">Mô tả</h3>
-                                <div style={{ whiteSpace: "pre-wrap" }}>{data.description || "Không có mô tả."}</div>
+                                <div style={{ whiteSpace: "pre-wrap" }}>
+                                    {data.description || "Không có mô tả."}
+                                </div>
                             </div>
 
                             {data.keywords && (

@@ -16,7 +16,8 @@ export default function StudentCoursesPage() {
     const [q, setQ] = useState("");
     const [sort, setSort] = useState<"name_asc" | "name_desc">("name_asc");
 
-    const isStudent = hasRole("STUDENT");
+    const isStudent = hasRole("STUDENT") || hasRole("ROLE_STUDENT");
+
 
 
     useEffect(() => {
@@ -96,7 +97,7 @@ export default function StudentCoursesPage() {
                                         key={c.id}
                                         className="course-row"
                                         style={{ cursor: "pointer" }}
-                                        onClick={() => nav(`/student/courses/${c.id}/syllabus`, { state: { course: c } })}
+                                        onClick={() => nav(`/student/courses/${c.id}`, { state: { course: c } })}
                                     >
                                         <div className={`course-thumb thumb-${idx % 4}`} />
                                         <div className="course-info">

@@ -29,6 +29,7 @@ export const studentApi = {
     publishedByCourse: (courseId: number) =>
         api.get<Syllabus[]>(`/student/syllabus/course/${courseId}`).then((r) => r.data),
 
+
     availableCourses: (params?: { academicYear?: string; semester?: string }) =>
         api.get<Course[]>("/student/syllabus/available", { params }).then((r) => r.data),
 
