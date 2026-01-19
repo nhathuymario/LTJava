@@ -62,6 +62,9 @@ public interface SyllabusService {
     Syllabus getSyllabusDetailPublic(Long id);
     List<Course> getMySubscribedCourses(Long userId);
     List<Syllabus> getPublishedByCourseForStudent(Long userId, Long courseId);
+    long countUnread(Long userId);
+    void markNotificationRead(Long userId, Long notificationId);
+    void readAllNotifications(Long userId);
     // =========================
     // 8) HISTORY / VERSIONING
     // =========================

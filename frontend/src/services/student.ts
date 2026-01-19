@@ -39,4 +39,14 @@ export const studentApi = {
         api.post<string>(`/student/syllabus/subscribe/${courseId}`).then((r) => r.data),
 
     notifications: () => api.get<Notification[]>("/student/syllabus/notifications").then((r) => r.data),
+
+    unreadCount: () =>
+        api.get<number>("/student/syllabus/notifications/unread-count").then(r => r.data),
+
+    markRead: (id: number) =>
+        api.patch(`/student/syllabus/notifications/${id}/read`).then(r => r.data),
+
+    readAll: () =>
+        api.post(`/student/syllabus/notifications/read-all`).then(r => r.data),
+
 }

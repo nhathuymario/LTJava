@@ -86,4 +86,27 @@ public class StudentSyllabusController {
     public ResponseEntity<?> notifications(@AuthenticationPrincipal CustomUserDetails currentUser) {
         return ResponseEntity.ok(syllabusService.getMyNotifications(currentUser.getUser().getId()));
     }
+
+    // ✅ unread count (để badge 🔔)
+    @GetMapping("/notifications/unread-count")
+    public ResponseEntity<Long> unreadCount(@AuthenticationPrincipal CustomUserDetails currentUser) {
+        return ResponseEntity.ok(syllabusService.countUnread(currentUser.getUser().getId()));
+    }
+
+    // ✅ mark 1 notification as read
+    @PatchMapping("/notifications/{id}/read")
+    public ResponseEntity<?> markRead(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long id
+    ) {
+        syllabusService.markNotificationRead(currentUser.getUser().getId(), id);
+        return ResponseEntity.ok().build();
+    }
+
+    // ✅ mark all as read
+    @PostMapping("/notifications/read-all")
+    public ResponseEntity<?> readAll(@AuthenticationPrincipal CustomUserDetails currentUser) {
+        syllabusService.readAllNotifications(currentUser.getUser().getId());
+        return ResponseEntity.ok().build();
+    }
 }

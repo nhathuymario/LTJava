@@ -29,7 +29,7 @@ export default function StudentRegisterCoursePage() {
     const [q, setQ] = useState("");
     const [sort, setSort] = useState<SortKey>("name_asc");
 
-    const isStudent = hasRole("STUDENT");
+    const isStudent = hasRole("STUDENT") || hasRole("ROLE_STUDENT");
 
     // =====================================================
     // FETCH AVAILABLE COURSES (server-side filter by year/semester)

@@ -26,7 +26,7 @@ export default function StudentCourseSyllabusPage() {
     const [academicYear, setAcademicYear] = useState("");
     const [semester, setSemester] = useState("");
 
-    const isStudent = hasRole("STUDENT");
+    const isStudent = hasRole("STUDENT") || hasRole("ROLE_STUDENT");
 
     // =====================================================
     // LOAD SYLLABUS BY COURSE

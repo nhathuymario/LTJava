@@ -13,10 +13,13 @@ import com.example.LTJava.user.repository.UserRepository;
 import com.example.LTJava.syllabus.repository.SyllabusHistoryRepository;
 
 import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import com.example.LTJava.syllabus.repository.SubscriptionRepository;
+
 
 @Service
 public class SyllabusServiceImpl implements SyllabusService {
@@ -341,27 +344,14 @@ public class SyllabusServiceImpl implements SyllabusService {
         Syllabus syllabus = syllabusRepository.findById(syllabusId)
                 .orElseThrow(() -> new ResourceNotFoundException("Syllabus not found"));
 
-        saveHistory(syllabus);
-
         if (syllabus.getStatus() != SyllabusStatus.PRINCIPAL_APPROVED) {
             throw new RuntimeException("Chỉ syllabus PRINCIPAL_APPROVED mới được publish");
         }
 
         syllabus.setStatus(SyllabusStatus.PUBLISHED);
 
-        // AI notification content
-        String notiContent = aiService.createNotificationMessage(
-                syllabus.getCourse().getName(),
-                syllabus.getAiSummary()
-        );
-
-        List<Subscription> subs = subRepo.findByCourse_Id(syllabus.getCourse().getId());
-        for (Subscription sub : subs) {
-            notiRepo.save(new Notification(sub.getUser(), notiContent));
-        }
-
-        // AI summary/keywords (optional)
-        if (syllabus.getDescription() != null && syllabus.getDescription().length() > 10) {
+        // 1) Tạo AI summary trước (để không bị null)
+        if (syllabus.getDescription() != null && syllabus.getDescription().trim().length() > 10) {
             try {
                 String[] aiResult = aiService.processSyllabusContent(
                         syllabus.getTitle(),
@@ -374,11 +364,30 @@ public class SyllabusServiceImpl implements SyllabusService {
             }
         }
 
+        // 2) Lúc này mới tạo nội dung notification
+        String summaryForNoti = syllabus.getAiSummary();
+        if (summaryForNoti == null || summaryForNoti.isBlank()) {
+            summaryForNoti = "có cập nhật mới"; // fallback tránh 'null'
+        }
+
+        String notiContent = aiService.createNotificationMessage(
+                syllabus.getCourse().getName(),
+                summaryForNoti
+        );
+
+        // 3) Gửi noti cho người subscribe
+        List<Subscription> subs = subRepo.findByCourse_Id(syllabus.getCourse().getId());
+        for (Subscription sub : subs) {
+            notiRepo.save(new Notification(sub.getUser(), notiContent));
+        }
+
+        // 4) Lưu syllabus
         Syllabus saved = syllabusRepository.save(syllabus);
         saveHistory(saved);
 
         return saved;
     }
+
 
     // =========================
     // STUDENT
@@ -483,6 +492,43 @@ public class SyllabusServiceImpl implements SyllabusService {
 
     @Override
     public List<Notification> getMyNotifications(Long userId) {
-        return notiRepo.findByUserIdOrderByCreatedAtDesc(userId);
+        return notiRepo.findByUser_IdOrderByCreatedAtDesc(userId);
+
     }
+
+    @Override
+    public long countUnread(Long userId) {
+        return notiRepo.countByUser_IdAndIsReadFalse(userId);
+    }
+
+    @Override
+    public void markNotificationRead(Long userId, Long notificationId) {
+        Notification n = notiRepo.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification không tồn tại"));
+
+        if (!n.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Bạn không có quyền");
+        }
+
+        if (!n.isRead()) {
+            n.setRead(true);
+            notiRepo.save(n);
+        }
+    }
+
+    @Override
+    public void readAllNotifications(Long userId) {
+        List<Notification> list = notiRepo.findByUser_IdOrderByCreatedAtDesc(userId);
+        boolean changed = false;
+
+        for (Notification n : list) {
+            if (!n.isRead()) {
+                n.setRead(true);
+                changed = true;
+            }
+        }
+        if (changed) notiRepo.saveAll(list);
+    }
+
+
 }

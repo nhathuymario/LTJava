@@ -21,7 +21,7 @@ export default function StudentSyllabusDetailPage() {
     const [loading, setLoading] = useState(true);
     const [err, setErr] = useState<string | null>(null);
 
-    const isStudent = hasRole("STUDENT");
+    const isStudent = hasRole("STUDENT") || hasRole("ROLE_STUDENT");
 
     useEffect(() => {
         const token = getToken?.() || localStorage.getItem("token");

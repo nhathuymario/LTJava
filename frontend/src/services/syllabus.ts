@@ -67,8 +67,12 @@ export interface SyllabusHistory {
     updatedBy?: User | null;
 }
 
-export interface Notification {
-    id: number
-    content: string
-    createdAt?: string
-}
+export type Notification = {
+    id: number;
+    message: string;
+    createdAt?: string;
+    isRead?: boolean; // backend boolean
+};
+
+
+
