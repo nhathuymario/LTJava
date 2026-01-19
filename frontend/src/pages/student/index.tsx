@@ -3,27 +3,12 @@ import { useNavigate } from "react-router-dom";
 import "../../assets/css/pages/lecturer.css";
 import { hasRole, getToken } from "../../services/auth";
 import { studentApi, type Course } from "../../services/student";
-import type { Notification } from "../../services/syllabus";
-
-/**
- * Normalize isRead:
- * - backend có thể trả boolean true/false
- * - hoặc number 0/1
- * - hoặc string "0"/"1"
- */
-const isUnread = (n: any) => {
-    const v = n?.isRead;
-    if (v === false) return true;
-    if (v === 0) return true;
-    if (v === "0") return true;
-    return false;
-};
 
 export default function StudentCoursesPage() {
     const nav = useNavigate();
 
     const [courses, setCourses] = useState<Course[]>([]);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [unread, setUnread] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [err, setErr] = useState<string | null>(null);
 
@@ -32,7 +17,9 @@ export default function StudentCoursesPage() {
 
     const isStudent = hasRole("STUDENT") || hasRole("ROLE_STUDENT");
 
-    // Load courses + notifications (để hiện badge)
+    // =====================================================
+    // LOAD COURSES + UNREAD COUNT (CHỈ SỐ)
+    // =====================================================
     useEffect(() => {
         const token = getToken?.() || localStorage.getItem("token");
         if (!token) {
@@ -50,13 +37,13 @@ export default function StudentCoursesPage() {
             setLoading(true);
             setErr(null);
             try {
-                const [coursesRes, notiRes] = await Promise.all([
+                const [coursesRes, unreadRes] = await Promise.all([
                     studentApi.myCourses(),
-                    studentApi.notifications(),
+                    studentApi.unreadCount(), // ✅ CHỈ LẤY SỐ
                 ]);
 
                 setCourses(coursesRes || []);
-                setNotifications(notiRes || []);
+                setUnread(Number(unreadRes || 0));
             } catch (e: any) {
                 setErr(e?.response?.data?.message || e?.message || "Không tải được dữ liệu");
             } finally {
@@ -65,10 +52,9 @@ export default function StudentCoursesPage() {
         })();
     }, [isStudent]);
 
-    const unreadCount = useMemo(() => {
-        return (notifications || []).filter((n: any) => isUnread(n)).length;
-    }, [notifications]);
-
+    // =====================================================
+    // FILTER + SORT
+    // =====================================================
     const view = useMemo(() => {
         const key = q.trim().toLowerCase();
 
@@ -85,6 +71,9 @@ export default function StudentCoursesPage() {
         return list;
     }, [courses, q, sort]);
 
+    // =====================================================
+    // UI
+    // =====================================================
     return (
         <div className="lec-page">
             <div className="lec-container">
@@ -108,10 +97,13 @@ export default function StudentCoursesPage() {
                             <option value="name_desc">Z → A</option>
                         </select>
 
-                        {/* Badge số thông báo chưa đọc */}
-                        <button className="lec-select" onClick={() => nav("/student/notifications")}>
+                        {/* 🔔 CHỈ HIỂN THỊ SỐ */}
+                        <button
+                            className="lec-select"
+                            onClick={() => nav("/student/notifications")}
+                        >
                             🔔 Notifications
-                            {unreadCount > 0 && (
+                            {unread > 0 && (
                                 <span
                                     style={{
                                         marginLeft: 6,
@@ -121,9 +113,10 @@ export default function StudentCoursesPage() {
                                         padding: "2px 8px",
                                         fontSize: 12,
                                         lineHeight: "14px",
+                                        fontWeight: 700,
                                     }}
                                 >
-                  {unreadCount}
+                  {unread}
                 </span>
                             )}
                         </button>
@@ -143,7 +136,6 @@ export default function StudentCoursesPage() {
                                         className="course-row"
                                         style={{ cursor: "pointer" }}
                                         onClick={() =>
-                                            // Route đúng: /student/courses/:courseId
                                             nav(`/student/courses/${c.id}`, { state: { course: c } })
                                         }
                                     >

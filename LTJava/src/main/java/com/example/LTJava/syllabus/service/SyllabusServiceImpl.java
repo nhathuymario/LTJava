@@ -498,7 +498,7 @@ public class SyllabusServiceImpl implements SyllabusService {
 
     @Override
     public long countUnread(Long userId) {
-        return notiRepo.countByUser_IdAndIsReadFalse(userId);
+        return notiRepo.countByUser_IdAndReadFalse(userId);
     }
 
     @Override
