@@ -13,8 +13,10 @@ import com.example.LTJava.user.repository.UserRepository;
 import com.example.LTJava.syllabus.repository.SyllabusHistoryRepository;
 
 import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
+import jakarta.persistence.Cacheable;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -501,7 +503,7 @@ public class SyllabusServiceImpl implements SyllabusService {
         return notiRepo.countByUser_IdAndReadFalse(userId);
     }
 
-    @Override
+    @CacheEvict(cacheNames = "unreadCount", key = "#userId")
     public void markNotificationRead(Long userId, Long notificationId) {
         Notification n = notiRepo.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification không tồn tại"));
@@ -516,7 +518,7 @@ public class SyllabusServiceImpl implements SyllabusService {
         }
     }
 
-    @Override
+    @CacheEvict(cacheNames = "unreadCount", key = "#userId")
     public void readAllNotifications(Long userId) {
         List<Notification> list = notiRepo.findByUser_IdOrderByCreatedAtDesc(userId);
         boolean changed = false;
