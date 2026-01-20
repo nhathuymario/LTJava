@@ -10,6 +10,9 @@ import LecturerPage from "./pages/lecturer"
 import HodPage from "./pages/hod"
 import PrincipalPage from "./pages/principal"
 
+import ReviewerMyReviewsPage from "./pages/review/ReviewerMyReviewsPage";
+import ReviewDetailPage from "./pages/review/ReviewDetailPage";
+import HodAssignReviewPage from "./pages/review/HodAssignReviewPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import ProfileEditPage from "./pages/profile/ProfileEditPage";
 import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
@@ -35,7 +38,22 @@ export default function App() {
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/profile/edit" element={<ProfileEditPage />} />
                 <Route path="/profile/password" element={<ChangePasswordPage />} />
-
+                {/* review */}
+                // App.tsx
+                <Route element={<RequireAuth allowedRoles={[
+                    "SYSTEM_ADMIN","ROLE_SYSTEM_ADMIN",
+                    "AA","ROLE_AA",
+                    "LECTURER","ROLE_LECTURER",
+                    "HOD","ROLE_HOD",
+                    "PRINCIPAL","ROLE_PRINCIPAL",
+                    "STUDENT","ROLE_STUDENT",
+                ]} />}>
+                    <Route element={<AppLayout />}>
+                        <Route path="/reviews" element={<ReviewerMyReviewsPage />} />
+                        <Route path="/reviews/:assignmentId" element={<ReviewDetailPage />} />
+                        <Route path="/hod/reviews/assign" element={<HodAssignReviewPage />} />
+                    </Route>
+                </Route>
 
                 {/* ADMIN */}
                 <Route element={<RequireAuth allowedRoles={["SYSTEM_ADMIN", "ROLE_SYSTEM_ADMIN"]} />}>
