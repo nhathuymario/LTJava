@@ -81,6 +81,10 @@ public class SyllabusServiceImpl implements SyllabusService {
         if (syllabus.getStatus() != SyllabusStatus.DRAFT) {
             throw new RuntimeException("Chỉ syllabus ở trạng thái DRAFT mới được chỉnh sửa");
         }
+        if (syllabus.getStatus() == SyllabusStatus.PUBLISHED) {
+            throw new RuntimeException("Syllabus đã PUBLISHED. Hãy tạo version mới trước khi chỉnh sửa.");
+        }
+
 
         // ✅ không tăng version ở đây
         syllabus.setTitle(request.getTitle());
@@ -124,20 +128,53 @@ public class SyllabusServiceImpl implements SyllabusService {
     }
 
     @Override
-    public Syllabus resubmitSyllabus(Long syllabusId, Long lecturerId) {
+    public Syllabus createNewVersion(Long syllabusId, Long lecturerId) {
+        // chỉ owner mới tạo version mới
         Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
                 .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
 
+        // chỉ cho tạo version mới khi đã PUBLISHED
+        if (syllabus.getStatus() != SyllabusStatus.PUBLISHED) {
+            throw new RuntimeException("Chỉ syllabus ở trạng thái PUBLISHED mới được tạo version mới");
+        }
+
+        // lưu snapshot vào history trước khi mở bản mới
+        saveHistory(syllabus);
+
+        // mở version mới trên chính record syllabus hiện tại
+        syllabus.setVersion(syllabus.getVersion() + 1);
+        syllabus.setStatus(SyllabusStatus.DRAFT);
+
+        // reset các thứ thuộc publish/duyệt trước đó
+        syllabus.setEditNote(null);
+
+        // optional: nếu bạn muốn publish lần sau regenerate AI summary + keywords
+        syllabus.setAiSummary(null);
+        syllabus.setKeywords(null);
+
+        return syllabusRepository.save(syllabus);
+    }
+
+
+    @Override
+    public Syllabus resubmitSyllabus(Long syllabusId, Long lecturerId) {
+        Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
+                .orElseThrow(() ->
+                        new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
+
         if (syllabus.getStatus() != SyllabusStatus.REQUESTEDIT
                 && syllabus.getStatus() != SyllabusStatus.REJECTED) {
-            throw new RuntimeException("Chỉ syllabus REQUESTEDIT hoặc REJECTED mới được resubmit");
+            throw new RuntimeException(
+                    "Chỉ syllabus REQUESTEDIT hoặc REJECTED mới được resubmit");
         }
 
         syllabus.setStatus(SyllabusStatus.SUBMITTED);
-        syllabus.setVersion(syllabus.getVersion() + 1);
         syllabus.setEditNote(null);
+
+        // ❗ KHÔNG tăng version
         return syllabusRepository.save(syllabus);
     }
+
 
     @Override
     public Syllabus moveToDraftForEdit(Long syllabusId, Long lecturerId) {
@@ -371,11 +408,12 @@ public class SyllabusServiceImpl implements SyllabusService {
         if (summaryForNoti == null || summaryForNoti.isBlank()) {
             summaryForNoti = "có cập nhật mới"; // fallback tránh 'null'
         }
-
         String notiContent = aiService.createNotificationMessage(
                 syllabus.getCourse().getName(),
-                summaryForNoti
+                summaryForNoti,
+                syllabus.getVersion()
         );
+
 
         // 3) Gửi noti cho người subscribe
         List<Subscription> subs = subRepo.findByCourse_Id(syllabus.getCourse().getId());

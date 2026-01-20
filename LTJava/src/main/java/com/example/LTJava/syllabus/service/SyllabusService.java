@@ -16,10 +16,9 @@ public interface SyllabusService {
     Syllabus resubmitSyllabus(Long syllabusId, Long lecturerId);
     Syllabus moveToDraftForEdit(Long syllabusId, Long lecturerId);
     List<Syllabus> getMySyllabus(Long lecturerId);
-    // LECTURER (thêm)
     Syllabus updateSyllabus(Long syllabusId, CreateSyllabusRequest request, Long lecturerId);
     void deleteSyllabus(Long syllabusId, Long lecturerId);
-
+    Syllabus createNewVersion(Long syllabusId, Long lecturerId);
     // =========================
     // 2) QUERY
     // =========================
