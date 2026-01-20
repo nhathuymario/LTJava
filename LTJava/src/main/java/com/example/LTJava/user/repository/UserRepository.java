@@ -1,5 +1,6 @@
 package com.example.LTJava.user.repository;
 
+import com.example.LTJava.profile.entity.UserProfile;
 import com.example.LTJava.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,7 +20,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
         where u.username = :username
     """)
     Optional<User> findByUsernameFetchRoles(@Param("username") String username);
-
     boolean existsByUsername(String username);
     boolean existsByCccd(String cccd);
 }

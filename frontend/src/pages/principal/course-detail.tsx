@@ -8,31 +8,29 @@ import type { Syllabus } from "../../services/syllabus";
 
 export default function PrincipalCourseDetailPage() {
     const nav = useNavigate();
-    const loc = useLocation() as any; // ✅ khai báo trước khi dùng
+    const loc = useLocation() as any;
     const { courseId } = useParams();
     const id = Number(courseId);
 
-    // ✅ lấy viewStatus để quay lại đúng tab
     const viewStatus = (loc.state?.viewStatus as string) || "AA_APPROVED";
-
     const initialCourse = loc.state?.course;
     const initialSyllabi: Syllabus[] = loc.state?.syllabi || [];
 
     const [syllabi, setSyllabi] = useState<Syllabus[]>(initialSyllabi);
     const [loading, setLoading] = useState(initialSyllabi.length === 0);
     const [error, setError] = useState<string | null>(null);
-
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
     const isPrincipal = hasRole("PRINCIPAL");
-    const toggleMenu = (sid: number) =>
-        setOpenMenuId((p) => (p === sid ? null : sid));
+    const toggleMenu = (sid: number) => setOpenMenuId((p) => (p === sid ? null : sid));
 
-    const fetchAll = async () => {
-        setLoading(true);
+    // ✅ silent=true: không bật loading che UI
+    const fetchAll = async (opts?: { silent?: boolean }) => {
+        const silent = !!opts?.silent;
+        if (!silent) setLoading(true);
+
         setError(null);
         try {
-            // ✅ lấy cả 3 để detail xem được đầy đủ
             const [aa, pa, pub] = await Promise.all([
                 principalApi.listByStatus("AA_APPROVED"),
                 principalApi.listByStatus("PRINCIPAL_APPROVED"),
@@ -46,11 +44,10 @@ export default function PrincipalCourseDetailPage() {
             setSyllabi(merged);
         } catch (err: any) {
             const resp = err?.response?.data;
-            const msg =
-                resp?.message || resp || err?.message || "Không tải được syllabus cho course";
+            const msg = resp?.message || resp || err?.message || "Không tải được syllabus cho course";
             setError(typeof msg === "string" ? msg : "Không tải được dữ liệu");
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
@@ -78,53 +75,67 @@ export default function PrincipalCourseDetailPage() {
 
     const approve = async (sid: number) => {
         if (!window.confirm("Principal duyệt syllabus này?")) return;
+        setOpenMenuId(null);
+
+        // ✅ UI đổi ngay
+        setSyllabi((prev) =>
+            prev.map((s: any) => (s.id === sid ? { ...s, status: "PRINCIPAL_APPROVED" } : s))
+        );
+
         try {
             await principalApi.approve(sid);
-            setSyllabi((prev) =>
-                prev.map((s: any) =>
-                    s.id === sid ? { ...s, status: "PRINCIPAL_APPROVED" } : s
-                )
-            );
-            setOpenMenuId(null);
+            // ✅ đồng bộ lại, nhưng không che UI
+            fetchAll({ silent: true });
         } catch (err: any) {
             alert(err?.response?.data?.message || "Approve thất bại");
+            // rollback
+            fetchAll({ silent: true });
         }
     };
 
     const publish = async (sid: number) => {
         if (!window.confirm("Public syllabus này?")) return;
+        setOpenMenuId(null);
+
+        // ✅ UI đổi ngay
+        setSyllabi((prev) =>
+            prev.map((s: any) => (s.id === sid ? { ...s, status: "PUBLISHED" } : s))
+        );
+
         try {
             await principalApi.publish(sid);
-            setSyllabi((prev) =>
-                prev.map((s: any) => (s.id === sid ? { ...s, status: "PUBLISHED" } : s))
-            );
-            setOpenMenuId(null);
+            fetchAll({ silent: true });
         } catch (err: any) {
             alert(err?.response?.data?.message || "Publish thất bại");
+            // rollback
+            fetchAll({ silent: true });
         }
     };
 
     const reject = async (sid: number) => {
         const note = window.prompt("Lý do từ chối (có thể bỏ trống):") || "";
         if (!window.confirm("Từ chối syllabus này?")) return;
+        setOpenMenuId(null);
+
+        // ✅ UI đổi ngay
+        setSyllabi((prev) =>
+            prev.map((s: any) =>
+                s.id === sid ? { ...s, status: "REJECTED", editNote: note.trim() } : s
+            )
+        );
 
         try {
             await principalApi.reject(sid, note.trim());
-            setSyllabi((prev) =>
-                prev.map((s: any) =>
-                    s.id === sid ? { ...s, status: "REJECTED", editNote: note.trim() } : s
-                )
-            );
-            setOpenMenuId(null);
+            fetchAll({ silent: true });
         } catch (err: any) {
             alert(err?.response?.data?.message || "Reject thất bại");
+            // rollback
+            fetchAll({ silent: true });
         }
     };
 
     const courseTitle = initialCourse
-        ? `[${initialCourse.code || "NO_CODE"}] - ${
-            initialCourse.name || `Course #${id}`
-        }`
+        ? `[${initialCourse.code || "NO_CODE"}] - ${initialCourse.name || `Course #${id}`}`
         : `Course #${id}`;
 
     const emptyText = useMemo(() => {
@@ -135,10 +146,7 @@ export default function PrincipalCourseDetailPage() {
         <div className="lec-page">
             <div className="lec-container">
                 <div className="lec-card">
-                    <button
-                        className="lec-link"
-                        onClick={() => nav(`/principal?status=${viewStatus}`)}
-                    >
+                    <button className="lec-link" onClick={() => nav(`/principal?status=${viewStatus}`)}>
                         ← Quay lại
                     </button>
 
@@ -165,9 +173,7 @@ export default function PrincipalCourseDetailPage() {
                                             <div className="syllabus-folder-name">
                                                 {s.title}
                                                 <span
-                                                    className={`syllabus-status status-${String(
-                                                        s.status || ""
-                                                    ).toLowerCase()}`}
+                                                    className={`syllabus-status status-${String(s.status || "").toLowerCase()}`}
                                                 >
                           {s.status}
                         </span>
@@ -186,18 +192,24 @@ export default function PrincipalCourseDetailPage() {
                                             </button>
 
                                             {openMenuId === s.id && (
-                                                <div className="syllabus-menu">
+                                                <div className="syllabus-menu" onClick={(e) => e.stopPropagation()}>
                                                     {s.status === "AA_APPROVED" ? (
                                                         <>
                                                             <button
                                                                 className="syllabus-menu-item"
-                                                                onClick={() => approve(s.id)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    approve(s.id);
+                                                                }}
                                                             >
                                                                 ✅ Approve
                                                             </button>
                                                             <button
                                                                 className="syllabus-menu-item"
-                                                                onClick={() => reject(s.id)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    reject(s.id);
+                                                                }}
                                                             >
                                                                 ❌ Reject
                                                             </button>
@@ -206,13 +218,19 @@ export default function PrincipalCourseDetailPage() {
                                                         <>
                                                             <button
                                                                 className="syllabus-menu-item"
-                                                                onClick={() => publish(s.id)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    publish(s.id);
+                                                                }}
                                                             >
                                                                 🌍 Publish
                                                             </button>
                                                             <button
                                                                 className="syllabus-menu-item"
-                                                                onClick={() => reject(s.id)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    reject(s.id);
+                                                                }}
                                                             >
                                                                 ❌ Reject
                                                             </button>
@@ -220,7 +238,10 @@ export default function PrincipalCourseDetailPage() {
                                                     ) : (
                                                         <button
                                                             className="syllabus-menu-item"
-                                                            onClick={() => setOpenMenuId(null)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setOpenMenuId(null);
+                                                            }}
                                                         >
                                                             Đóng
                                                         </button>
