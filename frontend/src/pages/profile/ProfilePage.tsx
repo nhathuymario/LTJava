@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/css/pages/hod.css"; // nếu bạn dùng chung layout
+import "../../assets/css/pages/hod.css";
+import "../../assets/css/pages/profile.css";
+
 import { profileApi, type MeResponse } from "../../services/profile";
 import { getToken } from "../../services/auth";
 
@@ -32,7 +34,7 @@ export default function ProfilePage() {
     }, []);
 
     const avatarSrc = me?.profile?.avatarUrl
-        ? `http://localhost:8081${me.profile.avatarUrl}` // chỉnh port nếu khác
+        ? `http://localhost:8081${me.profile.avatarUrl}`
         : null;
 
     if (loading) return <div className="lec-empty">Đang tải...</div>;
@@ -43,15 +45,22 @@ export default function ProfilePage() {
         <div className="lec-page">
             <div className="lec-container">
                 <div className="lec-card">
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                    <div style={{ marginBottom: 8 }}>
+                        {/* ✅ quay về trang chính để tránh loop history */}
+                        <button className="lec-link" onClick={() => nav("/student")}>
+                            ← Quay lại
+                        </button>
+                    </div>
+
+                    <div className="profile-header">
                         <div>
-                            <div style={{ fontSize: 20, fontWeight: 700 }}>Profile</div>
-                            <div style={{ opacity: 0.75 }}>
+                            <div className="profile-title">Profile</div>
+                            <div className="profile-subtitle">
                                 {me.username} • Roles: {me.roles?.join(", ")}
                             </div>
                         </div>
 
-                        <div style={{ display: "flex", gap: 8 }}>
+                        <div className="profile-actions">
                             <button className="lec-link" onClick={() => nav("/profile/edit")}>
                                 Sửa profile
                             </button>
@@ -61,45 +70,28 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    <hr style={{ margin: "12px 0" }} />
+                    <hr className="profile-divider" />
 
-                    <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-                        <div style={{ width: 140 }}>
-                            <div
-                                style={{
-                                    width: 120,
-                                    height: 120,
-                                    borderRadius: 12,
-                                    overflow: "hidden",
-                                    background: "#f2f2f2",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                }}
-                            >
+                    <div className="profile-body">
+                        <div className="profile-avatar-col">
+                            <div className="profile-avatar">
                                 {avatarSrc ? (
-                                    <img
-                                        src={avatarSrc}
-                                        alt="avatar"
-                                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                    />
+                                    <img src={avatarSrc} alt="avatar" className="profile-avatar-img" />
                                 ) : (
-                                    <div style={{ opacity: 0.6 }}>No Avatar</div>
+                                    <div className="profile-avatar-empty">No Avatar</div>
                                 )}
                             </div>
-                            <div style={{ marginTop: 8, opacity: 0.7, fontSize: 12 }}>
-                                Upload ở trang Edit
-                            </div>
+                            <div className="profile-avatar-hint">Upload ở trang Edit</div>
                         </div>
 
-                        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        <div className="profile-grid">
                             <Field label="Họ tên" value={me.fullName || ""} />
                             <Field label="CCCD" value={me.cccd || ""} />
                             <Field label="Ngày sinh" value={me.dateOfBirth || ""} />
                             <Field label="Email" value={me.profile?.email || ""} />
                             <Field label="Phone" value={me.profile?.phone || ""} />
                             <Field label="Địa chỉ" value={me.profile?.address || ""} />
-                            <div style={{ gridColumn: "1 / -1" }}>
+                            <div className="profile-grid-full">
                                 <Field label="Bio" value={me.profile?.bio || ""} multiline />
                             </div>
                         </div>
@@ -121,20 +113,9 @@ function Field({
 }) {
     return (
         <div>
-            <div style={{ fontSize: 12, opacity: 0.7 }}>{label}</div>
-            <div
-                style={{
-                    marginTop: 4,
-                    padding: 10,
-                    border: "1px solid #e5e5e5",
-                    borderRadius: 10,
-                    minHeight: multiline ? 80 : 40,
-                    whiteSpace: multiline ? "pre-wrap" : "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                }}
-            >
-                {value || <span style={{ opacity: 0.5 }}>(trống)</span>}
+            <div className="profile-field-label">{label}</div>
+            <div className={`profile-field-value ${multiline ? "multiline" : ""}`}>
+                {value || <span className="profile-field-empty">(trống)</span>}
             </div>
         </div>
     );
