@@ -1,5 +1,6 @@
 package com.example.LTJava.syllabuscomment.entity;
 
+import com.example.LTJava.review.entity.ReviewAssignment;
 import com.example.LTJava.syllabus.entity.Syllabus;
 import com.example.LTJava.user.entity.User;
 import jakarta.persistence.*;
@@ -27,6 +28,11 @@ public class SyllabusComment {
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assignment_id")
+    private ReviewAssignment assignment;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
