@@ -3,6 +3,7 @@ package com.example.LTJava.syllabus.service;
 import java.util.List;
 
 import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
+import com.example.LTJava.syllabus.dto.HodCourseGroupResponse;
 import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
 import com.example.LTJava.syllabus.entity.*;
 
@@ -36,7 +37,8 @@ public interface SyllabusService {
     Syllabus approveByHod(Long syllabusId, Long hodId);
     Syllabus requestEditByHod(Long syllabusId, Long hodId, String editNote);
     Syllabus rejectByHod(Long syllabusId, Long hodId, String reason);
-
+    List<Syllabus> getByCourseAndStatus(Long courseId, SyllabusStatus status);
+    List<HodCourseGroupResponse> listCoursesHavingSyllabusStatus(SyllabusStatus status);
     // =========================
     // 4) AA (HOD_APPROVED -> AA_APPROVED / REJECTED)
     // =========================

@@ -28,6 +28,7 @@ import StudentCourseSyllabusPage from "./pages/student/course-syllabus"
 import StudentSyllabusDetailPage from "./pages/student/syllabus/syllabus-detail"
 import StudentNotificationsPage from "./pages/student/notifications/notifications"
 import StudentRegisterCoursePage from "./pages/student/courses/register-course"
+import HodCollabCoursesPage from "./pages/hod/HodCollabCoursesPage";
 
 
 export default function App() {
@@ -87,6 +88,7 @@ export default function App() {
                     <Route element={<AppLayout />}>
                         <Route path="/hod" element={<HodPage />} />
                         <Route path="/hod/courses/:courseId" element={<HodCourseDetailPage />} />
+                        <Route path="/hod/collab" element={<HodCollabCoursesPage />} />
                     </Route>
                 </Route>
 

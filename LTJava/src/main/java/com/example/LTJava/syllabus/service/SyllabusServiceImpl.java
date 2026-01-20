@@ -11,10 +11,10 @@ import com.example.LTJava.syllabus.repository.*;
 import com.example.LTJava.user.entity.User;
 import com.example.LTJava.user.repository.UserRepository;
 import com.example.LTJava.syllabus.repository.SyllabusHistoryRepository;
-
+import com.example.LTJava.syllabus.dto.HodCourseGroupResponse;
 import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
 import jakarta.persistence.Cacheable;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
@@ -227,6 +227,21 @@ public class SyllabusServiceImpl implements SyllabusService {
     // =========================
     // HOD
     // =========================
+
+    @Transactional(readOnly = true)
+    public List<HodCourseGroupResponse> listCoursesHavingSyllabusStatus(SyllabusStatus status) {
+        return syllabusRepository.groupCoursesBySyllabusStatus(status);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Syllabus> getByCourseAndStatus(Long courseId, SyllabusStatus status) {
+
+        return syllabusRepository
+                .findByCourse_IdAndStatus(courseId, status);
+    }
+
+
 
     @Override
     public Syllabus approveByHod(Long syllabusId, Long hodId) {

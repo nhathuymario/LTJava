@@ -3,6 +3,7 @@ package com.example.LTJava.syllabus.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.LTJava.syllabus.dto.HodCourseGroupResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.LTJava.syllabus.entity.Syllabus;
@@ -20,6 +21,20 @@ public interface SyllabusRepository extends JpaRepository<Syllabus, Long> {
     List<Syllabus> findByCourseId(Long courseId);
 
     List<Syllabus> findByCourse_IdAndStatus(Long courseId, SyllabusStatus status);
+
+
+
+    @Query("""
+        select new com.example.LTJava.syllabus.dto.HodCourseGroupResponse(
+            c.id, c.code, c.name, c.department, count(s.id)
+        )
+        from Syllabus s
+        join s.course c
+        where s.status = :status
+        group by c.id, c.code, c.name, c.department
+        order by c.name asc
+    """)
+    List<HodCourseGroupResponse> groupCoursesBySyllabusStatus(@Param("status") SyllabusStatus status);
 
 
 
