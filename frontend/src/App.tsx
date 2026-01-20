@@ -10,6 +10,9 @@ import LecturerPage from "./pages/lecturer"
 import HodPage from "./pages/hod"
 import PrincipalPage from "./pages/principal"
 
+import ProfilePage from "./pages/profile/ProfilePage";
+import ProfileEditPage from "./pages/profile/ProfileEditPage";
+import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
 import HodCourseDetailPage from "./pages/hod/course-detail"
 import AACourseDetailPage from "./pages/aa/course-detail"
 import AaCourseRelationsPage from "./pages/aa/courses/relations"
@@ -29,6 +32,10 @@ export default function App() {
         <BrowserRouter>
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/profile/edit" element={<ProfileEditPage />} />
+                <Route path="/profile/password" element={<ChangePasswordPage />} />
+
 
                 {/* ADMIN */}
                 <Route element={<RequireAuth allowedRoles={["SYSTEM_ADMIN", "ROLE_SYSTEM_ADMIN"]} />}>
