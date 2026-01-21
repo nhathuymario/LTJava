@@ -1,0 +1,194 @@
+/* plo-manager.css */
+
+/* 1. Tổng thể trang */
+.plo-page {
+    padding: 2rem;
+    background-color: #f4f6f8; /* Màu nền xám nhẹ dịu mắt */
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.plo-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 2. Header */
+.plo-header {
+    margin-bottom: 24px;
+}
+
+.plo-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0;
+}
+
+.plo-subtitle {
+    color: #718096;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+/* 3. Card UI (Khung chứa nội dung) */
+.plo-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #e2e8f0;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #edf2f7;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 4. Form Styling */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Chia 2 cột */
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1; /* Chiếm hết chiều ngang */
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.required {
+    color: #e53e3e;
+    margin-left: 4px;
+}
+
+.form-input, .form-textarea {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.form-input:focus, .form-textarea:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.form-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* 5. Button Styling */
+.btn-primary {
+    background-color: #3182ce;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    background-color: #2b6cb0;
+}
+
+.btn-primary:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+}
+
+/* 6. Table Styling */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.plo-table {
+    width: 100%;
+    border-collapse: separate; /* Để bo góc table */
+    border-spacing: 0;
+}
+
+.plo-table th {
+    background-color: #f7fafc;
+    color: #4a5568;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.plo-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #edf2f7;
+    color: #2d3748;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.plo-table tr:last-child td {
+    border-bottom: none;
+}
+
+.plo-table tr:hover td {
+    background-color: #f8fafc;
+}
+
+/* Badge cho PLO Code */
+.badge-code {
+    background-color: #ebf8ff;
+    color: #2b6cb0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 12px;
+    border: 1px solid #bee3f8;
+}
+
+.text-subtle {
+    color: #718096;
+    font-size: 13px;
+}
+
+.btn-danger {
+    background: #e53e3e;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: #c53030;
+}
