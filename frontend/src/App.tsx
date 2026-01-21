@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import LoginPage from "./pages/LoginPage"
 import RequireAuth from "./RequireAuth"
 import AppLayout from "./AppLayout" // hoặc để cùng file cũng được
@@ -29,12 +29,15 @@ import StudentSyllabusDetailPage from "./pages/student/syllabus/syllabus-detail"
 import StudentNotificationsPage from "./pages/student/notifications/notifications"
 import StudentRegisterCoursePage from "./pages/student/courses/register-course"
 import HodCollabCoursesPage from "./pages/hod/HodCollabCoursesPage";
-
+import LecturerSyllabusReviewsPage  from "./pages/lecturer/comment/LecturerSyllabusReviewsPage";
 
 export default function App() {
     return (
         <BrowserRouter>
             <Routes>
+
+                <Route path="/" element={<Navigate to="/login" replace />} />
+
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/profile/edit" element={<ProfileEditPage />} />
@@ -80,6 +83,7 @@ export default function App() {
                         <Route path="/lecturer/courses/:courseId" element={<LecturerCoureseDetailPage/>} />
                         <Route path="/lecturer/syllabus/new" element={<LecturerSyllabusNewPage />} />
                         <Route path="/lecturer/syllabus/:syllabusId/edit" element={<LecturerSyllabusEdit/>} />
+                        <Route path="/lecturer/syllabus/:id/reviews" element={<LecturerSyllabusReviewsPage/>} />
                     </Route>
                 </Route>
 

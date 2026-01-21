@@ -76,7 +76,7 @@ export default function HodAssignReviewPage() {
         <div className="lec-page">
             <div className="lec-container">
                 <div className="lec-card">
-                    <button className="lec-link" onClick={() => nav("/hod")}>← Quay lại</button>
+                    <button className="lec-link" onClick={() => nav("/hod/collab")}>← Quay lại</button>
 
                     <div className="course-detail-header">
                         <div className="course-detail-title">Assign Collaborative Review</div>

@@ -207,6 +207,12 @@ export default function LecturerCourseDetailPage() {
                                                                     ✏️ Sửa
                                                                 </button>
 
+                                                                <button className="syllabus-menu-item"
+                                                                        onClick={() => nav(`/lecturer/syllabus/${s.id}/reviews`)}
+                                                                >
+                                                                    💬 Xem review
+                                                                </button>
+
                                                                 <button
                                                                     className="syllabus-menu-item danger"
                                                                     onClick={() => handleDeleteSyllabus(s.id)}

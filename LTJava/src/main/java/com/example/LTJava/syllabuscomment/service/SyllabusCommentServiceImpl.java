@@ -107,6 +107,24 @@ public class SyllabusCommentServiceImpl implements SyllabusCommentService {
     }
 
     @Override
+    public List<CommentResponse> getCommentsForOwner(Long syllabusId, Long lecturerId) {
+
+        boolean ok = syllabusRepo.existsByIdAndCreatedBy_Id(syllabusId, lecturerId);
+        if (!ok) {
+            throw new RuntimeException("Bạn không có quyền xem review của syllabus này");
+        }
+
+        return commentRepo
+                .findBySyllabus_IdAndStatusOrderByCreatedAtAsc(syllabusId, CommentStatus.ACTIVE)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+
+
+
+    @Override
     public List<CommentResponse> getCommentsByAssignment(Long assignmentId) {
         return commentRepo
                 .findByAssignment_IdAndStatusOrderByCreatedAtAsc(assignmentId, CommentStatus.ACTIVE)

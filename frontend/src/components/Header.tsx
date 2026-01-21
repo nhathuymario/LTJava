@@ -6,6 +6,7 @@ import "../assets/css/components/Header.css";
 import { HEADER_ACTIONS } from "../config/headerActions";
 import { filterActionsByRoles } from "../utils/filterByRoles";
 import { profileApi, type MeResponse } from "../services/profile";
+import { goHomeByRole } from "../utils/navByRole";
 
 type HeaderProps = {
     username?: string;
@@ -84,9 +85,9 @@ export default function Header({ username, onProfile, showMenu = true }: HeaderP
 
     return (
         <header className="header">
-            <div className="brand" onClick={() => nav("/")}>
+            <div className="brand" onClick={() => goHomeByRole(nav)}>
                 <span className="brand-main">UTH</span>
-                <span className="brand-sub">Elearning</span>
+                <span className="brand-sub">Project</span>
             </div>
 
             {showMenu && (
