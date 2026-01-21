@@ -27,4 +27,7 @@ export const reviewCommentApi = {
 
     remove: (commentId: number) =>
         api.delete<void>(`/comments/${commentId}`).then((r) => r.data),
+
+    listForLecturerSyllabus: (syllabusId: number) =>
+        api.get<CommentResponse[]>(`/lecturer/syllabus/${syllabusId}/comments`).then((r) => r.data),
 };

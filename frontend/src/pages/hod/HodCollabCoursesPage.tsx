@@ -73,7 +73,7 @@ export default function HodCollabCoursesPage() {
                                         key={c.courseId}
                                         className="course-row"
                                         style={{ cursor: "pointer" }}
-                                        onClick={() => nav(`/hod/reviews/assign?courseId=${c.courseId}`)}
+                                        // onClick={() => nav(`/hod/reviews/assign?courseId=${c.courseId}`)}
                                     >
                                         <div className={`course-thumb thumb-${idx % 4}`} />
 
@@ -86,8 +86,14 @@ export default function HodCollabCoursesPage() {
                                             </div>
                                         </div>
 
-                                        <button className="course-more" onClick={(e) => e.stopPropagation()}>
-                                            🧩
+                                        <button
+                                            className="course-more"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                nav(`/hod/reviews/assign?courseId=${c.courseId}`);
+                                            }}
+                                        >
+                                            🧩 Assign
                                         </button>
                                     </div>
                                 ))

@@ -67,4 +67,14 @@ public class SyllabusCommentController {
 
         service.deleteComment(commentId, user.getUser().getId());
     }
+
+    @GetMapping("/lecturer/syllabus/{id}/comments")
+    @PreAuthorize("hasRole('LECTURER')")
+    public List<CommentResponse> listForLecturer(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        return service.getCommentsForOwner(id, user.getId());
+    }
+
 }

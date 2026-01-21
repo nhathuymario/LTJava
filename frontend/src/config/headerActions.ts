@@ -38,7 +38,7 @@ export const HEADER_ACTIONS: HeaderAction[] = [
     {
         key: "assign_review",
         label: "Assign Review",
-        to: "/hod/reviews/assign",
+        to: "/hod/collab",
         roles: ["HOD"],
         icon: "🧩",
     },

@@ -14,6 +14,8 @@ public interface SyllabusCommentService {
 
     List<CommentResponse> getComments(Long syllabusId);
 
+    List<CommentResponse> getCommentsForOwner(Long syllabusId, Long lecturerId);
+
     // ✅ list comment theo assignment
     List<CommentResponse> getCommentsByAssignment(Long assignmentId);
 
