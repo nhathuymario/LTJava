@@ -37,12 +37,12 @@ export default function LoginPage() {
     return (
         <div className="uth-login-page">
             <nav className="uth-topbar">
-                <div className="uth-logo">UTH <span>University of Transport</span></div>
-                <div className="uth-menu">
+                <img src="../src/assets/uth-logo.png" alt="uth logo" />
+                {/* <div className="uth-menu">
                     <a>Hướng dẫn</a>
                     <a>Quét trùng lặp</a>
                     <a>Courses (phiên bản cũ)</a>
-                </div>
+                </div> */}
                 <div className="uth-spacer" />
             </nav>
 

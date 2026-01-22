@@ -179,9 +179,7 @@ export default function LecturerCourseDetailPage() {
                                                 <div className="syllabus-folder-icon">📁</div>
                                                 <div className="syllabus-folder-name">
                                                     {s.title}
-                                                    <span className={`syllabus-status status-${String(s.status || "").toLowerCase()}`}>
-                            {s.status}
-                          </span>
+                                                    <span className={`syllabus-status status-${String(s.status || "").toLowerCase()}`}> {s.status} </span>
                                                 </div>
                                             </div>
 

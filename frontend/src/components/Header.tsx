@@ -86,8 +86,7 @@ export default function Header({ username, onProfile, showMenu = true }: HeaderP
     return (
         <header className="header">
             <div className="brand" onClick={() => goHomeByRole(nav)}>
-                <span className="brand-main">UTH</span>
-                <span className="brand-sub">Project</span>
+                <img src="../src/assets/uth-logo.png" alt="uth logo" />
             </div>
 
             {showMenu && (

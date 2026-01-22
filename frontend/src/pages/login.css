@@ -27,12 +27,9 @@ html, body, #root {
     position: sticky; top: 0; z-index: 10;
 }
 
-.uth-logo {
-    font-weight: 800;
-    color: #0b6b5c;
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
+.uth-topbar img {
+    height: 35px;
+    width: auto;    
 }
 .uth-logo span {
     font-size: 13px;
