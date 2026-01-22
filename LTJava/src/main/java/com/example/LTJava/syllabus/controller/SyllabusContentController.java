@@ -22,7 +22,7 @@ public class SyllabusContentController {
     @Autowired
     private SyllabusRepository syllabusRepo;
 
-    // ===== VIEW (mọi role) =====
+    // VIEW (mọi role)
     @GetMapping("/{syllabusId}")
     public ResponseEntity<?> get(@PathVariable Long syllabusId) {
         return ResponseEntity.ok(
@@ -30,7 +30,7 @@ public class SyllabusContentController {
         );
     }
 
-    // ===== EDIT (LECTURER ONLY) =====
+    // EDIT (LECTURER ONLY)
     @PreAuthorize("hasRole('LECTURER')")
     @PutMapping("/{syllabusId}")
     public ResponseEntity<?> save(
