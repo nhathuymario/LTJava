@@ -192,3 +192,99 @@
 .btn-danger:hover {
     background: #c53030;
 }
+
+/* ===== 7. GIAO DIỆN HÀNH ĐỘNG (SỬA/XÓA) ===== */
+
+/* Cột hành động và nhóm nút */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center; /* Căn giữa các nút trong cột */
+}
+
+/* Nút dạng Icon tròn nhẹ nhàng */
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    font-size: 16px;
+}
+
+/* Nút Sửa (Màu xanh dương nhẹ) */
+.btn-edit {
+    color: #3182ce;
+    background-color: #ebf8ff;
+    border: 1px solid #bee3f8;
+}
+.btn-edit:hover {
+    background-color: #3182ce;
+    color: white;
+}
+
+/* Nút Xóa (Màu đỏ nhẹ - thay cho btn-danger cũ nếu muốn đồng bộ) */
+.btn-delete {
+    color: #e53e3e;
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+}
+.btn-delete:hover {
+    background-color: #e53e3e;
+    color: white;
+}
+
+/* ===== 8. STYLE KHI ĐANG TRONG CHẾ ĐỘ SỬA (INLINE EDIT) ===== */
+
+/* Input nhỏ gọn để không làm vỡ hàng của bảng */
+.edit-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 2px solid #3182ce; /* Viền xanh đậm để biết đang sửa */
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+}
+
+.edit-textarea {
+    width: 100%;
+    min-height: 70px;
+    padding: 8px;
+    border: 2px solid #3182ce;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
+/* Nút Lưu và Hủy */
+.btn-save {
+    background: #48bb78; /* Xanh lá */
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background: #a0aec0; /* Xám */
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-save:hover { background: #38a169; }
+.btn-cancel:hover { background: #718096; }
