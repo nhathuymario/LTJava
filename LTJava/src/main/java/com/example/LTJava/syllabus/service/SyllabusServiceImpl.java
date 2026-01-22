@@ -1,27 +1,33 @@
 package com.example.LTJava.syllabus.service;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
-import com.example.LTJava.syllabus.entity.*;
-import com.example.LTJava.syllabus.exception.ResourceNotFoundException;
-import com.example.LTJava.syllabus.repository.*;
-import com.example.LTJava.user.entity.User;
-import com.example.LTJava.user.repository.UserRepository;
-import com.example.LTJava.syllabus.repository.SyllabusHistoryRepository;
 import com.example.LTJava.syllabus.dto.HodCourseGroupResponse;
 import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
-import jakarta.persistence.Cacheable;
-import org.springframework.transaction.annotation.Transactional;
+import com.example.LTJava.syllabus.entity.Course;
+import com.example.LTJava.syllabus.entity.Notification;
+import com.example.LTJava.syllabus.entity.Subscription;
+import com.example.LTJava.syllabus.entity.Syllabus;
+import com.example.LTJava.syllabus.entity.SyllabusHistory;
+import com.example.LTJava.syllabus.entity.SyllabusStatus;
+import com.example.LTJava.syllabus.exception.ResourceNotFoundException;
+import com.example.LTJava.syllabus.repository.CourseRepository;
+import com.example.LTJava.syllabus.repository.NotificationRepository;
+import com.example.LTJava.syllabus.repository.SubscriptionRepository;
+import com.example.LTJava.syllabus.repository.SyllabusHistoryRepository;
+import com.example.LTJava.syllabus.repository.SyllabusRepository;
+import com.example.LTJava.user.entity.User;
+import com.example.LTJava.user.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import com.example.LTJava.syllabus.repository.SubscriptionRepository;
-
 
 @Service
 public class SyllabusServiceImpl implements SyllabusService {
@@ -41,7 +47,6 @@ public class SyllabusServiceImpl implements SyllabusService {
         this.syllabusRepository = syllabusRepository;
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
-
     }
 
     // =========================
@@ -81,18 +86,12 @@ public class SyllabusServiceImpl implements SyllabusService {
         if (syllabus.getStatus() != SyllabusStatus.DRAFT) {
             throw new RuntimeException("Chỉ syllabus ở trạng thái DRAFT mới được chỉnh sửa");
         }
-        if (syllabus.getStatus() == SyllabusStatus.PUBLISHED) {
-            throw new RuntimeException("Syllabus đã PUBLISHED. Hãy tạo version mới trước khi chỉnh sửa.");
-        }
 
-
-        // ✅ không tăng version ở đây
         syllabus.setTitle(request.getTitle());
         syllabus.setDescription(request.getDescription());
         syllabus.setAcademicYear(request.getAcademicYear());
         syllabus.setSemester(request.getSemester());
 
-        // (không đổi courseId ở update; nếu muốn cho đổi course thì validate thêm)
         return syllabusRepository.save(syllabus);
     }
 
@@ -107,11 +106,10 @@ public class SyllabusServiceImpl implements SyllabusService {
         }
 
         // ✅ nếu có syllabus_history FK -> syllabus thì cần xóa history trước (nếu không cascade)
-         historyRepository.deleteBySyllabusId(syllabusId);
+        historyRepository.deleteBySyllabusId(syllabusId);
 
         syllabusRepository.delete(syllabus);
     }
-
 
     @Override
     public Syllabus submitSyllabus(Long syllabusId, Long lecturerId) {
@@ -124,57 +122,52 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         saveHistory(syllabus);
         syllabus.setStatus(SyllabusStatus.SUBMITTED);
-        return syllabusRepository.save(syllabus);
+        Syllabus saved = syllabusRepository.save(syllabus);
+
+        // Notify HOD
+        String msgToHod = aiService.createRoleNotificationMessage(
+                "HOD",
+                "Có syllabus mới cần duyệt (SUBMITTED)",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                null,
+                saved.getId()
+        );
+        notifyRole("HOD", msgToHod);
+
+        return saved;
     }
-
-    @Override
-    public Syllabus createNewVersion(Long syllabusId, Long lecturerId) {
-        // chỉ owner mới tạo version mới
-        Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
-                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
-
-        // chỉ cho tạo version mới khi đã PUBLISHED
-        if (syllabus.getStatus() != SyllabusStatus.PUBLISHED) {
-            throw new RuntimeException("Chỉ syllabus ở trạng thái PUBLISHED mới được tạo version mới");
-        }
-
-        // lưu snapshot vào history trước khi mở bản mới
-        saveHistory(syllabus);
-
-        // mở version mới trên chính record syllabus hiện tại
-        syllabus.setVersion(syllabus.getVersion() + 1);
-        syllabus.setStatus(SyllabusStatus.DRAFT);
-
-        // reset các thứ thuộc publish/duyệt trước đó
-        syllabus.setEditNote(null);
-
-        // optional: nếu bạn muốn publish lần sau regenerate AI summary + keywords
-        syllabus.setAiSummary(null);
-        syllabus.setKeywords(null);
-
-        return syllabusRepository.save(syllabus);
-    }
-
 
     @Override
     public Syllabus resubmitSyllabus(Long syllabusId, Long lecturerId) {
         Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
-                .orElseThrow(() ->
-                        new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
 
         if (syllabus.getStatus() != SyllabusStatus.REQUESTEDIT
                 && syllabus.getStatus() != SyllabusStatus.REJECTED) {
-            throw new RuntimeException(
-                    "Chỉ syllabus REQUESTEDIT hoặc REJECTED mới được resubmit");
+            throw new RuntimeException("Chỉ syllabus REQUESTEDIT hoặc REJECTED mới được resubmit");
         }
 
         syllabus.setStatus(SyllabusStatus.SUBMITTED);
         syllabus.setEditNote(null);
 
-        // ❗ KHÔNG tăng version
-        return syllabusRepository.save(syllabus);
-    }
+        Syllabus saved = syllabusRepository.save(syllabus);
 
+        // Notify HOD (resubmitted)
+        String msgToHod = aiService.createRoleNotificationMessage(
+                "HOD",
+                "Lecturer đã resubmit syllabus, cần duyệt lại",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                null,
+                saved.getId()
+        );
+        notifyRole("HOD", msgToHod);
+
+        return saved;
+    }
 
     @Override
     public Syllabus moveToDraftForEdit(Long syllabusId, Long lecturerId) {
@@ -186,6 +179,27 @@ public class SyllabusServiceImpl implements SyllabusService {
         }
 
         syllabus.setStatus(SyllabusStatus.DRAFT);
+        return syllabusRepository.save(syllabus);
+    }
+
+    @Override
+    public Syllabus createNewVersion(Long syllabusId, Long lecturerId) {
+        Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
+                .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
+
+        if (syllabus.getStatus() != SyllabusStatus.PUBLISHED) {
+            throw new RuntimeException("Chỉ syllabus ở trạng thái PUBLISHED mới được tạo version mới");
+        }
+
+        saveHistory(syllabus);
+
+        syllabus.setVersion(syllabus.getVersion() + 1);
+        syllabus.setStatus(SyllabusStatus.DRAFT);
+
+        syllabus.setEditNote(null);
+        syllabus.setAiSummary(null);
+        syllabus.setKeywords(null);
+
         return syllabusRepository.save(syllabus);
     }
 
@@ -236,12 +250,8 @@ public class SyllabusServiceImpl implements SyllabusService {
     @Override
     @Transactional(readOnly = true)
     public List<Syllabus> getByCourseAndStatus(Long courseId, SyllabusStatus status) {
-
-        return syllabusRepository
-                .findByCourse_IdAndStatus(courseId, status);
+        return syllabusRepository.findByCourse_IdAndStatus(courseId, status);
     }
-
-
 
     @Override
     public Syllabus approveByHod(Long syllabusId, Long hodId) {
@@ -252,9 +262,34 @@ public class SyllabusServiceImpl implements SyllabusService {
             throw new RuntimeException("Chỉ syllabus SUBMITTED mới được HoD duyệt");
         }
 
-        // ✅ HoD duyệt -> HOD_APPROVED
         syllabus.setStatus(SyllabusStatus.HOD_APPROVED);
-        return syllabusRepository.save(syllabus);
+        Syllabus saved = syllabusRepository.save(syllabus);
+
+        // Notify AA
+        String msgToAa = aiService.createRoleNotificationMessage(
+                "AA",
+                "Syllabus đã được HOD duyệt, cần AA thẩm định",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                null,
+                saved.getId()
+        );
+        notifyRole("AA", msgToAa);
+
+        // Notify Lecturer
+        String msgToLecturer = aiService.createRoleNotificationMessage(
+                "LECTURER",
+                "Syllabus của bạn đã được HOD duyệt và chuyển sang AA",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                null,
+                saved.getId()
+        );
+        notifyLecturerOwner(saved, msgToLecturer);
+
+        return saved;
     }
 
     @Override
@@ -272,7 +307,20 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         syllabus.setStatus(SyllabusStatus.REQUESTEDIT);
         syllabus.setEditNote(editNote);
-        return syllabusRepository.save(syllabus);
+        Syllabus saved = syllabusRepository.save(syllabus);
+
+        String msgToLecturer = aiService.createRoleNotificationMessage(
+                "LECTURER",
+                "HOD yêu cầu chỉnh sửa syllabus (REQUESTEDIT)",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                editNote,
+                saved.getId()
+        );
+        notifyLecturerOwner(saved, msgToLecturer);
+
+        return saved;
     }
 
     @Override
@@ -286,7 +334,20 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         syllabus.setStatus(SyllabusStatus.REJECTED);
         syllabus.setEditNote(reason);
-        return syllabusRepository.save(syllabus);
+        Syllabus saved = syllabusRepository.save(syllabus);
+
+        String msgToLecturer = aiService.createRoleNotificationMessage(
+                "LECTURER",
+                "Syllabus bị HOD từ chối (REJECTED)",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                reason,
+                saved.getId()
+        );
+        notifyLecturerOwner(saved, msgToLecturer);
+
+        return saved;
     }
 
     // =========================
@@ -298,12 +359,10 @@ public class SyllabusServiceImpl implements SyllabusService {
         Course course = courseRepository.findById(req.getCourseId())
                 .orElseThrow(() -> new RuntimeException("Course syllabus không tồn tại: " + req.getCourseId()));
 
-        // ✅ clear old
         course.getPrerequisites().clear();
         course.getParallelCourses().clear();
         course.getSupplementaryCourses().clear();
 
-        // ✅ add new
         addMany(course.getPrerequisites(), req.getPrerequisiteIds(), req.getCourseId());
         addMany(course.getParallelCourses(), req.getParallelIds(), req.getCourseId());
         addMany(course.getSupplementaryCourses(), req.getSupplementaryIds(), req.getCourseId());
@@ -316,7 +375,7 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         for (Long id : ids) {
             if (id == null) continue;
-            if (id.equals(selfId)) continue; // ✅ tránh tự tham chiếu
+            if (id.equals(selfId)) continue;
 
             Course related = courseRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Related course không tồn tại: " + id));
@@ -335,7 +394,33 @@ public class SyllabusServiceImpl implements SyllabusService {
         }
 
         syllabus.setStatus(SyllabusStatus.AA_APPROVED);
-        return syllabusRepository.save(syllabus);
+        Syllabus saved = syllabusRepository.save(syllabus);
+
+        // Notify Principal
+        String msgToPrincipal = aiService.createRoleNotificationMessage(
+                "PRINCIPAL",
+                "Syllabus đã qua AA, cần Principal duyệt",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                null,
+                saved.getId()
+        );
+        notifyRole("PRINCIPAL", msgToPrincipal);
+
+        // Notify Lecturer
+        String msgToLecturer = aiService.createRoleNotificationMessage(
+                "LECTURER",
+                "Syllabus đã được AA duyệt và chuyển Principal",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                null,
+                saved.getId()
+        );
+        notifyLecturerOwner(saved, msgToLecturer);
+
+        return saved;
     }
 
     @Override
@@ -350,7 +435,20 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         syllabus.setStatus(SyllabusStatus.REJECTED);
         syllabus.setEditNote(reason);
-        return syllabusRepository.save(syllabus);
+        Syllabus saved = syllabusRepository.save(syllabus);
+
+        String msgToLecturer = aiService.createRoleNotificationMessage(
+                "LECTURER",
+                "Syllabus bị AA từ chối (REJECTED)",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                reason,
+                saved.getId()
+        );
+        notifyLecturerOwner(saved, msgToLecturer);
+
+        return saved;
     }
 
     // =========================
@@ -367,9 +465,20 @@ public class SyllabusServiceImpl implements SyllabusService {
         }
 
         syllabus.setStatus(SyllabusStatus.PRINCIPAL_APPROVED);
-//        return syllabusRepository.save(syllabus);
         Syllabus saved = syllabusRepository.save(syllabus);
         saveHistory(saved);
+
+        // Notify Lecturer
+        String msgToLecturer = aiService.createRoleNotificationMessage(
+                "LECTURER",
+                "Syllabus đã được Principal duyệt (PRINCIPAL_APPROVED)",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                null,
+                saved.getId()
+        );
+        notifyLecturerOwner(saved, msgToLecturer);
 
         return saved;
     }
@@ -386,7 +495,21 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         syllabus.setStatus(SyllabusStatus.REJECTED);
         syllabus.setEditNote(reason);
-        return syllabusRepository.save(syllabus);
+        Syllabus saved = syllabusRepository.save(syllabus);
+
+        // Notify Lecturer
+        String msgToLecturer = aiService.createRoleNotificationMessage(
+                "LECTURER",
+                "Syllabus bị Principal từ chối (REJECTED)",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                reason,
+                saved.getId()
+        );
+        notifyLecturerOwner(saved, msgToLecturer);
+
+        return saved;
     }
 
     // =========================
@@ -404,7 +527,7 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         syllabus.setStatus(SyllabusStatus.PUBLISHED);
 
-        // 1) Tạo AI summary trước (để không bị null)
+        // 1) AI summary/keywords
         if (syllabus.getDescription() != null && syllabus.getDescription().trim().length() > 10) {
             try {
                 String[] aiResult = aiService.processSyllabusContent(
@@ -418,31 +541,64 @@ public class SyllabusServiceImpl implements SyllabusService {
             }
         }
 
-        // 2) Lúc này mới tạo nội dung notification
+        // 2) Noti content for student subscribers
         String summaryForNoti = syllabus.getAiSummary();
         if (summaryForNoti == null || summaryForNoti.isBlank()) {
-            summaryForNoti = "có cập nhật mới"; // fallback tránh 'null'
+            summaryForNoti = "có cập nhật mới";
         }
+
         String notiContent = aiService.createNotificationMessage(
                 syllabus.getCourse().getName(),
                 summaryForNoti,
                 syllabus.getVersion()
         );
 
-
-        // 3) Gửi noti cho người subscribe
+        // 3) Send to subscribers
         List<Subscription> subs = subRepo.findByCourse_Id(syllabus.getCourse().getId());
         for (Subscription sub : subs) {
             notiRepo.save(new Notification(sub.getUser(), notiContent));
         }
 
-        // 4) Lưu syllabus
+        // 4) Save syllabus + history
         Syllabus saved = syllabusRepository.save(syllabus);
         saveHistory(saved);
 
+        // 5) Staff notifications (optional but per your requirement)
+        String msgToLecturer = aiService.createRoleNotificationMessage(
+                "LECTURER",
+                "Syllabus đã được publish",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                null,
+                saved.getId()
+        );
+        notifyLecturerOwner(saved, msgToLecturer);
+
+        String msgToHod = aiService.createRoleNotificationMessage(
+                "HOD",
+                "Syllabus đã được publish",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                null,
+                saved.getId()
+        );
+        notifyRole("HOD", msgToHod);
+
+        String msgToAa = aiService.createRoleNotificationMessage(
+                "AA",
+                "Syllabus đã được publish",
+                saved.getCourse().getName(),
+                saved.getTitle(),
+                saved.getVersion(),
+                null,
+                saved.getId()
+        );
+        notifyRole("AA", msgToAa);
+
         return saved;
     }
-
 
     // =========================
     // STUDENT
@@ -465,8 +621,8 @@ public class SyllabusServiceImpl implements SyllabusService {
     }
 
     // =========================
-// STUDENT - MY COURSES
-// =========================
+    // STUDENT - MY COURSES
+    // =========================
 
     @Override
     public List<Course> getMySubscribedCourses(Long userId) {
@@ -481,15 +637,12 @@ public class SyllabusServiceImpl implements SyllabusService {
 
     @Override
     public List<Syllabus> getPublishedByCourseForStudent(Long userId, Long courseId) {
-        // check student đã subscribe course chưa
         if (!subRepo.existsByUser_IdAndCourse_Id(userId, courseId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn chưa đăng ký môn này");
         }
 
-        // lấy syllabus public theo course
         return syllabusRepository.findByCourse_IdAndStatus(courseId, SyllabusStatus.PUBLISHED);
     }
-
 
     // =========================
     // HISTORY
@@ -508,13 +661,13 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         List<String> changes = new ArrayList<>();
 
-        if (!current.getTitle().equals(old.getTitle())) {
+        if (current.getTitle() != null && old.getTitle() != null && !current.getTitle().equals(old.getTitle())) {
             changes.add("Tiêu đề thay đổi: '" + old.getTitle() + "' -> '" + current.getTitle() + "'");
         }
-        if (!current.getDescription().equals(old.getDescription())) {
+        if (current.getDescription() != null && old.getDescription() != null && !current.getDescription().equals(old.getDescription())) {
             changes.add("Mô tả đã được chỉnh sửa.");
         }
-        if (!current.getAcademicYear().equals(old.getAcademicYear())) {
+        if (current.getAcademicYear() != null && old.getAcademicYear() != null && !current.getAcademicYear().equals(old.getAcademicYear())) {
             changes.add("Năm học thay đổi: " + old.getAcademicYear() + " -> " + current.getAcademicYear());
         }
 
@@ -548,7 +701,24 @@ public class SyllabusServiceImpl implements SyllabusService {
     @Override
     public List<Notification> getMyNotifications(Long userId) {
         return notiRepo.findByUser_IdOrderByCreatedAtDesc(userId);
+    }
 
+    private void notifyUsers(List<User> users, String message) {
+        if (users == null || users.isEmpty()) return;
+        for (User u : users) {
+            notiRepo.save(new Notification(u, message));
+        }
+    }
+
+    private void notifyRole(String roleName, String message) {
+        List<User> receivers = userRepository.findByRoles_Name(roleName);
+        notifyUsers(receivers, message);
+    }
+
+    private void notifyLecturerOwner(Syllabus syllabus, String message) {
+        if (syllabus.getCreatedBy() != null) {
+            notiRepo.save(new Notification(syllabus.getCreatedBy(), message));
+        }
     }
 
     @Override
@@ -584,6 +754,4 @@ public class SyllabusServiceImpl implements SyllabusService {
         }
         if (changed) notiRepo.saveAll(list);
     }
-
-
 }

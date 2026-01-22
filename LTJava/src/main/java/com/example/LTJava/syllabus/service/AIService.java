@@ -85,4 +85,51 @@ public class AIService {
         return "🔥 Giáo trình môn " + courseName + " vừa lên " + versionText + ". Vào xem ngay!";
     }
 
+    // AIService.java
+    public String createRoleNotificationMessage(
+            String recipientRole,
+            String action,
+            String courseName,
+            String syllabusTitle,
+            Integer version,
+            String note,
+            Long syllabusId
+    ) {
+        String versionText = (version != null ? ("v" + version) : "phiên bản mới");
+        String noteSafe = (note == null ? "" : note.trim());
+
+        String toneRule =
+                // staff roles: ngắn gọn, rõ việc, KHÔNG emoji
+                "Văn phong: chuyên nghiệp, ngắn gọn, rõ việc, KHÔNG emoji, KHÔNG lan man. " +
+                        "Dưới 45 từ. Chỉ trả về đúng nội dung thông báo, không lời dẫn.";
+
+        String prompt =
+                "Bạn là trợ lý quy trình duyệt giáo trình trong trường.\n" +
+                        "Người nhận role: " + recipientRole + "\n" +
+                        "Hành động cần truyền đạt: " + action + "\n" +
+                        "Môn: " + courseName + "\n" +
+                        "Syllabus: '" + syllabusTitle + "', " + versionText + ", syllabusId=" + syllabusId + "\n" +
+                        (noteSafe.isEmpty() ? "" : ("Ghi chú/Reason: " + noteSafe + "\n")) +
+                        "Yêu cầu: " + toneRule;
+
+        try {
+            String finalUrl = apiUrl + "?key=" + apiKey;
+            GeminiRequest request = new GeminiRequest(prompt);
+            GeminiResponse response = restTemplate.postForObject(finalUrl, request, GeminiResponse.class);
+
+            if (response != null && response.getCandidates() != null && !response.getCandidates().isEmpty()) {
+                String text = response.getCandidates().get(0).getContent().getParts().get(0).getText();
+                if (text != null) return text.trim();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // fallback nếu AI lỗi
+        String base = "[" + recipientRole + "] " + action + " - " + courseName + " (" + versionText + "), syllabusId=" + syllabusId;
+        if (!noteSafe.isEmpty()) base += ". Ghi chú: " + noteSafe;
+        return base;
+    }
+
+
 }

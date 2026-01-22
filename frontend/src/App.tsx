@@ -30,6 +30,7 @@ import StudentNotificationsPage from "./pages/student/notifications/notification
 import StudentRegisterCoursePage from "./pages/student/courses/register-course"
 import HodCollabCoursesPage from "./pages/hod/HodCollabCoursesPage";
 import LecturerSyllabusReviewsPage  from "./pages/lecturer/comment/LecturerSyllabusReviewsPage";
+import NotificationsPage from "./pages/notifications/NotificationsPage"
 
 export default function App() {
     return (
@@ -38,6 +39,7 @@ export default function App() {
 
                 <Route path="/" element={<Navigate to="/login" replace />} />
 
+                <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/profile/edit" element={<ProfileEditPage />} />

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "../../assets/css/pages/hod.css";
 import "../../assets/css/pages/profile.css";
 
+import { goHomeByRole } from "../../utils/navByRole"; // chỉnh đúng path project bạn
+
 import { profileApi, type MeResponse } from "../../services/profile";
 import { getToken } from "../../services/auth";
 
@@ -47,7 +49,7 @@ export default function ProfilePage() {
                 <div className="lec-card">
                     <div style={{ marginBottom: 8 }}>
                         {/* ✅ quay về trang chính để tránh loop history */}
-                        <button className="lec-link" onClick={() => nav("/student")}>
+                        <button className="lec-link" onClick={() => goHomeByRole(nav)}>
                             ← Quay lại
                         </button>
                     </div>

@@ -7,6 +7,8 @@ import { HEADER_ACTIONS } from "../config/headerActions";
 import { filterActionsByRoles } from "../utils/filterByRoles";
 import { profileApi, type MeResponse } from "../services/profile";
 import { goHomeByRole } from "../utils/navByRole";
+import { notificationApi } from "../services/notification";
+
 
 type HeaderProps = {
     username?: string;
@@ -19,12 +21,15 @@ export default function Header({ username, onProfile, showMenu = true }: HeaderP
     const [roles, setRoles] = useState<string[]>([]);
     const [me, setMe] = useState<MeResponse | null>(null);
 
+    const [unreadCount, setUnreadCount] = useState(0);
     const nav = useNavigate();
     const ref = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         setRoles(getRoles());
     }, []);
+
+    const hideBell = roles.includes("SYSTEM_ADMIN") || roles.includes("ADMIN_SYSTEM");
 
     // đóng menu khi click ngoài
     useEffect(() => {
@@ -33,6 +38,20 @@ export default function Header({ username, onProfile, showMenu = true }: HeaderP
         };
         document.addEventListener("click", handler);
         return () => document.removeEventListener("click", handler);
+    }, []);
+
+    useEffect(() => {
+        const token = getToken?.() || localStorage.getItem("token");
+        if (!token) return;
+
+        (async () => {
+            try {
+                const c = await notificationApi.unreadCount();
+                setUnreadCount(Number(c) || 0);
+            } catch {
+                // ignore
+            }
+        })();
     }, []);
 
     // ✅ lấy avatar từ /users/me (chỉ khi đã login)
@@ -90,10 +109,21 @@ export default function Header({ username, onProfile, showMenu = true }: HeaderP
                 <span className="brand-sub">Project</span>
             </div>
 
+            {/* 🔔 Notification bell */}
+            {showMenu && !hideBell && (
+                <button
+                    className="noti-btn"
+                    onClick={() => nav("/notifications")}
+                    title="Thông báo"
+                >
+                    🔔
+                    {unreadCount > 0 && <span className="noti-badge">{unreadCount > 99 ? "99+" : unreadCount}</span>}
+                </button>
+            )}
+
             {showMenu && (
                 <div ref={ref} className="user-box">
                     <button className="user-btn" onClick={() => setOpen(!open)}>
-                        {/* ✅ Avatar image nếu có, fallback chữ */}
                         <div className="avatar">
                             {avatarUrl ? (
                                 <img
@@ -101,7 +131,6 @@ export default function Header({ username, onProfile, showMenu = true }: HeaderP
                                     alt="avatar"
                                     className="avatar-img"
                                     onError={(e) => {
-                                        // fallback nếu link hỏng
                                         (e.currentTarget as HTMLImageElement).style.display = "none";
                                     }}
                                 />
@@ -145,4 +174,5 @@ export default function Header({ username, onProfile, showMenu = true }: HeaderP
             )}
         </header>
     );
+
 }
