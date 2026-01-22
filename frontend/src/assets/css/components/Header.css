@@ -128,3 +128,29 @@
     object-fit: cover;
     display: block;
 }
+/*chuông*/
+.noti-btn {
+    position: relative;
+    margin-left: auto;        /* đẩy sang phải sau brand */
+    margin-right: 12px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.noti-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 9px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+    font-weight: 600;
+}
