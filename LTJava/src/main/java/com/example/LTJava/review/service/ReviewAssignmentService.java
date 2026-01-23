@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import com.example.LTJava.review.entity.ReviewAssignment;
 import com.example.LTJava.review.entity.ReviewStatus;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface ReviewAssignmentService {
 
@@ -27,5 +28,16 @@ public interface ReviewAssignmentService {
 
     void cancel(Long hodId, Long assignmentId);
 
+    List<ReviewAssignment> listAllForHod(
+                Long courseId,
+                Long syllabusId,
+                ReviewStatus status,
+                String reviewer,
+                LocalDateTime fromDue,
+                LocalDateTime toDue
+        );
+    }
 
-}
+
+
+

@@ -58,6 +58,14 @@ export default function HodCollabCoursesPage() {
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
                         />
+
+                        <button
+                            className="lec-select"
+                            onClick={() => nav("/hod/reviews/manage")}
+                            title="Quản lý tất cả assignment"
+                        >
+                            📋 Quản lý Assign
+                        </button>
                     </div>
 
                     {error && <div className="lec-empty">❌ {error}</div>}
@@ -95,6 +103,7 @@ export default function HodCollabCoursesPage() {
                                         >
                                             🧩 Assign
                                         </button>
+
                                     </div>
                                 ))
                             )}

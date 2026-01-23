@@ -1,0 +1,162 @@
+/* =========================
+   HOD • Review Manage Page
+   ========================= */
+
+.hod-manage .lec-container {
+    max-width: 1180px;
+}
+
+.hod-manage .lec-title {
+    margin: 18px 0 14px;
+    letter-spacing: -0.5px;
+}
+
+.hod-manage .lec-card {
+    padding: 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* Toolbar */
+.hod-manage .manage-toolbar {
+    display: grid;
+    grid-template-columns: 120px 140px 1fr 140px 140px 220px 220px 90px;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 1100px) {
+    .hod-manage .manage-toolbar {
+        grid-template-columns: 120px 140px 1fr 140px 140px 1fr 1fr 90px;
+    }
+}
+@media (max-width: 820px) {
+    .hod-manage .manage-toolbar {
+        grid-template-columns: 120px 1fr 1fr;
+    }
+}
+
+.hod-manage .manage-toolbar .lec-btn,
+.hod-manage .manage-toolbar .lec-select,
+.hod-manage .manage-toolbar .lec-search {
+    height: 40px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.hod-manage .manage-toolbar .lec-btn {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #fff;
+    cursor: pointer;
+}
+
+.hod-manage .manage-toolbar .lec-btn:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.hod-manage .manage-toolbar .lec-search,
+.hod-manage .manage-toolbar .lec-select {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    padding: 0 12px;
+    outline: none;
+}
+
+.hod-manage .manage-toolbar .lec-search:focus,
+.hod-manage .manage-toolbar .lec-select:focus {
+    border-color: rgba(0, 0, 0, 0.22);
+}
+
+/* Table */
+.hod-manage .manage-table-wrap {
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.hod-manage .manage-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+.hod-manage .manage-table thead th {
+    text-align: left;
+    font-weight: 700;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.72);
+    background: rgba(0, 0, 0, 0.03);
+    padding: 12px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    white-space: nowrap;
+}
+
+.hod-manage .manage-table tbody td {
+    padding: 12px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.hod-manage .manage-table tbody tr:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.hod-manage .manage-muted {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+/* Badges */
+.hod-manage .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    background: #fff;
+}
+
+.hod-manage .badge.assigned { border-color: rgba(37, 99, 235, 0.30); color: rgb(37, 99, 235); }
+.hod-manage .badge.inreview { border-color: rgba(245, 158, 11, 0.35); color: rgb(180, 83, 9); }
+.hod-manage .badge.done { border-color: rgba(16, 185, 129, 0.35); color: rgb(5, 150, 105); }
+.hod-manage .badge.cancelled { border-color: rgba(239, 68, 68, 0.35); color: rgb(185, 28, 28); }
+
+/* Actions */
+.hod-manage .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.hod-manage .btn-cancel {
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.06);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.hod-manage .btn-cancel:hover {
+    background: rgba(239, 68, 68, 0.10);
+}
+
+.hod-manage .btn-cancel:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.hod-manage .empty {
+    padding: 16px;
+    border: 1px dashed rgba(0, 0, 0, 0.16);
+    border-radius: 12px;
+    color: rgba(0, 0, 0, 0.65);
+}

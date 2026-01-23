@@ -205,4 +205,17 @@ public class ReviewAssignmentServiceImpl implements ReviewAssignmentService {
         a.setStatus(ReviewStatus.CANCELLED);
         repo.save(a);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReviewAssignment> listAllForHod(
+            Long courseId,
+            Long syllabusId,
+            ReviewStatus status,
+            String reviewer,
+            LocalDateTime fromDue,
+            LocalDateTime toDue
+    ) {
+        return repo.searchForHod(courseId, syllabusId, status, reviewer, fromDue, toDue);
+    }
 }

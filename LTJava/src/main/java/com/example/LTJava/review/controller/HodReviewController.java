@@ -1,7 +1,10 @@
 package com.example.LTJava.review.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.LTJava.review.entity.ReviewStatus;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -51,4 +54,17 @@ public class HodReviewController {
         service.cancel(currentUser.getId(), assignmentId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping
+    public List<ReviewAssignment> listAll(
+            @RequestParam(required = false) Long courseId,
+            @RequestParam(required = false) Long syllabusId,
+            @RequestParam(required = false) ReviewStatus status,
+            @RequestParam(required = false) String reviewer,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDue,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDue
+    ) {
+        return service.listAllForHod(courseId, syllabusId, status, reviewer, fromDue, toDue);
+    }
+
 }
