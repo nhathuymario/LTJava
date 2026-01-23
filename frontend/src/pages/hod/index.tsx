@@ -135,12 +135,12 @@ export default function HodPage() {
                             <option value="name_desc">Sort Z → A</option>
                         </select>
 
-                        {/*<button*/}
-                        {/*    className="lec-link"*/}
-                        {/*    onClick={() => nav("/hod/collab")}*/}
-                        {/*>*/}
-                        {/*    🧩 Cộng tác (DRAFT)*/}
-                        {/*</button>*/}
+                        <button
+                            className="lec-link"
+                            onClick={() => nav("/hod/collab")}
+                        >
+                            🧩 Cộng tác (DRAFT)
+                        </button>
                     </div>
 
                     {error && <div className="lec-empty">❌ {error}</div>}

@@ -35,13 +35,13 @@ export const HEADER_ACTIONS: HeaderAction[] = [
         roles: ["LECTURER", "AA", "HOD"],
         icon: "📌",
     },
-    {
-        key: "assign_review",
-        label: "Assign Review",
-        to: "/hod/collab",
-        roles: ["HOD"],
-        icon: "🧩",
-    },
+    // {
+    //     key: "assign_review",
+    //     label: "Assign Review",
+    //     to: "/hod/collab",
+    //     roles: ["HOD"],
+    //     icon: "🧩",
+    // },
 
 
     // Ví dụ sau này thêm:

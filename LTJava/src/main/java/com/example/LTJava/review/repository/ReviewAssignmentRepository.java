@@ -18,5 +18,18 @@ public interface ReviewAssignmentRepository extends JpaRepository<ReviewAssignme
 
     Optional<ReviewAssignment> findByIdAndReviewer_Id(Long id, Long reviewerId);
 
-    boolean existsBySyllabus_IdAndReviewer_Id(Long syllabusId, Long reviewerId);
+    Optional<ReviewAssignment> findTopBySyllabus_IdAndReviewer_IdOrderByCreatedAtDesc(Long syllabusId, Long reviewerId);
+
+
+    boolean existsBySyllabus_IdAndReviewer_IdAndStatusIn(
+            Long syllabusId,
+            Long reviewerId,
+            List<ReviewStatus> statuses
+    );
+
+    Optional<ReviewAssignment> findBySyllabus_IdAndReviewer_Id(
+            Long syllabusId,
+            Long reviewerId
+    );
+
 }
