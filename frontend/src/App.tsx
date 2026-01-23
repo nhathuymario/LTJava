@@ -28,7 +28,8 @@ import StudentCourseSyllabusPage from "./pages/student/course-syllabus"
 import StudentSyllabusDetailPage from "./pages/student/syllabus/syllabus-detail"
 import StudentNotificationsPage from "./pages/student/notifications/notifications"
 import StudentRegisterCoursePage from "./pages/student/courses/register-course"
-import HodCollabCoursesPage from "./pages/hod/HodCollabCoursesPage";
+import HodCollabCoursesPage from "./pages/hod/assign/HodCollabCoursesPage";
+import HodDraftSyllabiByCoursePage from "./pages/hod/assign/HodDraftSyllabiByCoursePage";
 import LecturerSyllabusReviewsPage  from "./pages/lecturer/comment/LecturerSyllabusReviewsPage";
 import NotificationsPage from "./pages/notifications/NotificationsPage"
 
@@ -95,6 +96,7 @@ export default function App() {
                         <Route path="/hod" element={<HodPage />} />
                         <Route path="/hod/courses/:courseId" element={<HodCourseDetailPage />} />
                         <Route path="/hod/collab" element={<HodCollabCoursesPage />} />
+                        <Route path="/hod/courses/:courseId/syllabi" element={<HodDraftSyllabiByCoursePage />} />
                     </Route>
                 </Route>
 

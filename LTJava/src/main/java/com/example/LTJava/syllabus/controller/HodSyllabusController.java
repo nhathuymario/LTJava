@@ -68,6 +68,8 @@ public class HodSyllabusController {
         return syllabusService.getByCourseAndStatus(courseId, status);
     }
 
+
+
     @GetMapping("/courses")
     public List<HodCourseGroupResponse> listCoursesHavingSyllabusStatus(
             @RequestParam(defaultValue = "DRAFT") SyllabusStatus syllabusStatus
