@@ -15,6 +15,16 @@ export type ReviewAssignment = {
     assignedBy?: any;
 };
 
+export type HodReviewListParams = {
+    courseId?: number;
+    syllabusId?: number;
+    status?: ReviewStatus;
+    reviewer?: string;
+    fromDue?: string; // ISO string
+    toDue?: string;   // ISO string
+};
+
+
 export type AssignReviewRequest = {
     syllabusId: number;
     reviewerUsernames: string[]; // username = CCCD
@@ -52,5 +62,17 @@ export const reviewApi = {
     done: (assignmentId: number) =>
         api
             .put<ReviewAssignment>(`/reviewer/reviews/${assignmentId}/done`)
+            .then((r) => r.data),
+
+    listAll: (params: HodReviewListParams = {}) =>
+        api
+            .get<ReviewAssignment[]>("/hod/reviews", {
+                params,
+            })
+            .then((r) => r.data),
+
+    reviewerCancel: (assignmentId: number) =>
+        api
+            .put<void>(`/reviewer/reviews/${assignmentId}/cancel`)
             .then((r) => r.data),
 };

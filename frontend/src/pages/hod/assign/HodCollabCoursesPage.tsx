@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/css/pages/hod.css";
-import { getToken, hasRole } from "../../services/auth";
-import { hodApi, type HodCourseGroup } from "../../services/hod";
+import "../../../assets/css/pages/hod.css";
+import { getToken, hasRole } from "../../../services/auth";
+import { hodApi, type HodCourseGroup } from "../../../services/hod";
 
 export default function HodCollabCoursesPage() {
     const nav = useNavigate();
@@ -58,6 +58,14 @@ export default function HodCollabCoursesPage() {
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
                         />
+
+                        <button
+                            className="lec-select"
+                            onClick={() => nav("/hod/reviews/manage")}
+                            title="Quản lý tất cả assignment"
+                        >
+                            📋 Quản lý Assign
+                        </button>
                     </div>
 
                     {error && <div className="lec-empty">❌ {error}</div>}
@@ -73,7 +81,7 @@ export default function HodCollabCoursesPage() {
                                         key={c.courseId}
                                         className="course-row"
                                         style={{ cursor: "pointer" }}
-                                        // onClick={() => nav(`/hod/reviews/assign?courseId=${c.courseId}`)}
+                                        onClick={() => nav(`/hod/courses/${c.courseId}/syllabi?status=DRAFT`)}
                                     >
                                         <div className={`course-thumb thumb-${idx % 4}`} />
 
@@ -95,6 +103,7 @@ export default function HodCollabCoursesPage() {
                                         >
                                             🧩 Assign
                                         </button>
+
                                     </div>
                                 ))
                             )}
