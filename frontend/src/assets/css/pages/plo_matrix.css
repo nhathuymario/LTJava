@@ -1,0 +1,194 @@
+/* plo_matrix.css */
+
+/* 1. Layout tổng thể */
+.plo-matrix-page {
+    padding: 24px;
+    background-color: #f7fafc; /* Nền xám nhẹ dịu mắt */
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #2d3748;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 32px;
+    color: #1a202c;
+    border-left: 5px solid #3182ce;
+    padding-left: 16px;
+}
+
+/* 2. Section Card (Khung chứa từng phần) */
+.matrix-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    margin-bottom: 30px;
+    padding: 24px;
+    border: 1px solid #edf2f7;
+    transition: transform 0.2s;
+}
+
+.matrix-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2b6cb0; /* Xanh đậm cho tiêu đề */
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #edf2f7;
+}
+
+/* 3. Table Styles */
+.matrix-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+}
+
+.matrix-table th {
+    background-color: #f8fafc;
+    color: #4a5568;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+.matrix-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: top;
+    line-height: 1.5;
+}
+
+/* Hover effect cho bảng PLO để biết bấm được */
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.clickable-row:hover {
+    background-color: #ebf8ff;
+}
+
+/* Style cho dòng đang được CHỌN (Quan trọng) */
+.row-selected {
+    background-color: #ebf8ff !important; /* Xanh nhạt */
+    border-left: 4px solid #3182ce;
+}
+.row-selected td {
+    font-weight: 500;
+    color: #2c5282;
+}
+
+/* 4. Input và Textarea trong bảng */
+.matrix-input, .matrix-textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.2s;
+    background-color: #fff;
+}
+
+.matrix-input:focus, .matrix-textarea:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    outline: none;
+}
+
+.matrix-textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+/* 5. Nút bấm và tiện ích */
+.btn-delete {
+    color: #e53e3e;
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-delete:hover {
+    background: #e53e3e;
+    color: white;
+}
+
+.matrix-placeholder {
+    padding: 40px;
+    text-align: center;
+    color: #718096;
+    background-color: #f7fafc;
+    border-radius: 8px;
+    border: 2px dashed #cbd5e0;
+    font-style: italic;
+}
+
+/* Create Form Container */
+.create-form-wrapper {
+    background: #f0fff4; /* Xanh lá nhạt để phân biệt vùng tạo mới */
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #c6f6d5;
+    margin-bottom: 24px;
+}
+
+/* ... (Code cũ giữ nguyên) ... */
+
+/* Style riêng cho Form tạo PI để nó cân đối hơn */
+.pi-create-layout {
+    display: grid;
+    grid-template-columns: 200px 1fr; /* Cột Mã PI cố định 200px, Mô tả chiếm phần còn lại */
+    gap: 20px;
+    align-items: start;
+}
+
+.pi-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.pi-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+/* Nút tạo PI xịn hơn */
+.btn-create-pi {
+    background-color: #38a169; /* Màu xanh lá cây */
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-create-pi:hover {
+    background-color: #2f855a;
+}
+
+/* Responsive: Màn hình nhỏ thì tự động xuống dòng */
+@media (max-width: 768px) {
+    .pi-create-layout {
+        grid-template-columns: 1fr;
+    }
+}

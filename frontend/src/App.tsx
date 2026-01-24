@@ -19,7 +19,6 @@ import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
 import HodCourseDetailPage from "./pages/hod/course-detail"
 import AACourseDetailPage from "./pages/aa/course-detail"
 import AaCourseRelationsPage from "./pages/aa/courses/relations"
-import AaPloPage from "./pages/aa/plo/AaPloPage"
 import AACourseNew from "./pages/aa/courses/new"
 import LecturerCoureseDetailPage from "./pages/lecturer/course-syllabus"
 import LecturerSyllabusNewPage  from "./pages/lecturer/syllabus/new";
@@ -31,6 +30,7 @@ import StudentSyllabusDetailPage from "./pages/student/syllabus/syllabus-detail"
 import StudentNotificationsPage from "./pages/student/notifications/notifications"
 import StudentRegisterCoursePage from "./pages/student/courses/register-course"
 import LecturerCLOPage from "./pages/lecturer/LecturerCLOPage.tsx";
+import AAMappingPage from "./pages/aa/plo/AAMappingPage.tsx";
 
 
 import HodCollabCoursesPage from "./pages/hod/assign/HodCollabCoursesPage";
@@ -83,8 +83,8 @@ export default function App() {
                         <Route path="/aa/courses/new" element={<AACourseNew />} />
                         <Route path="/aa/courses/:courseId" element={<AACourseDetailPage />} />
                         <Route path="/aa/plo" element={<AaPLOPage />} />
+                        <Route path="/aa/mapping" element={<AAMappingPage />} />
                         <Route path="/aa/courses/relations" element={<AaCourseRelationsPage />} /> {/* set tiên quyết/song hành/bổ trợ */}
-                        <Route path="/aa/plos" element={<AaPloPage />} />
                     </Route>
                 </Route>
 
