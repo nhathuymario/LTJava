@@ -59,11 +59,15 @@ public class AIService {
     // ... (Code cũ giữ nguyên) ...
 
     // --- HÀM MỚI: VIẾT THÔNG BÁO ---
-    public String createNotificationMessage(String courseName, String summary) {
-        String prompt = "Bạn là trợ lý lớp học vui tính. Môn học '" + courseName + "' vừa cập nhật giáo trình mới với nội dung: '" + summary + "'. " +
-                "Hãy viết một thông báo ngắn (dưới 30 từ) gửi đến sinh viên để nhắc họ vào xem. " +
-                "Yêu cầu: Văn phong Gen Z, hài hước, dùng emoji, không quá nghiêm túc. " +
-                "Chỉ trả về nội dung thông báo, không có lời dẫn.";
+    public String createNotificationMessage(String courseName, String summary, Integer version) {
+        String versionText = (version != null ? ("v" + version) : "phiên bản mới");
+
+        String prompt =
+                "Bạn là trợ lý lớp học vui tính. " +
+                        "Môn học '" + courseName + "' vừa cập nhật giáo trình " + versionText + " với nội dung: '" + summary + "'. " +
+                        "Hãy viết một thông báo ngắn (dưới 30 từ) gửi đến sinh viên để nhắc họ vào xem. " +
+                        "Yêu cầu: Văn phong Gen Z, hài hước, dùng emoji, không quá nghiêm túc. " +
+                        "Chỉ trả về nội dung thông báo, không có lời dẫn.";
 
         try {
             String finalUrl = apiUrl + "?key=" + apiKey;
@@ -71,13 +75,61 @@ public class AIService {
             GeminiResponse response = restTemplate.postForObject(finalUrl, request, GeminiResponse.class);
 
             if (response != null && !response.getCandidates().isEmpty()) {
-                // Lấy text trả về trực tiếp
                 return response.getCandidates().get(0).getContent().getParts().get(0).getText().trim();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // Fallback nếu AI lỗi
-        return "🔥 Giáo trình môn " + courseName + " đã có cập nhật mới. Vào xem ngay!";
+
+        // fallback nếu AI lỗi
+        return "🔥 Giáo trình môn " + courseName + " vừa lên " + versionText + ". Vào xem ngay!";
     }
+
+    // AIService.java
+    public String createRoleNotificationMessage(
+            String recipientRole,
+            String action,
+            String courseName,
+            String syllabusTitle,
+            Integer version,
+            String note,
+            Long syllabusId
+    ) {
+        String versionText = (version != null ? ("v" + version) : "phiên bản mới");
+        String noteSafe = (note == null ? "" : note.trim());
+
+        String toneRule =
+                // staff roles: ngắn gọn, rõ việc, KHÔNG emoji
+                "Văn phong: chuyên nghiệp, ngắn gọn, rõ việc, KHÔNG emoji, KHÔNG lan man. " +
+                        "Dưới 45 từ. Chỉ trả về đúng nội dung thông báo, không lời dẫn.";
+
+        String prompt =
+                "Bạn là trợ lý quy trình duyệt giáo trình trong trường.\n" +
+                        "Người nhận role: " + recipientRole + "\n" +
+                        "Hành động cần truyền đạt: " + action + "\n" +
+                        "Môn: " + courseName + "\n" +
+                        "Syllabus: '" + syllabusTitle + "', " + versionText + ", syllabusId=" + syllabusId + "\n" +
+                        (noteSafe.isEmpty() ? "" : ("Ghi chú/Reason: " + noteSafe + "\n")) +
+                        "Yêu cầu: " + toneRule;
+
+        try {
+            String finalUrl = apiUrl + "?key=" + apiKey;
+            GeminiRequest request = new GeminiRequest(prompt);
+            GeminiResponse response = restTemplate.postForObject(finalUrl, request, GeminiResponse.class);
+
+            if (response != null && response.getCandidates() != null && !response.getCandidates().isEmpty()) {
+                String text = response.getCandidates().get(0).getContent().getParts().get(0).getText();
+                if (text != null) return text.trim();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // fallback nếu AI lỗi
+        String base = "[" + recipientRole + "] " + action + " - " + courseName + " (" + versionText + "), syllabusId=" + syllabusId;
+        if (!noteSafe.isEmpty()) base += ". Ghi chú: " + noteSafe;
+        return base;
+    }
+
+
 }

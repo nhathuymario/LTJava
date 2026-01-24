@@ -72,6 +72,16 @@ public class SyllabusController {
         return ResponseEntity.ok(syllabusService.resubmitSyllabus(id, lecturerId));
     }
 
+    @PostMapping("/{id}/new-version")
+    public ResponseEntity<Syllabus> createNewVersion(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
+        Syllabus newVersion =
+                syllabusService.createNewVersion(id, currentUser.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(newVersion);
+    }
+
     @PutMapping("/{id}/move-to-draft")
     public ResponseEntity<Syllabus> moveToDraft(
             @AuthenticationPrincipal CustomUserDetails currentUser,

@@ -2,6 +2,7 @@ package com.example.LTJava.syllabus.controller;
 
 import java.util.List;
 
+import com.example.LTJava.syllabus.dto.HodCourseGroupResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -58,4 +59,22 @@ public class HodSyllabusController {
         String reason = (request == null ? null : request.getNote());
         return ResponseEntity.ok(syllabusService.rejectByHod(id, hodId, reason));
     }
+
+    @GetMapping("/{courseId}/syllabi")
+    public List<Syllabus> getDraftSyllabiByCourse(
+            @PathVariable Long courseId,
+            @RequestParam(defaultValue = "DRAFT") SyllabusStatus status
+    ) {
+        return syllabusService.getByCourseAndStatus(courseId, status);
+    }
+
+
+
+    @GetMapping("/courses")
+    public List<HodCourseGroupResponse> listCoursesHavingSyllabusStatus(
+            @RequestParam(defaultValue = "DRAFT") SyllabusStatus syllabusStatus
+    ) {
+        return syllabusService.listCoursesHavingSyllabusStatus(syllabusStatus);
+    }
+
 }

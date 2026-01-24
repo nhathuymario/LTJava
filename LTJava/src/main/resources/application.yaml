@@ -1,19 +1,39 @@
-
 spring:
+  application:
+    name: LTJava
+
   datasource:
     url: jdbc:mysql://localhost:3306/LTJava?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-#    url: jdbc:mysql://host.docker.internal:3306/LTJava
     username: root
-    password: 
+    password: 123456
+
   jpa:
     hibernate:
-      ddl-auto: update   # dev cho ti?n, sau n�y ??i th�nh validate
+      ddl-auto: update   # dev, sau đổi validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-  application:
-    name: LTJava
+
+  # ===== REDIS =====
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  # ===== CACHE =====
+  cache:
+    type: redis
+    redis:
+      time-to-live: 10m
+      cache-null-values: false
+
+app:
+  storage:
+    pdf-dir: uploads/pdfs
+
+  upload:
+    base-dir: "src/main/resources/uploads"
 
 server:
   port: 8081
@@ -22,5 +42,3 @@ gemini:
   api:
     key: ${GEMINI_API_KEY}
     url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent
-
-

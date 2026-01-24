@@ -1,10 +1,13 @@
-# Sử dụng image Java 17 thực tế và có sẵn
-FROM eclipse-temurin:17-jre-alpine
-
+# ===== Build stage =====
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn -DskipTests package
 
-# Copy file jar mới vừa build ở Bước 2
-COPY target/*.jar app.jar
-
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# ===== Run stage =====
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 8081
+ENTRYPOINT ["java","-jar","/app/app.jar"]

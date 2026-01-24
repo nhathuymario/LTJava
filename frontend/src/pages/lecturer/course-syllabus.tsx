@@ -74,6 +74,23 @@ export default function LecturerCourseDetailPage() {
         }
     };
 
+    const handleUpdateVersion = async (sid: number) => {
+        if (!window.confirm("Tạo version mới từ syllabus đã PUBLISHED?")) return;
+
+        try {
+            const newSyllabus = await lecturerApi.createNewVersion(sid);
+
+            // cập nhật list để thấy ngay (tuỳ bạn có muốn hay không)
+            setSyllabi((prev) => [newSyllabus, ...prev]);
+
+            setOpenMenuId(null);
+            nav(`/lecturer/syllabus/${newSyllabus.id}/edit`, { state: { courseId: id } });
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Tạo version mới thất bại");
+        }
+    };
+
+
     const handleResubmitSyllabus = async (syllabusId: number) => {
         if (!window.confirm("Bạn chắc chắn muốn gửi lại syllabus này cho HoD?")) return;
 
@@ -190,6 +207,12 @@ export default function LecturerCourseDetailPage() {
                                                                     ✏️ Sửa
                                                                 </button>
 
+                                                                <button className="syllabus-menu-item"
+                                                                        onClick={() => nav(`/lecturer/syllabus/${s.id}/reviews`)}
+                                                                >
+                                                                    💬 Xem review
+                                                                </button>
+
                                                                 <button
                                                                     className="syllabus-menu-item danger"
                                                                     onClick={() => handleDeleteSyllabus(s.id)}
@@ -222,6 +245,15 @@ export default function LecturerCourseDetailPage() {
                                                                     🔁 Resubmit to HoD
                                                                 </button>
                                                             </>
+                                                        )}
+
+                                                        {s.status === "PUBLISHED" && (
+                                                            <button
+                                                                className="syllabus-menu-item"
+                                                                onClick={() => handleUpdateVersion(s.id)}
+                                                            >
+                                                                🆕 Update version
+                                                            </button>
                                                         )}
 
                                                         {s.status !== "DRAFT" &&

@@ -118,6 +118,13 @@ export default function HodCourseDetailPage() {
                     <div className="course-detail-header">
                         <div className="course-detail-title">{courseTitle}</div>
                         <div className="course-detail-desc">HoD duyệt các syllabus đang SUBMITTED cho course này</div>
+
+                        {/*<button*/}
+                        {/*    className="lec-link"*/}
+                        {/*    onClick={() => nav(`/hod/reviews/assign?courseId=${id}`)}*/}
+                        {/*>*/}
+                        {/*    🧩 Assign cộng tác*/}
+                        {/*</button>*/}
                     </div>
 
                     {loading && <div className="lec-empty">Đang tải...</div>}

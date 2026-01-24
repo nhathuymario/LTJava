@@ -12,6 +12,9 @@ export const lecturerApi = {
     deleteSyllabus: (id: number) =>
         api.delete<void>(`/lecturer/syllabus/${id}`).then((r) => r.data),
 
+    createNewVersion: (id: number) =>
+        api.post<Syllabus>(`/lecturer/syllabus/${id}/new-version`).then((r) => r.data),
+
 
     mySyllabi: () =>
         api.get<Syllabus[]>("/lecturer/syllabus/my").then((r) => r.data),

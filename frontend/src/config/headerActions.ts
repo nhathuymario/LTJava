@@ -28,6 +28,29 @@ export const HEADER_ACTIONS: HeaderAction[] = [
         icon: '📝',
     },
 
+    {
+        key: "my_reviews",
+        label: "My Reviews",
+        to: "/reviews",
+        roles: ["LECTURER", "AA", "HOD"],
+        icon: "📌",
+    },
+    // {
+    //     key: "assign_review",
+    //     label: "Assign Review",
+    //     to: "/hod/collab",
+    //     roles: ["HOD"],
+    //     icon: "🧩",
+    // },
+    {
+        key: "aa-plos",
+        label: "Quản lý PLO",
+        to: "/aa/plos",
+        roles: ["AA"],
+        icon: "🎯",
+    },
+
+
     // Ví dụ sau này thêm:
     // { key:'admin-users', label:'Quản lý user', to:'/admin/users', roles:['ADMIN'], icon:'🛠️' },
 ];

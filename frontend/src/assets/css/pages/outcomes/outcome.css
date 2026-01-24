@@ -1,0 +1,191 @@
+/* ===== Outcomes pages (AA PLO + Lecturer CLO/PLO) ===== */
+
+/* Toolbar wrap gọn hơn */
+.manage-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Form grid responsive (override inline nếu bạn bỏ inline style) */
+.outcome-form-grid-plo {
+    display: grid;
+    grid-template-columns: 180px 1fr 120px;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.outcome-form-grid-clo {
+    display: grid;
+    grid-template-columns: 140px 1fr 160px 120px 120px;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.outcome-table-wrap { margin-top: 14px; overflow-x: auto; }
+.outcome-empty { opacity: 0.7; }
+.outcome-loading { margin-top: 10px; opacity: 0.7; }
+.outcome-scope { min-width: 220px; max-width: 360px; }
+.pdf-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+
+@media (max-width: 980px) {
+    .outcome-form-grid-clo {
+        grid-template-columns: 140px 1fr;
+    }
+}
+
+/* ===== Table base (nếu project chưa có .lec-table chuẩn) ===== */
+.lec-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #e9e9ee;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.lec-table thead th {
+    font-size: 13px;
+    font-weight: 750;
+    color: #2b2b2b;
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #eeeeee;
+    background: #fafafb;
+}
+
+.lec-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.lec-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Input trong table gọn lại */
+.lec-table .lec-search {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 10px;
+}
+
+/* ===== Tabs (CLO / MATRIX / PDF) ===== */
+.outcome-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.lec-btn.is-active {
+    background: #f3f3f7;
+    border-color: #d9d9e3;
+}
+
+/* ===== Matrix table ===== */
+.matrix-wrap {
+    margin-top: 14px;
+    overflow-x: auto;
+}
+
+.matrix-hint {
+    opacity: 0.75;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.matrix-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #e9e9ee;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.matrix-table th,
+.matrix-table td {
+    border-bottom: 1px solid #f0f0f0;
+    border-right: 1px solid #f0f0f0;
+    padding: 10px 10px;
+    min-width: 52px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.matrix-table tr:last-child td {
+    border-bottom: none;
+}
+
+.matrix-table th:last-child,
+.matrix-table td:last-child {
+    border-right: none;
+}
+
+/* Sticky header/first column để giống UX các page khác */
+.matrix-table th.sticky-col,
+.matrix-table td.sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #fff;
+    text-align: left;
+    min-width: 140px;
+    font-weight: 750;
+}
+
+.matrix-table th.sticky-col {
+    z-index: 3;
+    background: #fafafb;
+}
+
+/* Cell clickable */
+.matrix-cell {
+    cursor: pointer;
+    user-select: none;
+    font-weight: 700;
+    border-radius: 8px;
+}
+
+/* Level visual */
+.matrix-cell.is-empty {
+    font-weight: 400;
+    opacity: 0.85;
+}
+
+.matrix-cell.level-1 {
+    background: #eef3ff;
+}
+
+.matrix-cell.level-2 {
+    background: #eaf8ef;
+}
+
+.matrix-cell.level-3 {
+    background: #fff4e5;
+}
+
+/* ===== Alerts ===== */
+.outcome-error {
+    margin-top: 10px;
+    color: #b00020;
+}
+
+.outcome-success {
+    margin-top: 10px;
+    color: #0a7a2f;
+}
+
+/* ===== PDF area ===== */
+.pdf-box {
+    margin-top: 14px;
+}
+
+.pdf-note {
+    margin-top: 10px;
+    opacity: 0.75;
+    font-size: 13px;
+}
