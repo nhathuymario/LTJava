@@ -42,6 +42,13 @@ export const HEADER_ACTIONS: HeaderAction[] = [
     //     roles: ["HOD"],
     //     icon: "🧩",
     // },
+    {
+        key: "aa-plos",
+        label: "Quản lý PLO",
+        to: "/aa/plos",
+        roles: ["AA"],
+        icon: "🎯",
+    },
 
 
     // Ví dụ sau này thêm:

@@ -29,6 +29,9 @@ spring:
       cache-null-values: false
 
 app:
+  storage:
+    pdf-dir: uploads/pdfs
+
   upload:
     base-dir: "src/main/resources/uploads"
 
