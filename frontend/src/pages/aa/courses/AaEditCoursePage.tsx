@@ -76,7 +76,6 @@ export default function AaEditCoursePage() {
     const setField = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm((p) => ({ ...p, [k]: e.target.value }));
     };
-
     const validate = () => {
         const code = form.code.trim();
         const name = form.name.trim();
@@ -84,7 +83,8 @@ export default function AaEditCoursePage() {
 
         if (!code) return "Course code không được trống";
         if (!name) return "Course name không được trống";
-        if (Number.isNaN(creditsNum) || creditsNum <= 0) return "Credits không hợp lệ";
+        if (Number.isNaN(creditsNum) || creditsNum <= 0)
+            return "Credits không hợp lệ";
 
         return null;
     };
@@ -92,14 +92,16 @@ export default function AaEditCoursePage() {
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const v = validate();
-        if (v) {
-            setErr(v);
+        // ✅ gọi validate
+        const errorMsg = validate();
+        if (errorMsg) {
+            setErr(errorMsg);
             return;
         }
 
         setSaving(true);
         setErr(null);
+
         try {
             await updateCourse(courseId, {
                 code: form.code.trim(),
@@ -111,13 +113,15 @@ export default function AaEditCoursePage() {
                 semester: form.semester.trim() || undefined,
             });
 
-            nav("/aa/courses");
-        } catch (e2: any) {
-            setErr(e2?.response?.data?.message || e2?.message || "Cập nhật thất bại");
+            // ✅ chỉ navigate 1 lần
+            nav("/aa/courses-manager");
+        } catch (e: any) {
+            setErr(e?.response?.data?.message || e?.message || "Cập nhật thất bại");
         } finally {
             setSaving(false);
         }
     };
+
     return (
         <div className="lec-page">
             <div className="lec-container">
@@ -213,9 +217,14 @@ export default function AaEditCoursePage() {
                                     Hủy
                                 </button>
 
-                                <button className="aa-btn aa-btn-save" disabled={saving}>
+                                <button
+                                    type="submit"
+                                    className="aa-btn aa-btn-save"
+                                    disabled={saving}
+                                >
                                     {saving ? "Đang lưu..." : "Lưu"}
                                 </button>
+
                             </div>
                         </form>
                     )}

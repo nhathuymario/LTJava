@@ -4,10 +4,14 @@ import com.example.LTJava.course.dto.AssignLecturerRequest;
 import com.example.LTJava.course.dto.CreateCourseRequest;
 import com.example.LTJava.course.entity.Course1;
 import com.example.LTJava.course.repository.CourseRepository1;
+import com.example.LTJava.syllabus.entity.Course;
 import com.example.LTJava.user.entity.User;
 import com.example.LTJava.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -116,11 +120,18 @@ public class CourseServiceImpl implements CourseService {
     }
 
 
-    @Override
+    @Transactional
     public void delete(Long id) {
-        if (!courseRepository.existsById(id)) throw new RuntimeException("Course không tồn tại");
-        courseRepository.deleteById(id);
+        Course1 course = courseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Not found"));
+
+        // gỡ course này khỏi danh sách prerequisite của các course khác
+        courseRepository.removeFromAllPrerequisites(id);
+
+        courseRepository.delete(course);
     }
+
+
 
     @Override
     public Course1 assignLecturer(Long courseId, AssignLecturerRequest req) {
