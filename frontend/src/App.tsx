@@ -19,6 +19,8 @@ import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
 import HodCourseDetailPage from "./pages/hod/course-detail"
 import AACourseDetailPage from "./pages/aa/course-detail"
 import AaCourseRelationsPage from "./pages/aa/courses/relations"
+import AaManageCoursesPage from "./pages/aa/courses/aa-manage-courses"
+import AaEditCoursePage from "./pages/aa/courses/AaEditCoursePage"
 import AaPloPage from "./pages/aa/plo/AaPloPage"
 import AACourseNew from "./pages/aa/courses/new"
 import LecturerCoureseDetailPage from "./pages/lecturer/course-syllabus"
@@ -80,6 +82,9 @@ export default function App() {
                         <Route path="/aa/courses/:courseId" element={<AACourseDetailPage />} />
                         <Route path="/aa/courses/relations" element={<AaCourseRelationsPage />} /> {/* set tiên quyết/song hành/bổ trợ */}
                         <Route path="/aa/plos" element={<AaPloPage />} />
+                        <Route path="/aa/courses-manager" element={<AaManageCoursesPage />} />
+                        <Route path="/aa/courses/:id/edit" element={<AaEditCoursePage />} />
+
                     </Route>
                 </Route>
 
