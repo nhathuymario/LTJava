@@ -689,14 +689,32 @@ public class SyllabusServiceImpl implements SyllabusService {
     @Override
     public void subscribeCourse(Long userId, Long courseId) {
         if (subRepo.existsByUser_IdAndCourse_Id(userId, courseId)) {
-            throw new RuntimeException("Bạn đã đăng ký môn này rồi!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn đã đăng ký môn này rồi!");
         }
 
         User user = userRepository.findById(userId).orElseThrow();
         Course course = courseRepository.findById(courseId).orElseThrow();
 
+        // ✅ Check tiên quyết
+        var prereqs = course.getPrerequisites();
+        if (prereqs != null && !prereqs.isEmpty()) {
+            List<String> missing = new ArrayList<>();
+            for (Course pre : prereqs) {
+                if (pre == null || pre.getId() == null) continue;
+                boolean hasPre = subRepo.existsByUser_IdAndCourse_Id(userId, pre.getId());
+                if (!hasPre) missing.add(pre.getCode());
+            }
+            if (!missing.isEmpty()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Chưa đủ môn tiên quyết: " + String.join(", ", missing)
+                );
+            }
+        }
+
         subRepo.save(new Subscription(user, course));
     }
+
 
     @Override
     public List<Notification> getMyNotifications(Long userId) {

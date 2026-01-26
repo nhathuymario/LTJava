@@ -19,6 +19,20 @@ export const HEADER_ACTIONS: HeaderAction[] = [
     { key:"aa-create-course", label:"Tạo môn học", to:"/aa/courses/new", roles:["AA"], icon:"➕" },
     { key:"aa-set-relations", label:"Set tiên quyết", to:"/aa/courses/relations", roles:["AA"], icon:"🧩" },
 
+    {
+        key: "aa-plos",
+        label: "Quản lý PLO",
+        to: "/aa/plos",
+        roles: ["AA"],
+        icon: "🎯",
+    },
+    {
+        key: "aa-manage-course",
+        label: "Quản lý Course",
+        to: "/aa/courses-manager",
+        roles: ["AA"],
+        icon: "📒",
+    },
     // ✅ STUDENT
     {
         key: 'student-register-course',
@@ -27,7 +41,7 @@ export const HEADER_ACTIONS: HeaderAction[] = [
         roles: ['STUDENT'],
         icon: '📝',
     },
-
+    // REVIEW SYLLABUS
     {
         key: "my_reviews",
         label: "My Reviews",
@@ -35,20 +49,8 @@ export const HEADER_ACTIONS: HeaderAction[] = [
         roles: ["LECTURER", "AA", "HOD"],
         icon: "📌",
     },
-    // {
-    //     key: "assign_review",
-    //     label: "Assign Review",
-    //     to: "/hod/collab",
-    //     roles: ["HOD"],
-    //     icon: "🧩",
-    // },
-    {
-        key: "aa-plos",
-        label: "Quản lý PLO",
-        to: "/aa/plos",
-        roles: ["AA"],
-        icon: "🎯",
-    },
+
+
 
 
     // Ví dụ sau này thêm:

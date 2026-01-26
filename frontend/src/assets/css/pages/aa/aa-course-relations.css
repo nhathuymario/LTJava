@@ -1,0 +1,122 @@
+/* =========================
+   AA • Course Relations
+   ========================= */
+
+.aa-rel-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.aa-rel-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827; /* gray-900 */
+}
+
+/* Form wrapper */
+.aa-rel-form {
+    display: grid;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+/* Field */
+.aa-rel-field {
+    display: grid;
+    gap: 6px;
+}
+
+.aa-rel-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151; /* gray-700 */
+}
+
+/* Select */
+.aa-rel-select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db; /* gray-300 */
+    font-size: 14px;
+    background: #fff;
+}
+
+.aa-rel-select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+/* Multi select */
+.aa-rel-select[multiple] {
+    min-height: 140px;
+}
+
+/* Error */
+.aa-rel-error {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 14px;
+}
+
+/* Actions */
+.aa-rel-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+/* Buttons */
+.aa-rel-btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.aa-rel-btn-save {
+    background: #2563eb;
+    color: #fff;
+}
+
+.aa-rel-btn-save:hover {
+    background: #1d4ed8;
+}
+
+.aa-rel-btn-cancel {
+    background: #f3f4f6;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.aa-rel-btn-cancel:hover {
+    background: #e5e7eb;
+}
+
+.aa-rel-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Loading */
+.aa-rel-loading {
+    margin-top: 12px;
+    color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .aa-rel-page {
+        padding: 12px;
+    }
+}

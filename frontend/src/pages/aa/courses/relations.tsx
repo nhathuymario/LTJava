@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { hasRole } from "../../../services/auth"
+import "../../../assets/css/pages/aa/aa-course-relations.css";
 import { getAllCourses, type Course } from "../../../services/course"
 import {api} from "../../../services/api"
 
@@ -72,80 +73,121 @@ export default function AaCourseRelationsPage() {
     if (!isAA) return <div style={{ padding: 16 }}>❌ Bạn không có quyền (AA)</div>
 
     return (
-        <>
+        <div className="lec-page">
+            <div className="lec-container">
+                <h1 className="lec-title">AA • Set tiên quyết / song hành / bổ trợ</h1>
 
-            <div style={{ maxWidth: 900, margin: "0 auto", padding: 16 }}>
-                <h2 style={{ marginTop: 0 }}>AA - Set tiên quyết / song hành / bổ trợ</h2>
+                <div className="lec-card">
+                    <div className="aa-rel-page">
+                        {loading && <div className="aa-rel-loading">Đang tải...</div>}
+                        {error && <div className="aa-rel-error">{error}</div>}
 
-                {loading && <div>Đang tải...</div>}
-                {error && <div style={{ color: "#c0392b", marginTop: 12 }}>{error}</div>}
+                        {!loading && (
+                            <div className="aa-rel-form">
+                                <div className="aa-rel-field">
+                                    <span className="aa-rel-label">Môn học chính</span>
+                                    <select
+                                        className="aa-rel-select"
+                                        value={courseId}
+                                        onChange={(e) => {
+                                            const v = e.target.value;
+                                            setCourseId(v ? Number(v) : "");
+                                            setPrereq([]);
+                                            setParallel([]);
+                                            setSupp([]);
+                                        }}
+                                    >
+                                        <option value="">-- Chọn môn học --</option>
+                                        {options.map((o) => (
+                                            <option key={o.id} value={o.id}>
+                                                {o.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                {!loading && (
-                    <div style={{ display: "grid", gap: 14, marginTop: 12 }}>
-                        <label style={{ display: "grid", gap: 6 }}>
-                            <span>Môn học chính</span>
-                            <select
-                                value={courseId}
-                                onChange={(e) => {
-                                    const v = e.target.value
-                                    setCourseId(v ? Number(v) : "")
-                                    setPrereq([])
-                                    setParallel([])
-                                    setSupp([])
-                                }}
-                            >
-                                <option value="">-- Chọn môn học --</option>
-                                {options.map(o => (
-                                    <option key={o.id} value={o.id}>{o.label}</option>
-                                ))}
-                            </select>
-                        </label>
+                                <div className="aa-rel-field">
+                                    <span className="aa-rel-label">Tiên quyết</span>
+                                    <select
+                                        className="aa-rel-select"
+                                        multiple
+                                        value={prereq.map(String)}
+                                        onChange={(e) =>
+                                            setPrereq(
+                                                toNumbers(Array.from(e.target.selectedOptions).map((o) => o.value))
+                                            )
+                                        }
+                                    >
+                                        {available.map((o) => (
+                                            <option key={o.id} value={o.id}>
+                                                {o.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                        <label style={{ display: "grid", gap: 6 }}>
-                            <span>Tiên quyết</span>
-                            <select
-                                multiple
-                                size={6}
-                                value={prereq.map(String)}
-                                onChange={(e) => setPrereq(toNumbers(Array.from(e.target.selectedOptions).map(o => o.value)))}
-                            >
-                                {available.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-                            </select>
-                        </label>
+                                <div className="aa-rel-field">
+                                    <span className="aa-rel-label">Song hành</span>
+                                    <select
+                                        className="aa-rel-select"
+                                        multiple
+                                        value={parallel.map(String)}
+                                        onChange={(e) =>
+                                            setParallel(
+                                                toNumbers(Array.from(e.target.selectedOptions).map((o) => o.value))
+                                            )
+                                        }
+                                    >
+                                        {available.map((o) => (
+                                            <option key={o.id} value={o.id}>
+                                                {o.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                        <label style={{ display: "grid", gap: 6 }}>
-                            <span>Song hành</span>
-                            <select
-                                multiple
-                                size={6}
-                                value={parallel.map(String)}
-                                onChange={(e) => setParallel(toNumbers(Array.from(e.target.selectedOptions).map(o => o.value)))}
-                            >
-                                {available.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-                            </select>
-                        </label>
+                                <div className="aa-rel-field">
+                                    <span className="aa-rel-label">Bổ trợ</span>
+                                    <select
+                                        className="aa-rel-select"
+                                        multiple
+                                        value={supp.map(String)}
+                                        onChange={(e) =>
+                                            setSupp(
+                                                toNumbers(Array.from(e.target.selectedOptions).map((o) => o.value))
+                                            )
+                                        }
+                                    >
+                                        {available.map((o) => (
+                                            <option key={o.id} value={o.id}>
+                                                {o.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                        <label style={{ display: "grid", gap: 6 }}>
-                            <span>Bổ trợ</span>
-                            <select
-                                multiple
-                                size={6}
-                                value={supp.map(String)}
-                                onChange={(e) => setSupp(toNumbers(Array.from(e.target.selectedOptions).map(o => o.value)))}
-                            >
-                                {available.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-                            </select>
-                        </label>
-
-                        <div style={{ display: "flex", gap: 10 }}>
-                            <button onClick={save} disabled={saving}>
-                                {saving ? "Đang lưu..." : "Lưu"}
-                            </button>
-                            <button onClick={() => nav("/aa")} type="button">Hủy</button>
-                        </div>
+                                <div className="aa-rel-actions">
+                                    <button
+                                        className="aa-rel-btn aa-rel-btn-cancel"
+                                        type="button"
+                                        onClick={() => nav("/aa")}
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        className="aa-rel-btn aa-rel-btn-save"
+                                        onClick={save}
+                                        disabled={saving}
+                                    >
+                                        {saving ? "Đang lưu..." : "Lưu"}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
-        </>
-    )
+        </div>
+    );
+
 }

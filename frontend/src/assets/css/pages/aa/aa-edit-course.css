@@ -1,0 +1,105 @@
+/* =========================
+   AA • Edit Course Page
+   ========================= */
+
+.aa-edit-form {
+    margin-top: 16px;
+}
+
+/* Grid form */
+.aa-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Full width row */
+.aa-edit-grid .full {
+    grid-column: 1 / -1;
+}
+
+/* Label */
+.aa-edit-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151; /* gray-700 */
+    margin-bottom: 6px;
+}
+
+/* Input */
+.aa-edit-input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db; /* gray-300 */
+    background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.aa-edit-input:focus {
+    outline: none;
+    border-color: #2563eb; /* blue-600 */
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+/* Error box */
+.aa-edit-error {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #fee2e2; /* red-100 */
+    color: #991b1b; /* red-800 */
+    font-size: 14px;
+}
+
+/* Footer actions */
+.aa-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Buttons */
+.aa-btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.aa-btn-cancel {
+    background: #f3f4f6; /* gray-100 */
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.aa-btn-cancel:hover {
+    background: #e5e7eb;
+}
+
+.aa-btn-save {
+    background: #2563eb; /* blue-600 */
+    color: #fff;
+}
+
+.aa-btn-save:hover {
+    background: #1d4ed8;
+}
+
+.aa-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .aa-edit-grid {
+        grid-template-columns: 1fr;
+    }
+}

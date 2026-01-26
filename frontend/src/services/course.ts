@@ -41,6 +41,15 @@ export async function createCourse(payload: CreateCoursePayload) {
     return data
 }
 
+export async function updateCourse(id: number, payload: CreateCoursePayload): Promise<Course> {
+    const { data } = await api.put<Course>(`/course/${id}`, payload);
+    return data;
+}
+
+export async function deleteCourse(id: number): Promise<void> {
+    await api.delete(`/course/${id}`);
+}
+
 export async function assignLecturer(courseId: number, req: AssignLecturerRequest): Promise<Course> {
     const { data } = await api.put<Course>(`/course/${courseId}/assign`, req)
     return data
