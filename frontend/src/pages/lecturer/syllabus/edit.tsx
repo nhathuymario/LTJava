@@ -6,7 +6,8 @@ import "../../../assets/css/pages/lecturer.css";
 import { hasRole, getToken } from "../../../services/auth";
 import { lecturerApi } from "../../../services/lecturer";
 import type { CreateSyllabusRequest, Syllabus } from "../../../services/syllabus";
-import CourseOutcomesForm, { type CourseOutcomes } from "./CourseOutcomesForm";
+import CourseOutcomesForm from "./CourseOutcomesForm";
+import type { CourseOutcomes } from "./types";
 
 type NavState = { courseId?: number };
 
@@ -94,6 +95,65 @@ export default function LecturerSyllabusEditPage() {
                     academicYear: s.academicYear || "",
                     semester: s.semester || "",
                 });
+
+                // Load course outcomes
+                try {
+                    const content = await lecturerApi.getCourseOutcomes(id);
+                    if (content) {
+                        // Parse JSON fields if they're strings
+                        const parseJsonField = (field: any): any => {
+                            if (typeof field === "string") {
+                                try {
+                                    return JSON.parse(field);
+                                } catch {
+                                    return field;
+                                }
+                            }
+                            return field;
+                        };
+
+                        const loadedGeneralInfo = parseJsonField(content.generalInfo) || {};
+                        setCourseOutcomes(prev => ({
+                            generalInfo: {
+                                nameVi: loadedGeneralInfo.nameVi ?? prev.generalInfo.nameVi,
+                                nameEn: loadedGeneralInfo.nameEn ?? prev.generalInfo.nameEn,
+                                codeId: loadedGeneralInfo.codeId ?? prev.generalInfo.codeId,
+                                credits: loadedGeneralInfo.credits ?? prev.generalInfo.credits,
+                                theory: loadedGeneralInfo.theory ?? prev.generalInfo.theory,
+                                practice: loadedGeneralInfo.practice ?? prev.generalInfo.practice,
+                                project: loadedGeneralInfo.project ?? prev.generalInfo.project,
+                                total: loadedGeneralInfo.total ?? prev.generalInfo.total,
+                                selfStudy: loadedGeneralInfo.selfStudy ?? prev.generalInfo.selfStudy,
+                                prerequisiteId: loadedGeneralInfo.prerequisiteId ?? prev.generalInfo.prerequisiteId,
+                                corequisiteId: loadedGeneralInfo.corequisiteId ?? prev.generalInfo.corequisiteId,
+                                parallerId: loadedGeneralInfo.parallerId ?? prev.generalInfo.parallerId,
+                                courseType: loadedGeneralInfo.courseType ?? prev.generalInfo.courseType,
+                                component: loadedGeneralInfo.component ?? prev.generalInfo.component,
+                                scopeKey: loadedGeneralInfo.scopeKey ?? prev.generalInfo.scopeKey,
+                            },
+                            description: content.description || prev.description,
+                            courseObjectives: Array.isArray(content.courseObjectives) 
+                                ? content.courseObjectives 
+                                : (typeof content.courseObjectives === 'string' ? parseJsonField(content.courseObjectives) : null) || [],
+                            courseLearningOutcomes: Array.isArray(content.courseLearningOutcomes) 
+                                ? content.courseLearningOutcomes 
+                                : (typeof content.courseLearningOutcomes === 'string' ? parseJsonField(content.courseLearningOutcomes) : null) || [],
+                            assessmentMethods: Array.isArray(content.assessmentMethods)
+                                ? content.assessmentMethods
+                                : (typeof content.assessmentMethods === 'string' ? parseJsonField(content.assessmentMethods) : null) || [],
+                            studentDuties: content.studentDuties || prev.studentDuties,
+                            teachingPlan: Array.isArray(content.teachingPlan)
+                                ? content.teachingPlan
+                                : (typeof content.teachingPlan === 'string' ? parseJsonField(content.teachingPlan) : null) || [],
+                            cloMappings: Array.isArray(content.cloMappings)
+                                ? content.cloMappings
+                                : (typeof content.cloMappings === 'string' ? parseJsonField(content.cloMappings) : null) || [],
+                        }));
+                    }
+                } catch (err) {
+                    // Course outcomes không tìm thấy là bình thường nếu chưa save
+                    console.log("Course outcomes not found, using defaults");
+                }
             } catch (err: any) {
                 const resp = err?.response?.data;
                 const msg =
@@ -125,6 +185,8 @@ export default function LecturerSyllabusEditPage() {
 
         try {
             setSaving(true);
+            
+            // Save syllabus basic info
             const updated = await lecturerApi.updateSyllabus(id, {
                 ...form,
                 title: form.title.trim(),
@@ -133,7 +195,26 @@ export default function LecturerSyllabusEditPage() {
                 semester: form.semester?.trim() || undefined,
             });
             setSyllabus(updated);
-            nav(`/lecturer/courses/${updated.course?.id || form.courseId}`);
+
+            // Save course outcomes
+            if (courseOutcomes) {
+                const outcomesPayload = {
+                    generalInfo: courseOutcomes.generalInfo,
+                    description: courseOutcomes.description,
+                    courseObjectives: courseOutcomes.courseObjectives,
+                    courseLearningOutcomes: courseOutcomes.courseLearningOutcomes,
+                    assessmentMethods: courseOutcomes.assessmentMethods,
+                    studentDuties: courseOutcomes.studentDuties,
+                    teachingPlan: courseOutcomes.teachingPlan,
+                    cloMappings: courseOutcomes.cloMappings,
+                };
+                console.log("DEBUG: outcomesPayload = ", outcomesPayload);
+                console.log("DEBUG: cloMappings = ", courseOutcomes.cloMappings);
+                await lecturerApi.saveCourseOutcomes(id, outcomesPayload);
+            }
+
+            alert("Lưu đề cương thành công!");
+            window.location.reload();
         } catch (err: any) {
             setError(err?.response?.data?.message || "Lưu thất bại");
         } finally {

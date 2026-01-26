@@ -7,6 +7,7 @@ import { hasRole, getToken } from "../../services/auth";
 import { getMyCourses, type Course } from "../../services/course";
 
 type SortKey = "name_asc" | "name_desc";
+type MenuOpen = number | null;
 
 export default function LecturerPage() {
     const nav = useNavigate();
@@ -17,6 +18,7 @@ export default function LecturerPage() {
 
     const [q, setQ] = useState("");
     const [sort, setSort] = useState<SortKey>("name_asc");
+    const [menuOpen, setMenuOpen] = useState<MenuOpen>(null);
 
     const isLecturer = hasRole("LECTURER");
 
@@ -128,9 +130,42 @@ export default function LecturerPage() {
                                             </div>
                                         </div>
 
-                                        <button className="course-more" title="More" onClick={(e) => e.stopPropagation()}>
-                                            ⋮
-                                        </button>
+                                        <div style={{ position: "relative" }}>
+                                            <button 
+                                                className="course-more" 
+                                                title="More" 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setMenuOpen(menuOpen === idx ? null : idx);
+                                                }}
+                                            >
+                                                ⋮
+                                            </button>
+                                            {menuOpen === idx && (
+                                                <div className="syllabus-menu">
+                                                    <button
+                                                        className="syllabus-menu-item"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            nav(`/lecturer/courses/${c.id}`);
+                                                            setMenuOpen(null);
+                                                        }}
+                                                    >
+                                                        Xem chi tiết
+                                                    </button>
+                                                    <button
+                                                        className="syllabus-menu-item"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            nav(`/lecturer/clo-plo/${c.id}`);
+                                                            setMenuOpen(null);
+                                                        }}
+                                                    >
+                                                        Ánh xạ CLO-PLO
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 ))
                             )}

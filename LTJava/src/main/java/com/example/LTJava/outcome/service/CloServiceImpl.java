@@ -1,16 +1,18 @@
 package com.example.LTJava.outcome.service;
 
-import com.example.LTJava.outcome.dto.*;
+import java.util.EnumSet;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.LTJava.outcome.dto.CloDto;
+import com.example.LTJava.outcome.dto.CloUpsertReq;
 import com.example.LTJava.outcome.entity.Clo;
 import com.example.LTJava.outcome.repository.CloRepo;
 import com.example.LTJava.syllabus.entity.Syllabus;
 import com.example.LTJava.syllabus.entity.SyllabusStatus;
 import com.example.LTJava.syllabus.repository.SyllabusRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.EnumSet;
-import java.util.List;
 
 @Service
 public class CloServiceImpl implements CloService {
@@ -31,7 +33,7 @@ public class CloServiceImpl implements CloService {
 
     @Override
     public List<CloDto> listBySyllabus(Long syllabusId) {
-        return cloRepo.findBySyllabusIdOrderByCodeAsc(syllabusId)
+        return cloRepo.findBySyllabus_IdOrderByCodeAsc(syllabusId)
                 .stream().map(this::toDto).toList();
     }
 
@@ -47,7 +49,11 @@ public class CloServiceImpl implements CloService {
         c.setDescription(req.description().trim());
         c.setDomain(req.domain());
         c.setWeight(req.weight());
-        c.setActive(req.active() == null ? true : req.active());
+        if (req.active() != null) {
+            c.setActive(req.active());
+        } else {
+            c.setActive(true);
+        }
 
         return toDto(cloRepo.save(c));
     }
@@ -67,7 +73,7 @@ public class CloServiceImpl implements CloService {
         c.setDescription(req.description().trim());
         c.setDomain(req.domain());
         c.setWeight(req.weight());
-        c.setActive(req.active() == null ? c.getActive() : req.active());
+        c.setActive(req.active() != null ? req.active() : c.getActive());
 
         return toDto(cloRepo.save(c));
     }

@@ -1,9 +1,15 @@
 
 package com.example.LTJava.outcome.service;
 
-import com.example.LTJava.outcome.dto.*;
-import com.example.LTJava.syllabus.entity.Syllabus;
-import com.example.LTJava.syllabus.repository.SyllabusRepository;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -15,11 +21,13 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.example.LTJava.outcome.dto.CloDto;
+import com.example.LTJava.outcome.dto.CloPloMatrixRes;
+import com.example.LTJava.outcome.dto.MatrixCellDto;
+import com.example.LTJava.outcome.dto.PdfExportRes;
+import com.example.LTJava.outcome.dto.PloDto;
+import com.example.LTJava.syllabus.entity.Syllabus;
+import com.example.LTJava.syllabus.repository.SyllabusRepository;
 
 @Service
 public class PdfExportServiceImpl implements PdfExportService {
@@ -135,7 +143,8 @@ public class PdfExportServiceImpl implements PdfExportService {
         Map<String, Integer> cellMap = new HashMap<>();
         for (MatrixCellDto c : matrix.cells()) {
             if (c.cloId() == null || c.ploId() == null) continue;
-            cellMap.put(c.cloId() + "_" + c.ploId(), c.level() == null ? 1 : c.level());
+            int level = (c.level() != null) ? (int) c.level() : 1;
+            cellMap.put(c.cloId() + "_" + c.ploId(), level);
         }
 
         float tableWidth = page.getMediaBox().getWidth() - x * 2;

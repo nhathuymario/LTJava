@@ -1,12 +1,14 @@
 package com.example.LTJava.outcome.service;
 
-import com.example.LTJava.outcome.dto.*;
-import com.example.LTJava.outcome.entity.Plo;
-import com.example.LTJava.outcome.repository.PloRepo;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.example.LTJava.outcome.dto.PloDto;
+import com.example.LTJava.outcome.dto.PloUpsertReq;
+import com.example.LTJava.outcome.entity.Plo;
+import com.example.LTJava.outcome.repository.PloRepo;
 
 @Service
 public class PloServiceImpl implements PloService {
@@ -35,7 +37,11 @@ public class PloServiceImpl implements PloService {
         p.setScopeKey(req.scopeKey().trim());
         p.setCode(req.code().trim());
         p.setDescription(req.description().trim());
-        p.setActive(req.active() == null ? true : req.active());
+        if (req.active() != null) {
+            p.setActive(req.active());
+        } else {
+            p.setActive(true);
+        }
 
         return toDto(ploRepo.save(p));
     }
@@ -51,7 +57,7 @@ public class PloServiceImpl implements PloService {
         p.setScopeKey(req.scopeKey().trim());
         p.setCode(req.code().trim());
         p.setDescription(req.description().trim());
-        p.setActive(req.active() == null ? p.getActive() : req.active());
+        p.setActive(req.active() != null ? req.active() : p.getActive());
 
         return toDto(ploRepo.save(p));
     }

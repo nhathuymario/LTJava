@@ -34,7 +34,6 @@ import HodDraftSyllabiByCoursePage from "./pages/hod/assign/HodDraftSyllabiByCou
 import HodReviewManagePage  from "./pages/hod/assign/HodReviewManagePage ";
 import LecturerSyllabusReviewsPage  from "./pages/lecturer/comment/LecturerSyllabusReviewsPage";
 import LecturerCloPloPage  from "./pages/lecturer/clo-plo/LecturerCloPloPage";
-import NotificationsPage from "./pages/notifications/NotificationsPage"
 
 export default function App() {
     return (

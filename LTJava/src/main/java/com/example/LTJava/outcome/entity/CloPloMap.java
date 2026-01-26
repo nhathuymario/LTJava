@@ -1,6 +1,16 @@
 package com.example.LTJava.outcome.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "clo_plo_map",
@@ -21,8 +31,10 @@ public class CloPloMap {
     @JoinColumn(name = "plo_id", nullable = false)
     private Plo plo;
 
-    // optional: 1-3 hoặc null
-    private Integer level;
+    // level: I (1), R (2), M (3) - Introduced, Reinforced, Mastered
+    @Enumerated(EnumType.ORDINAL)
+    @Column(nullable = true)
+    private MappingLevel level;
 
     // getter/setter
 
@@ -51,10 +63,27 @@ public class CloPloMap {
     }
 
     public Integer getLevel() {
-        return level;
+        return level == null ? null : level.value;
     }
 
-    public void setLevel(Integer level) {
+    public void setLevel(Integer levelValue) {
+        if (levelValue == null) {
+            this.level = null;
+        } else {
+            try {
+                this.level = MappingLevel.fromValue(levelValue);
+            } catch (IllegalArgumentException ex) {
+                // Gracefully ignore invalid values to avoid server errors
+                this.level = null;
+            }
+        }
+    }
+
+    public void setLevel(MappingLevel level) {
         this.level = level;
+    }
+
+    public MappingLevel getMappingLevel() {
+        return level;
     }
 }

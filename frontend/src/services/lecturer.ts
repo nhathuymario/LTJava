@@ -2,6 +2,17 @@
 import { api } from "./api";
 import type { CreateSyllabusRequest, Syllabus, SyllabusHistory, SyllabusStatus } from "./syllabus";
 
+export interface CourseOutcomesPayload {
+    generalInfo: Record<string, string>;
+    description: string;
+    courseObjectives: string[];
+    courseLearningOutcomes: Array<{code: string; description: string}>;
+    assessmentMethods: Array<{component: string; method: string; clos: string; criteria: string; weight: string}>;
+    studentDuties: string;
+    teachingPlan: Array<{week: string; chapter: string; content: string; clos: string; teaching: string; assessment: string}>;
+    cloMappings: Array<{clo: string; plo: string; level: number | null}>;
+}
+
 export const lecturerApi = {
     createSyllabus: (payload: CreateSyllabusRequest) =>
         api.post<Syllabus>("/lecturer/syllabus", payload).then((r) => r.data),
@@ -15,6 +26,11 @@ export const lecturerApi = {
     createNewVersion: (id: number) =>
         api.post<Syllabus>(`/lecturer/syllabus/${id}/new-version`).then((r) => r.data),
 
+    saveCourseOutcomes: (syllabusId: number, payload: CourseOutcomesPayload) =>
+        api.put<any>(`/lecturer/syllabus/${syllabusId}/content`, payload).then((r) => r.data),
+
+    getCourseOutcomes: (syllabusId: number) =>
+        api.get<any>(`/lecturer/syllabus/${syllabusId}/content`).then((r) => r.data),
 
     mySyllabi: () =>
         api.get<Syllabus[]>("/lecturer/syllabus/my").then((r) => r.data),

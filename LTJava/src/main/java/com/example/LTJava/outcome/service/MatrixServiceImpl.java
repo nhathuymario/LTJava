@@ -37,13 +37,13 @@ public class MatrixServiceImpl implements MatrixService {
         if (scopeKey == null || scopeKey.isBlank()) throw new IllegalArgumentException("scopeKey is required");
 
         // clos theo syllabus(version)
-        List<Clo> clos = cloRepo.findBySyllabusIdOrderByCodeAsc(syllabusId);
+        List<Clo> clos = cloRepo.findBySyllabus_IdOrderByCodeAsc(syllabusId);
 
         // plos theo scope
         List<Plo> plos = ploRepo.findByScopeKeyAndActiveTrueOrderByCodeAsc(scopeKey);
 
         // mapping theo syllabus
-        List<CloPloMap> maps = mapRepo.findByCloSyllabusId(syllabusId);
+        List<CloPloMap> maps = mapRepo.findByClo_Syllabus_Id(syllabusId);
 
         List<PloDto> ploDtos = plos.stream()
                 .map(p -> new PloDto(p.getId(), p.getScopeKey(), p.getCode(), p.getDescription(), p.getActive()))
@@ -73,13 +73,15 @@ public class MatrixServiceImpl implements MatrixService {
             throw new IllegalStateException("Syllabus is not editable in status: " + s.getStatus());
         }
 
-        // Xóa mapping cũ theo syllabus
-        mapRepo.deleteByCloSyllabusId(syllabusId);
-
-        if (req.cells().isEmpty()) return;
+        // Upsert + prune instead of blanket delete to avoid race conditions
+        if (req.cells().isEmpty()) {
+            // If empty, remove all existing mappings for this syllabus
+            mapRepo.deleteAllBySyllabusId(syllabusId);
+            return;
+        }
 
         // chuẩn hóa: chỉ cho phép clo thuộc syllabusId, plo thuộc scopeKey
-        Map<Long, Clo> cloMap = cloRepo.findBySyllabusIdOrderByCodeAsc(syllabusId)
+        Map<Long, Clo> cloMap = cloRepo.findBySyllabus_IdOrderByCodeAsc(syllabusId)
                 .stream().collect(java.util.stream.Collectors.toMap(Clo::getId, x -> x));
 
         Set<Long> allowedPloIds = new HashSet<>(
@@ -87,7 +89,8 @@ public class MatrixServiceImpl implements MatrixService {
                         .stream().map(Plo::getId).toList()
         );
 
-        List<CloPloMap> toSave = new ArrayList<>();
+        // Deduplicate pairs (cloId, ploId); last entry wins for level
+        Map<String, Integer> pairToLevel = new LinkedHashMap<>();
 
         for (MatrixCellDto cell : req.cells()) {
             if (cell.cloId() == null || cell.ploId() == null) continue;
@@ -97,17 +100,46 @@ public class MatrixServiceImpl implements MatrixService {
 
             if (!allowedPloIds.contains(cell.ploId())) continue; // plo không thuộc scope => bỏ
 
-            Plo ploRef = ploRepo.getReferenceById(cell.ploId());
-
-            CloPloMap m = new CloPloMap();
-            m.setClo(clo);
-            m.setPlo(ploRef);
-            m.setLevel(cell.level());
-            toSave.add(m);
+            String key = clo.getId() + ":" + cell.ploId();
+            pairToLevel.put(key, cell.level());
         }
 
-        if (!toSave.isEmpty()) {
-            mapRepo.saveAll(toSave);
+        if (!pairToLevel.isEmpty()) {
+            // Load existing mappings for syllabus
+            List<CloPloMap> existing = mapRepo.findByClo_Syllabus_Id(syllabusId);
+            Map<String, CloPloMap> existingByPair = new HashMap<>();
+            for (CloPloMap m : existing) {
+                existingByPair.put(m.getClo().getId() + ":" + m.getPlo().getId(), m);
+            }
+
+            List<CloPloMap> mapsToUpsert = new ArrayList<>();
+            Set<String> desiredPairs = pairToLevel.keySet();
+
+            for (Map.Entry<String, Integer> e : pairToLevel.entrySet()) {
+                String pair = e.getKey();
+                Integer lvl = e.getValue();
+                CloPloMap m = existingByPair.get(pair);
+                if (m == null) {
+                    String[] parts = pair.split(":", 2);
+                    Long cloId = Long.parseLong(parts[0]);
+                    Long ploId = Long.parseLong(parts[1]);
+                    m = new CloPloMap();
+                    m.setClo(cloRepo.getReferenceById(cloId));
+                    m.setPlo(ploRepo.getReferenceById(ploId));
+                }
+                m.setLevel(lvl);
+                mapsToUpsert.add(m);
+            }
+
+            List<CloPloMap> toDelete = new ArrayList<>();
+            for (Map.Entry<String, CloPloMap> en : existingByPair.entrySet()) {
+                if (!desiredPairs.contains(en.getKey())) {
+                    toDelete.add(en.getValue());
+                }
+            }
+
+            if (!toDelete.isEmpty()) mapRepo.deleteAllInBatch(toDelete);
+            if (!mapsToUpsert.isEmpty()) mapRepo.saveAll(mapsToUpsert);
         }
     }
 }

@@ -1,30 +1,8 @@
 import type { Dispatch, SetStateAction } from "react";
+import CloPloMappingSection from "./CloPloMappingSection.tsx";
+import type { CourseOutcomes } from "./types";
 
-export interface CourseOutcomes {
-  generalInfo: {
-    nameVi: string;
-    nameEn: string;
-    codeId: string;
-    credits: string;
-    theory: string;
-    practice: string;
-    project: string;
-    total: string;
-    selfStudy: string;
-    prerequisiteId: string;
-    corequisiteId: string;
-    parallerId: string;
-    courseType: string;
-    component: string;
-  };
-  description: string;
-  courseObjectives: string[];
-  courseLearningOutcomes: { code: string; description: string }[];
-  cloMappings: { clo: string; plo: string; level: number }[];
-  studentDuties: string;
-  assessmentMethods: { component: string; method: string; clos: string; criteria: string; weight: string }[];
-  teachingPlan: { week: string; chapter: string; content: string; clos: string; teaching: string; assessment: string }[];
-}
+ 
 
 interface CourseOutcomesFormProps {
   courseOutcomes: CourseOutcomes;
@@ -163,7 +141,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                 ...prev,
                                 generalInfo: { ...prev.generalInfo, codeId: e.target.value }
                             }))}
-                            placeholder="123015"
+                            placeholder="Nhập mã học phần"
                         />
                     </div>
                     <div>
@@ -176,7 +154,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                 ...prev,
                                 generalInfo: { ...prev.generalInfo, credits: e.target.value }
                             }))}
-                            placeholder="3 (2,1,3)"
+                            placeholder="Nhập số tín chỉ"
                         />
                     </div>
                     <div>
@@ -189,7 +167,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                 ...prev,
                                 generalInfo: { ...prev.generalInfo, theory: e.target.value }
                             }))}
-                            placeholder="30"
+                            placeholder="Nhập số giờ lý thuyết/bài tập"
                         />
                     </div>
                     <div>
@@ -202,7 +180,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                 ...prev,
                                 generalInfo: { ...prev.generalInfo, practice: e.target.value }
                             }))}
-                            placeholder="30"
+                            placeholder="Nhập số giờ thực hành/thí nghiệm"
                         />
                     </div>
                     <div>
@@ -215,7 +193,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                 ...prev,
                                 generalInfo: { ...prev.generalInfo, project: e.target.value }
                             }))}
-                            placeholder="0"
+                            placeholder="Nhập số giờ dự án/thảo luận"
                         />
                     </div>
                     <div>
@@ -228,7 +206,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                 ...prev,
                                 generalInfo: { ...prev.generalInfo, total: e.target.value }
                             }))}
-                            placeholder="60"
+                            placeholder="Nhập tổng số giờ"
                         />
                     </div>
                     <div>
@@ -241,7 +219,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                 ...prev,
                                 generalInfo: { ...prev.generalInfo, selfStudy: e.target.value }
                             }))}
-                            placeholder="90"
+                            placeholder="Nhập số giờ tự học"
                         />
                     </div>
                     <div>
@@ -324,7 +302,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                 <h3 style={sectionTitleStyle}>
                     3. Mục tiêu học phần (Course Objectives)
                 </h3>
-                {courseOutcomes.courseObjectives.map((co, idx) => (
+                {Array.isArray(courseOutcomes.courseObjectives) && courseOutcomes.courseObjectives.map((co, idx) => (
                     <div key={idx} style={{ marginBottom: 12 }}>
                         <div style={flexRowStyle}>
                             <label style={smallLabelStyle}>
@@ -377,7 +355,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                 <h3 style={sectionTitleStyle}>
                     4. Chuẩn đầu ra học phần (Course Learning Outcomes - CLOs)
                 </h3>
-                {courseOutcomes.courseLearningOutcomes.map((clo, idx) => (
+                {Array.isArray(courseOutcomes.courseLearningOutcomes) && courseOutcomes.courseLearningOutcomes.map((clo, idx) => (
                     <div key={idx} style={{ marginBottom: 12 }}>
                         <div style={flexRowStyle}>
                             <input
@@ -393,7 +371,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') e.preventDefault();
                                 }}
-                                placeholder="CLO1"
+                                placeholder="Nhâp mã CLO"
                             />
                             <input
                                 style={{ ...inputStyle, flex: 1 }}
@@ -435,10 +413,13 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                 <button
                     type="button"
                     disabled={!canEdit}
-                    onClick={() => setCourseOutcomes(prev => ({
-                        ...prev,
-                        courseLearningOutcomes: [...prev.courseLearningOutcomes, { code: "", description: "" }]
-                    }))}
+                    onClick={() => {
+                        const newIndex = courseOutcomes.courseLearningOutcomes.length + 1;
+                        setCourseOutcomes(prev => ({
+                            ...prev,
+                            courseLearningOutcomes: [...prev.courseLearningOutcomes, { code: `CLO${newIndex}`, description: "" }]
+                        }));
+                    }}
                     style={{
                         padding: "8px 12px",
                         backgroundColor: "#e3f2fd",
@@ -452,6 +433,14 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                     + Thêm CLO
                 </button>
             </div>
+
+            {/* SECTION 4.1: CLO-PLO MAPPING */}
+            <CloPloMappingSection
+                setCourseOutcomes={setCourseOutcomes}
+                canEdit={canEdit}
+                availableClos={courseOutcomes.courseLearningOutcomes}
+                initialScopeKey={courseOutcomes.generalInfo.scopeKey ?? ""}
+            />
 
             {/* SECTION 5: STUDENT DUTIES */}
             <div style={{ marginBottom: 24 }}>
@@ -493,7 +482,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                             </tr>
                         </thead>
                         <tbody>
-                            {courseOutcomes.assessmentMethods.map((method, idx) => (
+                            {Array.isArray(courseOutcomes.assessmentMethods) && courseOutcomes.assessmentMethods.map((method, idx) => (
                                 <tr key={idx}>
                                     <td style={{ border: "1px solid #ddd", padding: 8 }}>
                                         <input
@@ -534,7 +523,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                                     i === idx ? { ...m, clos: e.target.value } : m
                                                 )
                                             }))}
-                                            placeholder="CLO1"
+                                            placeholder="Nhập mã CLO"
                                         />
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: 8 }}>
@@ -548,7 +537,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                                     i === idx ? { ...m, criteria: e.target.value } : m
                                                 )
                                             }))}
-                                            placeholder="A1.2"
+                                            placeholder="Nhập tiêu chí đánh giá"
                                         />
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: 8, textAlign: "center" }}>
@@ -562,7 +551,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                                     i === idx ? { ...m, weight: e.target.value } : m
                                                 )
                                             }))}
-                                            placeholder="10"
+                                            placeholder="Nhập trọng số"
                                         />
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: 8, textAlign: "center" }}>
@@ -635,7 +624,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                             </tr>
                         </thead>
                         <tbody>
-                            {courseOutcomes.teachingPlan.map((plan, idx) => (
+                            {Array.isArray(courseOutcomes.teachingPlan) && courseOutcomes.teachingPlan.map((plan, idx) => (
                                 <tr key={idx}>
                                     <td style={{ border: "1px solid #ddd", padding: 8 }}>
                                         <input
@@ -648,7 +637,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                                     i === idx ? { ...p, week: e.target.value } : p
                                                 )
                                             }))}
-                                            placeholder="Tuần 1/Chương 1"
+                                            placeholder="VD: Tuần 1"
                                         />
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: 8 }}>
@@ -676,7 +665,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                                     i === idx ? { ...p, clos: e.target.value } : p
                                                 )
                                             }))}
-                                            placeholder="CLO1"
+                                            placeholder="Nhập mã CLO"
                                         />
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: 8 }}>
@@ -704,7 +693,7 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                                     i === idx ? { ...p, assessment: e.target.value } : p
                                                 )
                                             }))}
-                                            placeholder="A1.2"
+                                            placeholder="Nhập hình thức đánh giá"
                                         />
                                     </td>
                                     <td style={{ border: "1px solid #ddd", padding: 8, textAlign: "center" }}>
