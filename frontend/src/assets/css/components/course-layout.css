@@ -1,0 +1,52 @@
+.course-shell { width: 100%; }
+
+.course-hero{
+    background: linear-gradient(180deg, #dff3f2 0%, #e9f7f6 100%);
+    padding: 26px 18px 10px;
+}
+
+.course-title{
+    margin: 0 0 14px;
+    text-align: center;
+    font-size: 46px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #2f2957;
+}
+
+.course-breadcrumb{
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.course-tabs{
+    max-width: 1100px;
+    margin: 10px auto 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.course-tab{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #3a3a3a;
+    background: rgba(255,255,255,0.65);
+    border: 1px solid rgba(0,0,0,0.06);
+}
+
+.course-tab.active{
+    background: #ffffff;
+    border-color: rgba(0,0,0,0.12);
+    font-weight: 700;
+}
+
+.course-body{
+    max-width: 1100px;
+    margin: 14px auto;
+    padding: 0 18px;
+}

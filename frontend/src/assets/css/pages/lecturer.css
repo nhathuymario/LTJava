@@ -259,3 +259,27 @@
 .syllabus-clickable:hover {
     background: #f7f9fb;
 }
+
+
+.lec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.lec-table th,
+.lec-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    vertical-align: top;
+}
+
+.lec-table thead th {
+    background: #f3f4f6;
+    font-weight: 600;
+}
+
+.lec-empty {
+    padding: 10px;
+    color: #6b6f76;
+}

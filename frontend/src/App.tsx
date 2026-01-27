@@ -39,10 +39,21 @@ import LecturerSyllabusReviewsPage  from "./pages/lecturer/comment/LecturerSylla
 import LecturerSyllabusOutcomesPage  from "./pages/lecturer/syllabus/LecturerSyllabusOutcomesPage";
 import NotificationsPage from "./pages/notifications/NotificationsPage"
 
+
 export default function App() {
     return (
         <BrowserRouter>
             <Routes>
+
+
+
+
+                        <Route path="materials" element={<div>Materials</div>} />
+                        <Route path="assignments" element={<div>Assignments</div>} />
+                        <Route path="grades" element={<div>Grades</div>} />
+
+
+
 
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/login" element={<LoginPage />} />
@@ -96,6 +107,7 @@ export default function App() {
                         <Route path="/lecturer/syllabus/new" element={<LecturerSyllabusNewPage />} />
                         <Route path="/lecturer/syllabus/:syllabusId/edit" element={<LecturerSyllabusEdit/>} />
                         <Route path="/lecturer/syllabus/:id/reviews" element={<LecturerSyllabusReviewsPage/>} />
+                        <Route path="/lecturer/syllabus" element={<Navigate to="/lecturer" replace />} />
                         <Route
                             path="/lecturer/syllabus/:syllabusId/outcomes"
                             element={<LecturerSyllabusOutcomesPage />}

@@ -88,6 +88,16 @@ export async function getCloPloMatrix(syllabusId: number, scopeKey: string) {
     })
     return data
 }
+
+export async function lecturerGetCloPloMatrix(syllabusId: number, scopeKey: string) {
+    const { data } = await api.get<CloPloMatrixRes>(
+        `/lecturer/syllabus/${syllabusId}/clo-plo-matrix`,
+        { params: { scopeKey } }
+    );
+    return data;
+}
+
+
 export async function saveCloPloMatrix(syllabusId: number, req: CloPloMatrixSaveReq) {
     await api.put(`/lecturer/syllabus/${syllabusId}/clo-plo-matrix`, req)
 }

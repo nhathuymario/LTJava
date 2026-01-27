@@ -544,7 +544,6 @@ export default function CourseOutcomesForm({ courseOutcomes, setCourseOutcomes, 
                                         <input
                                             style={{ ...inputStyle, margin: 0, width: 80, textAlign: "center" }}
                                             disabled={!canEdit}
-                                            value={method.weight}
                                             onChange={(e) => setCourseOutcomes(prev => ({
                                                 ...prev,
                                                 assessmentMethods: prev.assessmentMethods.map((m, i) =>
