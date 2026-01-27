@@ -8,6 +8,7 @@ import { filterActionsByRoles } from "../utils/filterByRoles";
 import { profileApi, type MeResponse } from "../services/profile";
 import { goHomeByRole } from "../utils/navByRole";
 import { notificationApi } from "../services/notification";
+import uthImg from "../assets/uth-logo.png";
 
 
 type HeaderProps = {
@@ -105,7 +106,7 @@ export default function Header({ username, onProfile, showMenu = true }: HeaderP
     return (
         <header className="header">
             <div className="brand" onClick={() => goHomeByRole(nav)}>
-                <img src="../src/assets/uth-logo.png" alt="uth logo" />
+                <img src={uthImg} alt="Logo" />
             </div>
 
             {/* 🔔 Notification bell */}

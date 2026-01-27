@@ -20,16 +20,12 @@ export type CloDto = {
     syllabusId: number
     code: string
     description: string
-    domain?: string | null
-    weight?: number | null
     active: boolean
 }
 
 export type CloUpsertReq = {
     code: string
     description: string
-    domain?: string | null
-    weight?: number | null
     active?: boolean
 }
 

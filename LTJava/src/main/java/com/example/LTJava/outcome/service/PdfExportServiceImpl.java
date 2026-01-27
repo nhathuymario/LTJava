@@ -1,7 +1,7 @@
-
 package com.example.LTJava.outcome.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,7 +14,8 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -51,7 +52,9 @@ public class PdfExportServiceImpl implements PdfExportService {
     @Override
     @Transactional(readOnly = true)
     public PdfExportRes exportPdf(Long syllabusId, String scopeKey) {
-        if (scopeKey == null || scopeKey.isBlank()) throw new IllegalArgumentException("scopeKey is required");
+        if (scopeKey == null || scopeKey.isBlank()) {
+            throw new IllegalArgumentException("scopeKey is required");
+        }
 
         Syllabus s = syllabusRepo.findById(syllabusId)
                 .orElseThrow(() -> new IllegalArgumentException("Syllabus not found: " + syllabusId));
@@ -84,8 +87,32 @@ public class PdfExportServiceImpl implements PdfExportService {
         return new FileSystemResource(p);
     }
 
+    // ===== Font loading =====
+
+    private PDFont loadFont(PDDocument doc, String classpathFontPath) throws IOException {
+        try (InputStream is = PdfExportServiceImpl.class.getResourceAsStream(classpathFontPath)) {
+            if (is == null) {
+                throw new IllegalStateException("Font not found in classpath: " + classpathFontPath);
+            }
+            // embed = true => Unicode OK (Vietnamese)
+            return PDType0Font.load(doc, is, true);
+        }
+    }
+
     private void generatePdf(Path out, Syllabus s, CloPloMatrixRes matrix) throws IOException {
         try (PDDocument doc = new PDDocument()) {
+
+            // ✅ Unicode fonts
+            PDFont fontRegular = loadFont(doc, "/fonts/NotoSans-Regular.ttf");
+
+            // Bold font optional: nếu không có file Bold thì fallback regular
+            PDFont fontBold;
+            try {
+                fontBold = loadFont(doc, "/fonts/NotoSans-Bold.ttf");
+            } catch (Exception ex) {
+                fontBold = fontRegular;
+            }
+
             PDPage page = new PDPage(PDRectangle.A4);
             doc.addPage(page);
 
@@ -94,48 +121,69 @@ public class PdfExportServiceImpl implements PdfExportService {
                 float y = page.getMediaBox().getHeight() - margin;
 
                 // Title
-                y = writeLine(cs, "SYLLABUS", margin, y, 16, true);
+                y = writeLine(cs, fontRegular, fontBold, "SYLLABUS", margin, y, 16, true);
                 y -= 8;
 
                 // Basic info
-                y = writeLine(cs, "Title: " + nullSafe(s.getTitle()), margin, y, 11, false);
-                y = writeLine(cs, "Course: " + (s.getCourse() != null ? nullSafe(s.getCourse().getCode()) + " - " + nullSafe(s.getCourse().getName()) : "N/A"), margin, y, 11, false);
-                y = writeLine(cs, "Academic Year: " + nullSafe(s.getAcademicYear()) + " | Semester: " + nullSafe(s.getSemester()), margin, y, 11, false);
-                y = writeLine(cs, "Version: v" + (s.getVersion() == null ? "" : s.getVersion()) + " | Status: " + (s.getStatus() == null ? "" : s.getStatus().name()), margin, y, 11, false);
-                y = writeLine(cs, "ScopeKey (PLO): " + matrix.scopeKey(), margin, y, 11, false);
+                y = writeLine(cs, fontRegular, fontBold,
+                        "Title: " + nullSafe(s.getTitle()),
+                        margin, y, 11, false);
+
+                y = writeLine(cs, fontRegular, fontBold,
+                        "Course: " + (s.getCourse() != null
+                                ? nullSafe(s.getCourse().getCode()) + " - " + nullSafe(s.getCourse().getName())
+                                : "N/A"),
+                        margin, y, 11, false);
+
+                y = writeLine(cs, fontRegular, fontBold,
+                        "Academic Year: " + nullSafe(s.getAcademicYear()) + " | Semester: " + nullSafe(s.getSemester()),
+                        margin, y, 11, false);
+
+                y = writeLine(cs, fontRegular, fontBold,
+                        "Version: v" + (s.getVersion() == null ? "" : s.getVersion()) + " | Status: " + (s.getStatus() == null ? "" : s.getStatus().name()),
+                        margin, y, 11, false);
+
+                y = writeLine(cs, fontRegular, fontBold,
+                        "ScopeKey (PLO): " + nullSafe(matrix.scopeKey()),
+                        margin, y, 11, false);
 
                 y -= 14;
 
                 // CLO list
-                y = writeLine(cs, "CLOs:", margin, y, 12, true);
+                y = writeLine(cs, fontRegular, fontBold, "CLOs:", margin, y, 12, true);
                 for (CloDto clo : matrix.clos()) {
-                    y = writeLine(cs, "- " + nullSafe(clo.code()) + ": " + shorten(nullSafe(clo.description()), 120), margin, y, 10, false);
-                    if (y < 120) break; // đơn giản: không auto add page ở bản demo
+                    y = writeLine(cs, fontRegular, fontBold,
+                            "- " + nullSafe(clo.code()) + ": " + shorten(nullSafe(clo.description()), 120),
+                            margin, y, 10, false);
+                    if (y < 120) break;
                 }
 
                 y -= 10;
 
                 // PLO list
-                y = writeLine(cs, "PLOs:", margin, y, 12, true);
+                y = writeLine(cs, fontRegular, fontBold, "PLOs:", margin, y, 12, true);
                 for (PloDto plo : matrix.plos()) {
-                    y = writeLine(cs, "- " + nullSafe(plo.code()) + ": " + shorten(nullSafe(plo.description()), 120), margin, y, 10, false);
+                    y = writeLine(cs, fontRegular, fontBold,
+                            "- " + nullSafe(plo.code()) + ": " + shorten(nullSafe(plo.description()), 120),
+                            margin, y, 10, false);
                     if (y < 120) break;
                 }
 
                 y -= 14;
 
-                // Matrix (table đơn giản)
-                y = writeLine(cs, "CLO-PLO Matrix:", margin, y, 12, true);
+                // Matrix
+                y = writeLine(cs, fontRegular, fontBold, "CLO-PLO Matrix:", margin, y, 12, true);
                 y -= 6;
 
-                drawMatrixTable(cs, page, margin, y, matrix);
+                drawMatrixTable(cs, page, margin, y, matrix, fontRegular, fontBold);
             }
 
             doc.save(out.toFile());
         }
     }
 
-    private void drawMatrixTable(PDPageContentStream cs, PDPage page, float x, float yTop, CloPloMatrixRes matrix) throws IOException {
+    private void drawMatrixTable(PDPageContentStream cs, PDPage page, float x, float yTop,
+                                 CloPloMatrixRes matrix, PDFont fontRegular, PDFont fontBold) throws IOException {
         List<PloDto> plos = matrix.plos();
         List<CloDto> clos = matrix.clos();
 
@@ -156,45 +204,48 @@ public class PdfExportServiceImpl implements PdfExportService {
         float y = yTop;
 
         // Header row
-        drawCellText(cs, "CLO \\ PLO", x, y, firstColW, rowH, true);
+        drawCellText(cs, "CLO \\ PLO", x, y, firstColW, rowH, true, fontRegular, fontBold);
         for (int j = 0; j < plos.size(); j++) {
-            drawCellText(cs, plos.get(j).code(), x + firstColW + j * colW, y, colW, rowH, true);
+            drawCellText(cs, plos.get(j).code(), x + firstColW + j * colW, y, colW, rowH, true, fontRegular, fontBold);
         }
         y -= rowH;
 
         // Rows
         for (CloDto clo : clos) {
-            drawCellText(cs, clo.code(), x, y, firstColW, rowH, true);
+            drawCellText(cs, clo.code(), x, y, firstColW, rowH, true, fontRegular, fontBold);
 
             for (int j = 0; j < plos.size(); j++) {
                 PloDto plo = plos.get(j);
                 Integer level = cellMap.get(clo.id() + "_" + plo.id());
-                String val = level == null ? "" : String.valueOf(level); // hoặc "X"
-                drawCellText(cs, val, x + firstColW + j * colW, y, colW, rowH, false);
+                String val = (level == null) ? "" : String.valueOf(level);
+                drawCellText(cs, val, x + firstColW + j * colW, y, colW, rowH, false, fontRegular, fontBold);
             }
             y -= rowH;
 
-            // stop nếu sắp hết trang (demo)
+            // demo stop
             if (y < 70) break;
         }
     }
 
-    private void drawCellText(PDPageContentStream cs, String text, float x, float yTop, float w, float h, boolean bold) throws IOException {
+    private void drawCellText(PDPageContentStream cs, String text,
+                              float x, float yTop, float w, float h,
+                              boolean bold, PDFont fontRegular, PDFont fontBold) throws IOException {
         // border
         cs.addRect(x, yTop - h, w, h);
         cs.stroke();
 
         // text
         cs.beginText();
-        cs.setFont(bold ? PDType1Font.HELVETICA_BOLD : PDType1Font.HELVETICA, 9);
+        cs.setFont(bold ? fontBold : fontRegular, 9);
         cs.newLineAtOffset(x + 3, yTop - 12);
         cs.showText(text == null ? "" : text);
         cs.endText();
     }
 
-    private float writeLine(PDPageContentStream cs, String text, float x, float y, int fontSize, boolean bold) throws IOException {
+    private float writeLine(PDPageContentStream cs, PDFont fontRegular, PDFont fontBold,
+                            String text, float x, float y, int fontSize, boolean bold) throws IOException {
         cs.beginText();
-        cs.setFont(bold ? PDType1Font.HELVETICA_BOLD : PDType1Font.HELVETICA, fontSize);
+        cs.setFont(bold ? fontBold : fontRegular, fontSize);
         cs.newLineAtOffset(x, y);
         cs.showText(text == null ? "" : text);
         cs.endText();

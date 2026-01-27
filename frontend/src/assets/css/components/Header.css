@@ -12,13 +12,13 @@
 }
 
 /* Brand */
-/* .brand {
+.brand {
     display: flex;
     align-items: center;
     font-size: 18px;
     font-weight: 700;
     cursor: pointer;
-} */
+}
 
 .brand img {
     cursor: pointer;

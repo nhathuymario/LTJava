@@ -24,10 +24,8 @@ public class Clo {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(length = 20)
-    private String domain; // optional: K/S/A hoặc Bloom
 
-    private Integer weight; // optional
+  // optional
 
     @Column(nullable = false)
     private Boolean active = true;
@@ -64,22 +62,6 @@ public class Clo {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    public Integer getWeight() {
-        return weight;
-    }
-
-    public void setWeight(Integer weight) {
-        this.weight = weight;
     }
 
     public Boolean getActive() {

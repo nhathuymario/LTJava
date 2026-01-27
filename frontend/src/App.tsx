@@ -25,6 +25,7 @@ import AaPloPage from "./pages/aa/plo/AaPloPage"
 import AACourseNew from "./pages/aa/courses/new"
 import LecturerCoureseDetailPage from "./pages/lecturer/course-syllabus"
 import LecturerSyllabusNewPage  from "./pages/lecturer/syllabus/new";
+import LecturerSyllabusDetailPage  from "./pages/lecturer/syllabus/LecturerSyllabusDetailPage";
 import LecturerSyllabusEdit  from "./pages/lecturer/syllabus/edit";
 import PrincipalCourseDetailPage from "./pages/principal/course-detail";
 import StudentCourseSyllabusPage from "./pages/student/course-syllabus"
@@ -35,7 +36,7 @@ import HodCollabCoursesPage from "./pages/hod/assign/HodCollabCoursesPage";
 import HodDraftSyllabiByCoursePage from "./pages/hod/assign/HodDraftSyllabiByCoursePage";
 import HodReviewManagePage  from "./pages/hod/assign/HodReviewManagePage ";
 import LecturerSyllabusReviewsPage  from "./pages/lecturer/comment/LecturerSyllabusReviewsPage";
-import LecturerCloPloPage  from "./pages/lecturer/clo-plo/LecturerCloPloPage";
+import LecturerSyllabusOutcomesPage  from "./pages/lecturer/syllabus/LecturerSyllabusOutcomesPage";
 import NotificationsPage from "./pages/notifications/NotificationsPage"
 
 export default function App() {
@@ -95,7 +96,16 @@ export default function App() {
                         <Route path="/lecturer/syllabus/new" element={<LecturerSyllabusNewPage />} />
                         <Route path="/lecturer/syllabus/:syllabusId/edit" element={<LecturerSyllabusEdit/>} />
                         <Route path="/lecturer/syllabus/:id/reviews" element={<LecturerSyllabusReviewsPage/>} />
-                        <Route path="/lecturer/syllabus/:id/outcomes" element={<LecturerCloPloPage />} />
+                        <Route
+                            path="/lecturer/syllabus/:syllabusId/outcomes"
+                            element={<LecturerSyllabusOutcomesPage />}
+                        />
+
+
+
+                        <Route path="/lecturer/syllabus/:syllabusId" element={<LecturerSyllabusDetailPage />} />
+
+
                     </Route>
                 </Route>
 

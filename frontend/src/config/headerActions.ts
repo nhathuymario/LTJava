@@ -15,6 +15,13 @@ export const HEADER_ACTIONS: HeaderAction[] = [
         roles: ['LECTURER'],
         icon: '📚',
     },
+    {
+        key: 'lecturer-create-syllabus',
+        label: 'Tạo clo',
+        to: '/lecturer/syllabus/:id/outcomes',
+        roles: ['LECTURER'],
+        icon: '📚',
+    },
     // ✅ AA
     { key:"aa-create-course", label:"Tạo môn học", to:"/aa/courses/new", roles:["AA"], icon:"➕" },
     { key:"aa-set-relations", label:"Set tiên quyết", to:"/aa/courses/relations", roles:["AA"], icon:"🧩" },

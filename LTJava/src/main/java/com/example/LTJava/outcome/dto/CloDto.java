@@ -5,7 +5,5 @@ public record CloDto(
         Long syllabusId,
         String code,
         String description,
-        String domain,
-        Integer weight,
         Boolean active
 ) {}

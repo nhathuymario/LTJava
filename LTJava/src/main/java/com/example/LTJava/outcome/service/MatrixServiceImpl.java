@@ -50,7 +50,7 @@ public class MatrixServiceImpl implements MatrixService {
                 .toList();
 
         List<CloDto> cloDtos = clos.stream()
-                .map(c -> new CloDto(c.getId(), c.getSyllabus().getId(), c.getCode(), c.getDescription(), c.getDomain(), c.getWeight(), c.getActive()))
+                .map(c -> new CloDto(c.getId(), c.getSyllabus().getId(), c.getCode(), c.getDescription(), c.getActive()))
                 .toList();
 
         List<MatrixCellDto> cells = maps.stream()

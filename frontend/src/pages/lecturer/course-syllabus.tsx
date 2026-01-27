@@ -176,13 +176,17 @@ export default function LecturerCourseDetailPage() {
                                     syllabi.map((s: any) => (
                                         <div key={s.id} className="syllabus-folder">
                                             <div className="syllabus-left">
+                                                <div
+                                                    className="syllabus-left syllabus-clickable"
+                                                    onClick={() => nav(`/lecturer/syllabus/${s.id}`)}
+                                                >
                                                 <div className="syllabus-folder-icon">📁</div>
                                                 <div className="syllabus-folder-name">
                                                     {s.title}
                                                     <span className={`syllabus-status status-${String(s.status || "").toLowerCase()}`}> {s.status} </span>
                                                 </div>
                                             </div>
-
+                                                </div>
                                             <div className="syllabus-actions">
                                                 <button
                                                     className="syllabus-more"

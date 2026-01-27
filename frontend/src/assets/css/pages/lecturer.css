@@ -252,3 +252,10 @@
 .syllabus-menu-item.danger {
     color: #b00020;
 }
+
+.syllabus-clickable {
+    cursor: pointer;
+}
+.syllabus-clickable:hover {
+    background: #f7f9fb;
+}

@@ -47,8 +47,6 @@ public class CloServiceImpl implements CloService {
         c.setSyllabus(s);
         c.setCode(req.code().trim());
         c.setDescription(req.description().trim());
-        c.setDomain(req.domain());
-        c.setWeight(req.weight());
         if (req.active() != null) {
             c.setActive(req.active());
         } else {
@@ -71,8 +69,6 @@ public class CloServiceImpl implements CloService {
 
         c.setCode(req.code().trim());
         c.setDescription(req.description().trim());
-        c.setDomain(req.domain());
-        c.setWeight(req.weight());
         c.setActive(req.active() != null ? req.active() : c.getActive());
 
         return toDto(cloRepo.save(c));
@@ -108,8 +104,6 @@ public class CloServiceImpl implements CloService {
                 c.getSyllabus().getId(),
                 c.getCode(),
                 c.getDescription(),
-                c.getDomain(),
-                c.getWeight(),
                 c.getActive()
         );
     }
