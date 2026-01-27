@@ -139,7 +139,7 @@ export default function HodPage() {
                             className="lec-link"
                             onClick={() => nav("/hod/collab")}
                         >
-                            🧩 Cộng tác (DRAFT)
+                            🧩 Cộng tác
                         </button>
                     </div>
 

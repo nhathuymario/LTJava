@@ -21,6 +21,7 @@
 } */
 
 .brand img {
+    cursor: pointer;
     height: 35px;
     width: auto;
 }

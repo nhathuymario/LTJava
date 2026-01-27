@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { login } from '../services/auth'
 import './login.css'
+import heroImg from "../assets/image/login-picture.png";
 
 export default function LoginPage() {
     const [username, setUsername] = useState('')
@@ -47,9 +48,17 @@ export default function LoginPage() {
             </nav>
 
             <div className="uth-hero">
-                <div className="uth-hero-overlay" />
+                <div
+                    className="uth-hero-overlay"
+                    style={{
+                        backgroundImage: `
+      linear-gradient(120deg, rgba(0,0,0,.35), rgba(0,0,0,.1)),
+      url(${heroImg})
+    `,
+                    }}
+                />
                 <div className="uth-login-card">
-                    <h2 className="uth-title">Đăng nhập vào Elearning</h2>
+                    <h2 className="uth-title">Đăng nhập</h2>
                     {error && <div className="uth-alert">{error}</div>}
                     <form className="uth-form" onSubmit={handleSubmit}>
                         <input

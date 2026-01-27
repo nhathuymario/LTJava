@@ -36,6 +36,7 @@ import HodDraftSyllabiByCoursePage from "./pages/hod/assign/HodDraftSyllabiByCou
 import HodReviewManagePage  from "./pages/hod/assign/HodReviewManagePage ";
 import LecturerSyllabusReviewsPage  from "./pages/lecturer/comment/LecturerSyllabusReviewsPage";
 import LecturerCloPloPage  from "./pages/lecturer/clo-plo/LecturerCloPloPage";
+import NotificationsPage from "./pages/notifications/NotificationsPage"
 
 export default function App() {
     return (
@@ -43,8 +44,8 @@ export default function App() {
             <Routes>
 
                 <Route path="/" element={<Navigate to="/login" replace />} />
-
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/profile/edit" element={<ProfileEditPage />} />
                 <Route path="/profile/password" element={<ChangePasswordPage />} />
