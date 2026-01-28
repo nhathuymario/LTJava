@@ -1,17 +1,23 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
     plugins: [react()],
     server: {
         proxy: {
-            '/api': {
-                target: 'http://localhost:8081', // cổng backend của bạn
+            // API backend
+            "/api": {
+                target: "http://localhost:8081",
                 changeOrigin: true,
                 secure: false,
-                // Nếu backend KHÔNG có prefix /api, bật rewrite:
-                // rewrite: (p) => p.replace(/^\/api/, ''),
+            },
+
+            // static files (avatars, uploads, etc.)
+            "/uploads": {
+                target: "http://localhost:8081",
+                changeOrigin: true,
+                secure: false,
             },
         },
     },
-})
+});

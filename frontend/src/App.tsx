@@ -29,7 +29,8 @@ import LecturerSyllabusDetailPage  from "./pages/lecturer/syllabus/LecturerSylla
 import LecturerSyllabusEdit  from "./pages/lecturer/syllabus/edit";
 import PrincipalCourseDetailPage from "./pages/principal/course-detail";
 import StudentCourseSyllabusPage from "./pages/student/course-syllabus"
-import StudentSyllabusDetailPage from "./pages/student/syllabus/syllabus-detail"
+import SyllabusDetailPage from "./pages/lecturer/syllabus/LecturerSyllabusDetailPage";
+
 import StudentNotificationsPage from "./pages/student/notifications/notifications"
 import StudentRegisterCoursePage from "./pages/student/courses/register-course"
 import HodCollabCoursesPage from "./pages/hod/assign/HodCollabCoursesPage";
@@ -46,9 +47,33 @@ export default function App() {
             <Routes>
 
 
+                {/* ===== VIEW CHUNG SYLLABUS (ALL ROLES) ===== */}
+                <Route
+                    element={
+                        <RequireAuth
+                            allowedRoles={[
+                                "SYSTEM_ADMIN","ROLE_SYSTEM_ADMIN",
+                                "AA","ROLE_AA",
+                                "LECTURER","ROLE_LECTURER",
+                                "HOD","ROLE_HOD",
+                                "PRINCIPAL","ROLE_PRINCIPAL",
+                                "STUDENT","ROLE_STUDENT",
+                            ]}
+                        />
+                    }
+                >
+                    <Route element={<AppLayout />}>
+                        <Route
+                            path="/syllabus/:syllabusId"
+                            element={<SyllabusDetailPage />}
+                        />
+                    </Route>
+                </Route>
 
 
-                        <Route path="materials" element={<div>Materials</div>} />
+
+
+                <Route path="materials" element={<div>Materials</div>} />
                         <Route path="assignments" element={<div>Assignments</div>} />
                         <Route path="grades" element={<div>Grades</div>} />
 
@@ -107,7 +132,11 @@ export default function App() {
                         <Route path="/lecturer/syllabus/new" element={<LecturerSyllabusNewPage />} />
                         <Route path="/lecturer/syllabus/:syllabusId/edit" element={<LecturerSyllabusEdit/>} />
                         <Route path="/lecturer/syllabus/:id/reviews" element={<LecturerSyllabusReviewsPage/>} />
-                        <Route path="/lecturer/syllabus" element={<Navigate to="/lecturer" replace />} />
+                        <Route
+                            path="/lecturer/syllabus/:syllabusId"
+                            element={<Navigate to="/syllabus/:syllabusId" replace />}
+                        />
+
                         <Route
                             path="/lecturer/syllabus/:syllabusId/outcomes"
                             element={<LecturerSyllabusOutcomesPage />}
@@ -137,7 +166,11 @@ export default function App() {
                     <Route element={<AppLayout />}>
                         <Route path="/student" element={<StudentPage />} />
                         <Route path="/student/courses/:courseId" element={<StudentCourseSyllabusPage />} />
-                        <Route path="/student/syllabus/:syllabusId" element={<StudentSyllabusDetailPage />} />
+                        <Route
+                            path="/student/syllabus/:syllabusId"
+                            element={<Navigate to="/syllabus/:syllabusId" replace />}
+                        />
+
                         <Route path="/student/courses/register" element={<StudentRegisterCoursePage />} />
                         <Route path="/student/notifications" element={<StudentNotificationsPage />} />
                     </Route>

@@ -17,7 +17,7 @@ public class CloPloMatrixController {
 
     // HoD/AA/Principal/Lecturer đều xem được (tùy bạn nới rộng/thu hẹp)
     @GetMapping("/api/syllabus/{syllabusId}/clo-plo-matrix")
-    @PreAuthorize("hasAnyRole('LECTURER','HOD','AA','PRINCIPAL','SYSTEM_ADMIN')")
+    @PreAuthorize("hasAnyRole('LECTURER','HOD','AA','PRINCIPAL','SYSTEM_ADMIN','STUDENT')")
     public ResponseEntity<CloPloMatrixRes> getMatrix(
             @PathVariable Long syllabusId,
             @RequestParam String scopeKey

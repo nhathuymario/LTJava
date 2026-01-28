@@ -115,7 +115,9 @@ export default function AACourseDetailPage() {
                             ) : (
                                 syllabi.map((s: any) => (
                                     <div key={s.id} className="syllabus-folder">
-                                        <div className="syllabus-left">
+                                        <div className="syllabus-left"
+                                             onClick={() => nav(`/syllabus/${s.id}`)}
+                                        >
                                             <div className="syllabus-folder-icon">📁</div>
                                             <div className="syllabus-folder-name">
                                                 {s.title}

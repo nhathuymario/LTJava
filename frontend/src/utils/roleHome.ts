@@ -14,6 +14,6 @@ export const roleHomeMap: Record<string, string> = {
     PRINCIPAL: "/principal",
     ROLE_PRINCIPAL: "/principal",
 
-    STUDENT: "/",
-    ROLE_STUDENT: "/",
+    STUDENT: "/student",
+    ROLE_STUDENT: "/student",
 };

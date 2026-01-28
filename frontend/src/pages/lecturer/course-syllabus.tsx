@@ -178,7 +178,7 @@ export default function LecturerCourseDetailPage() {
                                             <div className="syllabus-left">
                                                 <div
                                                     className="syllabus-left syllabus-clickable"
-                                                    onClick={() => nav(`/lecturer/syllabus/${s.id}`)}
+                                                    onClick={() => nav(`/syllabus/${s.id}`)}
                                                 >
                                                 <div className="syllabus-folder-icon">📁</div>
                                                 <div className="syllabus-folder-name">

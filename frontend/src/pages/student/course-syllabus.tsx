@@ -153,9 +153,8 @@ export default function StudentCourseSyllabusPage() {
                                         key={s.id}
                                         className="syllabus-folder"
                                         style={{ cursor: "pointer" }}
-                                        onClick={() =>
-                                            nav(`/student/syllabus/${s.id}`)
-                                        }
+                                        onClick={() => nav(`/syllabus/${s.id}`)}
+
                                     >
                                         <div className="syllabus-left">
                                             <div className="syllabus-folder-icon">

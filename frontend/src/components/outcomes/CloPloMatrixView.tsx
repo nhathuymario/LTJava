@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getCloPloMatrix, type CloPloMatrixRes } from "../../../services/outcomes";
+import { getCloPloMatrix, type CloPloMatrixRes } from "../../services/outcomes";
 
 type Props = {
     syllabusId: number;

@@ -101,3 +101,16 @@ export async function lecturerGetCloPloMatrix(syllabusId: number, scopeKey: stri
 export async function saveCloPloMatrix(syllabusId: number, req: CloPloMatrixSaveReq) {
     await api.put(`/lecturer/syllabus/${syllabusId}/clo-plo-matrix`, req)
 }
+
+// VIEW CHUNG
+export async function viewSyllabusContent(syllabusId: number) {
+    const { data } = await api.get(`/syllabus/${syllabusId}/content`);
+    return data;
+}
+
+// EDIT (LECTURER)
+export async function lecturerSaveSyllabusContent(syllabusId: number, req: any) {
+    const { data } = await api.put(`/lecturer/syllabus/${syllabusId}/content`, req);
+    return data;
+}
+
