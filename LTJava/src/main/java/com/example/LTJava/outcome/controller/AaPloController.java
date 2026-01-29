@@ -21,8 +21,10 @@ public class AaPloController {
 
     @GetMapping
     public ResponseEntity<List<PloDto>> list(@RequestParam String scopeKey) {
-        return ResponseEntity.ok(ploService.listActive(scopeKey));
+        return ResponseEntity.ok(ploService.listAll(scopeKey));
     }
+
+
 
     @PostMapping
     public ResponseEntity<PloDto> create(@RequestBody PloUpsertReq req) {
@@ -33,6 +35,13 @@ public class AaPloController {
     public ResponseEntity<PloDto> update(@PathVariable Long id, @RequestBody PloUpsertReq req) {
         return ResponseEntity.ok(ploService.update(id, req));
     }
+
+    @DeleteMapping("/{id}/hard")
+    public ResponseEntity<Void> hardDelete(@PathVariable Long id) {
+        ploService.hardDelete(id);
+        return ResponseEntity.noContent().build();
+    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

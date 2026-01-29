@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface SyllabusContentRepository
         extends JpaRepository<SyllabusContent, Long> {
-
+    void deleteBySyllabusId(Long syllabusId);
     Optional<SyllabusContent> findBySyllabus_Id(Long syllabusId);
 }

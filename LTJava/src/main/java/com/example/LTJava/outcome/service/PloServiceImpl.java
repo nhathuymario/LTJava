@@ -1,5 +1,6 @@
 package com.example.LTJava.outcome.service;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -20,13 +21,13 @@ public class PloServiceImpl implements PloService {
     }
 
     @Override
-    public List<PloDto> listActive(String scopeKey) {
-        if (scopeKey == null || scopeKey.isBlank()) {
-            throw new IllegalArgumentException("scopeKey is required");
-        }
-        return ploRepo.findByScopeKeyAndActiveTrueOrderByCodeAsc(scopeKey)
-                .stream().map(this::toDto).toList();
+    public List<PloDto> listAll(String scopeKey) {
+        return ploRepo.findByScopeKeyOrderByCodeAsc(scopeKey) // ✅ ALL (không active=true)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
+
 
     @Override
     @Transactional
@@ -37,11 +38,7 @@ public class PloServiceImpl implements PloService {
         p.setScopeKey(req.scopeKey().trim());
         p.setCode(req.code().trim());
         p.setDescription(req.description().trim());
-        if (req.active() != null) {
-            p.setActive(req.active());
-        } else {
-            p.setActive(true);
-        }
+        p.setActive(req.active() != null ? req.active() : true);
 
         return toDto(ploRepo.save(p));
     }
@@ -68,8 +65,25 @@ public class PloServiceImpl implements PloService {
         Plo p = ploRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("PLO not found: " + id));
         p.setActive(false);
+        // save() không bắt buộc nếu entity managed, nhưng cứ save cho chắc
         ploRepo.save(p);
     }
+
+    @Override
+    @Transactional
+    public void hardDelete(Long id) {
+        if (!ploRepo.existsById(id)) {
+            throw new IllegalArgumentException("PLO not found: " + id);
+        }
+        ploRepo.deleteById(id);
+    }
+
+    // Nếu bạn đã thêm endpoint /{id}/hard thì implement thêm trong interface PloService:
+    // @Override
+    // @Transactional
+    // public void hardDelete(Long id) {
+    //     ploRepo.deleteById(id);
+    // }
 
     private void validate(PloUpsertReq req) {
         if (req == null) throw new IllegalArgumentException("Body is required");

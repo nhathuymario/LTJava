@@ -1,139 +1,222 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import "../../../assets/css/pages/lecturer.css";
-import { hasRole, getToken } from "../../../services/auth";
-import type { CourseOutcomes } from "./types";
-import { createEmptyCourseOutcomes } from "./defaults";
-import CloPloMatrixView from "../../../components/outcomes/CloPloMatrixView";
-import { api } from "../../../services/api";
+import { useEffect, useMemo, useState } from "react"
+import { useNavigate, useParams } from "react-router-dom"
+import "../../../assets/css/pages/lecturer.css"
+import { hasRole, getToken } from "../../../services/auth"
+import type { CourseOutcomes } from "./types"
+import { createEmptyCourseOutcomes } from "./defaults"
+import CloPloMatrixView from "../../../components/outcomes/CloPloMatrixView"
 
-/** VIEW CHUNG: GET /api/syllabus/{id}/content */
-async function viewSyllabusContent(syllabusId: number) {
-    const { data } = await api.get(`/syllabus/${syllabusId}/content`);
-    return data;
-}
+// ✅ dùng đúng service của bạn
+import { viewSyllabusContent } from "../../../services/outcomes"
+import { lecturerApi } from "../../../services/lecturer"
 
-/** META: GET /api/syllabus/{id} (academicYear/semester/aiSummary/keywords...) */
+// ===== types (meta) =====
 type SyllabusMeta = {
-    id: number;
-    title?: string;
-    academicYear?: string;
-    semester?: string;
-    aiSummary?: string;
-    keywords?: string;
-    status?: string;
-    version?: number;
-    // nếu backend trả course:
-    course?: { id: number; code?: string; name?: string };
-};
-
-async function getSyllabusMeta(syllabusId: number) {
-    // ⚠️ nếu backend bạn dùng endpoint khác thì đổi dòng này:
-    // const { data } = await api.get(`/student/syllabus/${syllabusId}`);
-    const { data } = await api.get(`/syllabus/${syllabusId}`);
-    return data as SyllabusMeta;
+    id: number
+    title?: string
+    academicYear?: string
+    semester?: string
+    aiSummary?: string
+    keywords?: string
+    status?: string
+    version?: number
+    course?: { id: number; code?: string; name?: string }
 }
 
-function parseKeywords(raw?: string): string[] {
-    if (!raw) return [];
-    return raw
+/** ✅ parse JSON string an toàn (BE đôi khi trả string) */
+function safeJsonParse<T>(v: any, fallback: T): T {
+    if (v === null || v === undefined) return fallback
+    if (typeof v !== "string") return v as T
+    try {
+        return JSON.parse(v) as T
+    } catch {
+        return fallback
+    }
+}
+
+/** ✅ ép array an toàn để tránh .map crash */
+function asArray<T>(v: any, fallback: T[] = []): T[] {
+    if (Array.isArray(v)) return v as T[]
+    // có case BE trả JSON string của array
+    if (typeof v === "string") return safeJsonParse<T[]>(v, fallback)
+    return fallback
+}
+
+/** ✅ pick fallback value */
+function pickFirst(...vals: any[]) {
+    for (const v of vals) {
+        if (v !== null && v !== undefined && String(v).trim() !== "") return v
+    }
+    return null
+}
+
+function parseKeywords(raw: any): string[] {
+    if (!raw) return []
+    if (Array.isArray(raw)) return raw.map((x) => String(x).trim()).filter(Boolean)
+    return String(raw)
         .split(",")
         .map((x) => x.trim())
-        .filter(Boolean);
+        .filter(Boolean)
+}
+
+/** ✅ normalize content để UI không bao giờ crash */
+function normalizeCourseOutcomes(raw: any): CourseOutcomes {
+    const empty = createEmptyCourseOutcomes()
+
+    // generalInfo có thể là string JSON hoặc object
+    const gi = safeJsonParse<Record<string, any>>(raw?.generalInfo, {})
+    const mergedGI = {
+        ...empty.generalInfo,
+        ...(gi ?? {}),
+        ...(raw?.generalInfo && typeof raw.generalInfo === "object" ? raw.generalInfo : {}),
+    }
+
+    // các field array có thể là string JSON / null / object sai
+    const courseObjectives = asArray<string>(raw?.courseObjectives, [])
+    const courseLearningOutcomes = asArray<{ code: string; description: string }>(raw?.courseLearningOutcomes, [])
+    const assessmentMethods = asArray<{ component: string; method: string; clos: string; criteria: string }>(
+        raw?.assessmentMethods,
+        []
+    )
+    const teachingPlan = asArray<any>(raw?.teachingPlan, [])
+    const cloMappings = asArray<any>(raw?.cloMappings, [])
+
+    return {
+        ...empty,
+        ...raw,
+        generalInfo: mergedGI as any,
+
+        description: raw?.description ?? empty.description,
+        studentDuties: raw?.studentDuties ?? empty.studentDuties,
+
+        courseObjectives,
+        courseLearningOutcomes: courseLearningOutcomes.map((x: any) => ({
+            code: x?.code ?? "",
+            description: x?.description ?? "",
+        })) as any,
+
+        assessmentMethods: assessmentMethods.map((m: any) => ({
+            component: m?.component ?? "",
+            method: m?.method ?? "",
+            clos: m?.clos ?? "",
+            criteria: m?.criteria ?? "",
+        })) as any,
+
+        teachingPlan: teachingPlan.map((p: any) => ({
+            week: p?.week ?? "",
+            chapter: p?.chapter ?? "",
+            content: p?.content ?? "",
+            clos: p?.clos ?? "",
+            teaching: p?.teaching ?? "",
+            assessment: p?.assessment ?? "",
+        })) as any,
+
+        cloMappings: cloMappings.map((x: any) => ({
+            clo: x?.clo ?? "",
+            plo: x?.plo ?? "",
+            level: x?.level ?? null,
+        })) as any,
+    }
 }
 
 export default function LecturerSyllabusDetailPage() {
-    const nav = useNavigate();
-    const { syllabusId } = useParams<{ syllabusId: string }>();
+    const nav = useNavigate()
+    const { syllabusId } = useParams<{ syllabusId: string }>()
 
     const sid = useMemo(() => {
-        const n = Number(syllabusId);
-        return Number.isFinite(n) ? n : null;
-    }, [syllabusId]);
+        const n = Number(syllabusId)
+        return Number.isFinite(n) ? n : null
+    }, [syllabusId])
 
-    const [meta, setMeta] = useState<SyllabusMeta | null>(null);
+    const token = getToken()
 
-    const [content, setContent] = useState<CourseOutcomes>(() =>
-        createEmptyCourseOutcomes()
-    );
-    const [loading, setLoading] = useState(true);
-    const [err, setErr] = useState<string | null>(null);
+    const isLecturer = hasRole("LECTURER") || hasRole("ROLE_LECTURER")
+    const isHod = hasRole("HOD") || hasRole("ROLE_HOD")
+    const isAa = hasRole("AA") || hasRole("ROLE_AA")
+    const isPrincipal = hasRole("PRINCIPAL") || hasRole("ROLE_PRINCIPAL")
+    const isAdmin = hasRole("SYSTEM_ADMIN") || hasRole("ROLE_SYSTEM_ADMIN")
+    const isStudent = hasRole("STUDENT") || hasRole("ROLE_STUDENT")
 
-    const token = getToken();
+    const canView = isLecturer || isHod || isAa || isPrincipal || isAdmin || isStudent
 
-    const isLecturer = hasRole("LECTURER") || hasRole("ROLE_LECTURER");
-    const canView =
-        isLecturer ||
-        hasRole("HOD") ||
-        hasRole("ROLE_HOD") ||
-        hasRole("AA") ||
-        hasRole("ROLE_AA") ||
-        hasRole("PRINCIPAL") ||
-        hasRole("ROLE_PRINCIPAL") ||
-        hasRole("SYSTEM_ADMIN") ||
-        hasRole("ROLE_SYSTEM_ADMIN") ||
-        hasRole("STUDENT") ||
-        hasRole("ROLE_STUDENT");
+    const [meta, setMeta] = useState<SyllabusMeta | null>(null)
+    const [content, setContent] = useState<CourseOutcomes>(() => createEmptyCourseOutcomes())
+    const [loading, setLoading] = useState(true)
+    const [err, setErr] = useState<string | null>(null)
 
     useEffect(() => {
         if (!token) {
-            nav("/login", { replace: true });
-            return;
+            nav("/login", { replace: true })
+            return
         }
         if (!canView) {
-            setErr("Bạn không có quyền xem syllabus này.");
-            setLoading(false);
-            return;
+            setErr("Bạn không có quyền xem syllabus này.")
+            setLoading(false)
+            return
         }
         if (sid === null) {
-            setErr("Syllabus ID không hợp lệ.");
-            setLoading(false);
-            return;
+            setErr("Syllabus ID không hợp lệ.")
+            setLoading(false)
+            return
         }
 
-        let cancelled = false;
+        let cancelled = false
 
-        (async () => {
-            setLoading(true);
-            setErr(null);
-            setMeta(null); // ✅ reset meta tránh dùng dữ liệu cũ
+        ;(async () => {
+            setLoading(true)
+            setErr(null)
+            setMeta(null)
 
             try {
-                const [m, c] = await Promise.all([
-                    getSyllabusMeta(sid).catch(() => null),
-                    viewSyllabusContent(sid),
-                ]);
-                if (cancelled) return;
+                // ✅ 1) content view chung
+                const raw = await viewSyllabusContent(sid)
+                if (cancelled) return
+                setContent(normalizeCourseOutcomes(raw))
 
-                setMeta(m);
+                // ✅ 2) meta (nếu được phép)
+                if (isLecturer || isHod || isAa || isPrincipal || isAdmin) {
+                    try {
+                        const m = await lecturerApi.getById(sid)
+                        if (cancelled) return
 
-                const empty = createEmptyCourseOutcomes();
-                setContent({
-                    ...empty,
-                    ...c,
-                    generalInfo: {
-                        ...empty.generalInfo,
-                        ...(c?.generalInfo ?? {}),
-                    },
-                });
+                        const mapped: SyllabusMeta = {
+                            id: m.id,
+                            title: (m as any)?.title,
+                            academicYear: (m as any)?.academicYear,
+                            semester: (m as any)?.semester,
+                            aiSummary: (m as any)?.aiSummary,
+                            keywords: (m as any)?.keywords,
+                            status: (m as any)?.status,
+                            version: (m as any)?.version,
+                            course: (m as any)?.course
+                                ? {
+                                    id: (m as any)?.course?.id,
+                                    code: (m as any)?.course?.code,
+                                    name: (m as any)?.course?.name,
+                                }
+                                : undefined,
+                        }
+
+                        setMeta(mapped)
+                    } catch (e) {
+                        console.warn("Load meta via /lecturer/syllabus/{id} failed:", e)
+                        setMeta(null)
+                    }
+                }
             } catch (e: any) {
-                if (cancelled) return;
-                setErr(
-                    e?.response?.data?.message ||
-                    e?.message ||
-                    "Không tải được nội dung syllabus"
-                );
+                if (cancelled) return
+                setErr(e?.response?.data?.message || e?.message || "Không tải được nội dung syllabus")
             } finally {
-                if (!cancelled) setLoading(false);
+                if (!cancelled) setLoading(false)
             }
-        })();
+        })()
 
         return () => {
-            cancelled = true;
-        };
-    }, [token, canView, sid, nav]);
+            cancelled = true
+        }
+    }, [token, canView, sid, nav, isLecturer, isHod, isAa, isPrincipal, isAdmin])
 
-
+    // ===== Guards UI (không trắng) =====
     if (!token) {
         return (
             <div className="lec-page">
@@ -141,7 +224,7 @@ export default function LecturerSyllabusDetailPage() {
                     <div className="lec-card">Redirecting to login...</div>
                 </div>
             </div>
-        );
+        )
     }
 
     if (token && !canView) {
@@ -159,7 +242,7 @@ export default function LecturerSyllabusDetailPage() {
                     </div>
                 </div>
             </div>
-        );
+        )
     }
 
     if (sid === null) {
@@ -174,33 +257,77 @@ export default function LecturerSyllabusDetailPage() {
                     </div>
                 </div>
             </div>
-        );
+        )
     }
 
-    const keywords = parseKeywords(meta?.keywords);
-    const courseId = meta?.course?.id ?? null;
+    // ===== FALLBACK: ưu tiên meta, không có thì lấy từ content/generalInfo =====
+    const academicYear =
+        pickFirst(
+            meta?.academicYear,
+            (content as any)?.academicYear,
+            (content as any)?.generalInfo?.academicYear,
+            (content as any)?.academic_year,
+            (content as any)?.generalInfo?.academic_year
+        ) ?? "—"
+
+    const semester =
+        pickFirst(
+            meta?.semester,
+            (content as any)?.semester,
+            (content as any)?.generalInfo?.semester,
+            (content as any)?.sem,
+            (content as any)?.generalInfo?.sem
+        ) ?? "—"
+
+    const aiSummary =
+        pickFirst(
+            meta?.aiSummary,
+            (content as any)?.aiSummary,
+            (content as any)?.ai_summary,
+            (content as any)?.generalInfo?.aiSummary,
+            (content as any)?.generalInfo?.ai_summary
+        ) ?? "—"
+
+    const keywordsRaw =
+        pickFirst(
+            meta?.keywords,
+            (content as any)?.keywords,
+            (content as any)?.key_words,
+            (content as any)?.generalInfo?.keywords,
+            (content as any)?.generalInfo?.key_words
+        ) ?? ""
+
+    const keywords = parseKeywords(keywordsRaw)
+
+    const courseIdFromMeta = meta?.course?.id ?? null
+    const courseIdFromContent = (() => {
+        const gi: any = (content as any)?.generalInfo ?? {}
+        const v = gi.courseId ?? gi.course_id ?? null
+        const n = Number(v)
+        return Number.isFinite(n) ? n : null
+    })()
+    const courseId = courseIdFromMeta ?? courseIdFromContent
+
+    const scopeKey = (content as any)?.generalInfo?.scopeKey
+
+    // ✅ safe arrays (tuy đã normalize nhưng cứ giữ cho chắc)
+    const courseObjectives = Array.isArray(content.courseObjectives) ? content.courseObjectives : []
+    const clos = Array.isArray(content.courseLearningOutcomes) ? content.courseLearningOutcomes : []
+    const assessmentMethods = Array.isArray(content.assessmentMethods) ? content.assessmentMethods : []
+    const teachingPlan = Array.isArray(content.teachingPlan) ? content.teachingPlan : []
 
     return (
         <div className="lec-page">
             <div className="lec-container">
                 <div className="manage-toolbar">
-                    <button
-                        className="lec-btn"
-                        onClick={() => (courseId ? nav(`/lecturer/courses/${courseId}`) : nav(-1))}
-                    >
+                    <button className="lec-btn" onClick={() => (courseId ? nav(`/lecturer/courses/${courseId}`) : nav(-1))}>
                         ← Back
                     </button>
-
-
 
                     <div style={{ flex: 1 }} />
 
                     {isLecturer && (
-                        <button
-                            className="lec-btn"
-                            disabled={loading}
-                            onClick={() => nav(`/lecturer/syllabus/${sid}/outcomes`)}
-                        >
+                        <button className="lec-btn" disabled={loading} onClick={() => nav(`/lecturer/syllabus/${sid}/outcomes`)}>
                             Outcomes (Edit)
                         </button>
                     )}
@@ -211,49 +338,43 @@ export default function LecturerSyllabusDetailPage() {
 
                 {!loading && !err && (
                     <>
-                        {/* HEADER giống Word */}
+                        {/* HEADER */}
                         <div className="lec-card" style={{ marginTop: 12 }}>
-                            <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 6 }}>
-                                TRƯỜNG ĐH GIAO THÔNG VẬN TẢI TP.HCM
-                            </div>
+                            <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 6 }}>TRƯỜNG ĐH GIAO THÔNG VẬN TẢI TP.HCM</div>
                             <h2 className="lec-section-title" style={{ marginTop: 0 }}>
                                 ĐỀ CƯƠNG CHI TIẾT HỌC PHẦN
                             </h2>
 
                             <div style={{ marginTop: 10, color: "#6b6f76" }}>
-                                {content.generalInfo.nameVi ? (
+                                {content.generalInfo?.nameVi ? (
                                     <>
                                         Course: <b>{content.generalInfo.nameVi}</b> ·{" "}
                                     </>
                                 ) : null}
-                                {content.generalInfo.codeId ? (
+                                {content.generalInfo?.codeId ? (
                                     <>
                                         Code: <b>{content.generalInfo.codeId}</b> ·{" "}
                                     </>
                                 ) : null}
-                                {content.generalInfo.credits ? (
+                                {content.generalInfo?.credits ? (
                                     <>
                                         Credits: <b>{content.generalInfo.credits}</b>
                                     </>
                                 ) : null}
                             </div>
 
-                            {/* ✅ CHỈ THÊM: AY + Semester (không ảnh hưởng layout cũ) */}
                             <div style={{ marginTop: 6, color: "#6b6f76", fontSize: 13 }}>
-                                AY: <b>{meta?.academicYear || "—"}</b> · Sem:{" "}
-                                <b>{meta?.semester || "—"}</b>
+                                AY: <b>{academicYear}</b> · Sem: <b>{semester}</b>
                             </div>
                         </div>
 
-                        {/* ✅ CHỈ THÊM: AI Summary + Keywords */}
+                        {/* AI Summary + Keywords */}
                         <div className="lec-card" style={{ marginTop: 12 }}>
                             <h3 className="lec-section-title">AI Summary & Keywords</h3>
 
                             <div style={{ marginBottom: 12 }}>
                                 <div style={{ fontWeight: 700, marginBottom: 6 }}>Tóm tắt (AI)</div>
-                                <div style={{ whiteSpace: "pre-wrap" }}>
-                                    {meta?.aiSummary || "—"}
-                                </div>
+                                <div style={{ whiteSpace: "pre-wrap" }}>{aiSummary}</div>
                             </div>
 
                             <div>
@@ -272,8 +393,8 @@ export default function LecturerSyllabusDetailPage() {
                                                     fontSize: 13,
                                                 }}
                                             >
-                                                {k}
-                                            </span>
+                        {k}
+                      </span>
                                         ))}
                                     </div>
                                 ) : (
@@ -292,44 +413,42 @@ export default function LecturerSyllabusDetailPage() {
                                     <td style={{ width: 180, fontWeight: 600 }}>Tên học phần</td>
                                     <td>
                                         <div>
-                                            <b>Tiếng Việt:</b> {content.generalInfo.nameVi || "—"}
+                                            <b>Tiếng Việt:</b> {content.generalInfo?.nameVi || "—"}
                                         </div>
                                         <div>
-                                            <b>Tiếng Anh:</b> {content.generalInfo.nameEn || "—"}
+                                            <b>Tiếng Anh:</b> {content.generalInfo?.nameEn || "—"}
                                         </div>
                                     </td>
                                     <td style={{ width: 140, fontWeight: 600 }}>Mã HP</td>
-                                    <td style={{ width: 140 }}>{content.generalInfo.codeId || "—"}</td>
+                                    <td style={{ width: 140 }}>{content.generalInfo?.codeId || "—"}</td>
                                 </tr>
 
                                 <tr>
                                     <td style={{ fontWeight: 600 }}>Số tín chỉ</td>
-                                    <td colSpan={3}>{content.generalInfo.credits || "—"}</td>
+                                    <td colSpan={3}>{content.generalInfo?.credits || "—"}</td>
                                 </tr>
 
                                 <tr>
                                     <td style={{ fontWeight: 600 }}>Phân bố thời gian</td>
                                     <td colSpan={3}>
-                                        LT/BT: {content.generalInfo.theory || "—"} · TH/TN:{" "}
-                                        {content.generalInfo.practice || "—"} · DA/TL:{" "}
-                                        {content.generalInfo.project || "—"} · Tổng:{" "}
-                                        {content.generalInfo.total || "—"} · Tự học:{" "}
-                                        {content.generalInfo.selfStudy || "—"}
+                                        LT/BT: {content.generalInfo?.theory || "—"} · TH/TN: {content.generalInfo?.practice || "—"} · DA/TL:{" "}
+                                        {content.generalInfo?.project || "—"} · Tổng: {content.generalInfo?.total || "—"} · Tự học:{" "}
+                                        {content.generalInfo?.selfStudy || "—"}
                                     </td>
                                 </tr>
 
                                 <tr>
                                     <td style={{ fontWeight: 600 }}>HP tiên quyết</td>
-                                    <td>{content.generalInfo.prerequisiteId || "—"}</td>
+                                    <td>{content.generalInfo?.prerequisiteId || "—"}</td>
                                     <td style={{ fontWeight: 600 }}>HP song hành</td>
-                                    <td>{content.generalInfo.corequisiteId || "—"}</td>
+                                    <td>{content.generalInfo?.corequisiteId || "—"}</td>
                                 </tr>
 
                                 <tr>
                                     <td style={{ fontWeight: 600 }}>Loại học phần</td>
-                                    <td>{content.generalInfo.courseType || "—"}</td>
+                                    <td>{content.generalInfo?.courseType || "—"}</td>
                                     <td style={{ fontWeight: 600 }}>Thuộc thành phần</td>
-                                    <td>{content.generalInfo.component || "—"}</td>
+                                    <td>{content.generalInfo?.component || "—"}</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -344,9 +463,9 @@ export default function LecturerSyllabusDetailPage() {
                         {/* 3. Mục tiêu */}
                         <div className="lec-card" style={{ marginTop: 12 }}>
                             <h3 className="lec-section-title">3. Mục tiêu học phần (COs)</h3>
-                            {content.courseObjectives?.length ? (
+                            {courseObjectives.length ? (
                                 <ul style={{ marginTop: 6 }}>
-                                    {content.courseObjectives.map((x, i) => (
+                                    {courseObjectives.map((x, i) => (
                                         <li key={i}>
                                             <b>CO{i + 1}:</b> {x || "—"}
                                         </li>
@@ -360,7 +479,7 @@ export default function LecturerSyllabusDetailPage() {
                         {/* 4. CLOs */}
                         <div className="lec-card" style={{ marginTop: 12 }}>
                             <h3 className="lec-section-title">4. Chuẩn đầu ra học phần (CLOs)</h3>
-                            {content.courseLearningOutcomes?.length ? (
+                            {clos.length ? (
                                 <table className="lec-table">
                                     <thead>
                                     <tr>
@@ -369,12 +488,10 @@ export default function LecturerSyllabusDetailPage() {
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {content.courseLearningOutcomes.map((clo, idx) => (
+                                    {clos.map((clo: any, idx: number) => (
                                         <tr key={idx}>
-                                            <td style={{ fontWeight: 600 }}>
-                                                {clo.code || `CLO${idx + 1}`}
-                                            </td>
-                                            <td>{clo.description || "—"}</td>
+                                            <td style={{ fontWeight: 600 }}>{clo?.code || `CLO${idx + 1}`}</td>
+                                            <td>{clo?.description || "—"}</td>
                                         </tr>
                                     ))}
                                     </tbody>
@@ -384,9 +501,9 @@ export default function LecturerSyllabusDetailPage() {
                             )}
                         </div>
 
-                        {/* 4.1 CLO-PLO VIEW (guard scopeKey) */}
-                        {content.generalInfo.scopeKey ? (
-                            <CloPloMatrixView syllabusId={sid} scopeKey={content.generalInfo.scopeKey} />
+                        {/* 4.1 CLO-PLO MATRIX */}
+                        {scopeKey ? (
+                            <CloPloMatrixView syllabusId={sid} scopeKey={scopeKey} />
                         ) : (
                             <div className="lec-card" style={{ marginTop: 12 }}>
                                 <div className="lec-empty">Chưa có scopeKey nên chưa xem được CLO–PLO Matrix.</div>
@@ -403,7 +520,7 @@ export default function LecturerSyllabusDetailPage() {
                         <div className="lec-card" style={{ marginTop: 12 }}>
                             <h3 className="lec-section-title">6. Phương pháp kiểm tra, đánh giá</h3>
 
-                            {content.assessmentMethods?.length ? (
+                            {assessmentMethods.length ? (
                                 <table className="lec-table">
                                     <thead>
                                     <tr>
@@ -411,16 +528,15 @@ export default function LecturerSyllabusDetailPage() {
                                         <th>Phương pháp/Hình thức</th>
                                         <th>CLOs</th>
                                         <th>Tiêu chí</th>
-                                        <th style={{ width: 120, textAlign: "center" }}>Trọng số</th>
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {content.assessmentMethods.map((m, idx) => (
+                                    {assessmentMethods.map((m: any, idx: number) => (
                                         <tr key={idx}>
-                                            <td>{m.component || "—"}</td>
-                                            <td>{m.method || "—"}</td>
-                                            <td>{m.clos || "—"}</td>
-                                            <td>{m.criteria || "—"}</td>
+                                            <td>{m?.component || "—"}</td>
+                                            <td>{m?.method || "—"}</td>
+                                            <td>{m?.clos || "—"}</td>
+                                            <td>{m?.criteria || "—"}</td>
                                         </tr>
                                     ))}
                                     </tbody>
@@ -434,7 +550,7 @@ export default function LecturerSyllabusDetailPage() {
                         <div className="lec-card" style={{ marginTop: 12 }}>
                             <h3 className="lec-section-title">7. Kế hoạch giảng dạy và học tập</h3>
 
-                            {content.teachingPlan?.length ? (
+                            {teachingPlan.length ? (
                                 <table className="lec-table">
                                     <thead>
                                     <tr>
@@ -446,13 +562,13 @@ export default function LecturerSyllabusDetailPage() {
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {content.teachingPlan.map((p, idx) => (
+                                    {teachingPlan.map((p: any, idx: number) => (
                                         <tr key={idx}>
-                                            <td>{p.week || "—"}</td>
-                                            <td>{p.content || "—"}</td>
-                                            <td>{p.clos || "—"}</td>
-                                            <td style={{ whiteSpace: "pre-wrap" }}>{p.teaching || "—"}</td>
-                                            <td>{p.assessment || "—"}</td>
+                                            <td>{p?.week || "—"}</td>
+                                            <td>{p?.content || "—"}</td>
+                                            <td>{p?.clos || "—"}</td>
+                                            <td style={{ whiteSpace: "pre-wrap" }}>{p?.teaching || "—"}</td>
+                                            <td>{p?.assessment || "—"}</td>
                                         </tr>
                                     ))}
                                     </tbody>
@@ -465,5 +581,5 @@ export default function LecturerSyllabusDetailPage() {
                 )}
             </div>
         </div>
-    );
+    )
 }

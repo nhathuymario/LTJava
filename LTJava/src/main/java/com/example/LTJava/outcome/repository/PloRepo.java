@@ -7,5 +7,8 @@ import java.util.List;
 
 public interface PloRepo extends JpaRepository<Plo, Long> {
     List<Plo> findByScopeKeyAndActiveTrueOrderByCodeAsc(String scopeKey);
+    List<Plo> findByScopeKeyOrderByCodeAsc(String scopeKey);
+    List<Plo> findByScopeKey(String scopeKey);
+
 }
 

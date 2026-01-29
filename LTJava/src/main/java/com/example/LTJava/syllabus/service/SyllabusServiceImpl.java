@@ -14,11 +14,7 @@ import com.example.LTJava.syllabus.entity.Syllabus;
 import com.example.LTJava.syllabus.entity.SyllabusHistory;
 import com.example.LTJava.syllabus.entity.SyllabusStatus;
 import com.example.LTJava.syllabus.exception.ResourceNotFoundException;
-import com.example.LTJava.syllabus.repository.CourseRepository;
-import com.example.LTJava.syllabus.repository.NotificationRepository;
-import com.example.LTJava.syllabus.repository.SubscriptionRepository;
-import com.example.LTJava.syllabus.repository.SyllabusHistoryRepository;
-import com.example.LTJava.syllabus.repository.SyllabusRepository;
+import com.example.LTJava.syllabus.repository.*;
 import com.example.LTJava.user.entity.User;
 import com.example.LTJava.user.repository.UserRepository;
 
@@ -35,6 +31,9 @@ public class SyllabusServiceImpl implements SyllabusService {
     private final SyllabusRepository syllabusRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    @Autowired
+    private final SyllabusContentRepository syllabusContentRepository;
+
 
     @Autowired private SubscriptionRepository subRepo;
     @Autowired private NotificationRepository notiRepo;
@@ -43,10 +42,12 @@ public class SyllabusServiceImpl implements SyllabusService {
 
     public SyllabusServiceImpl(SyllabusRepository syllabusRepository,
                                CourseRepository courseRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository,
+                               SyllabusContentRepository syllabusContentRepository) {
         this.syllabusRepository = syllabusRepository;
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
+        this.syllabusContentRepository = syllabusContentRepository;
     }
 
     // =========================
@@ -158,7 +159,7 @@ public class SyllabusServiceImpl implements SyllabusService {
     }
 
 
-
+    @Transactional
     @Override
     public void deleteSyllabus(Long syllabusId, Long lecturerId) {
         Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
@@ -169,6 +170,8 @@ public class SyllabusServiceImpl implements SyllabusService {
             throw new RuntimeException("Chỉ syllabus ở trạng thái DRAFT mới được xóa");
         }
 
+        // 1) xóa content trước
+        syllabusContentRepository.deleteBySyllabusId(syllabusId);
         // ✅ nếu có syllabus_history FK -> syllabus thì cần xóa history trước (nếu không cascade)
         historyRepository.deleteBySyllabusId(syllabusId);
 

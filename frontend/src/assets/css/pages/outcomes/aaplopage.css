@@ -1,0 +1,229 @@
+/* ===== AA • PLO page (clean + buttons fit text) ===== */
+
+.manage-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Grid: [code] [desc] [add] */
+.outcome-form-grid-plo {
+    display: grid;
+    grid-template-columns: 180px 1fr 120px;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.outcome-table-wrap {
+    margin-top: 14px;
+    overflow-x: auto;
+}
+
+.outcome-empty {
+    opacity: 0.7;
+    text-align: center;
+}
+
+.outcome-loading {
+    margin-top: 10px;
+    opacity: 0.7;
+}
+
+.outcome-error {
+    margin-top: 10px;
+    color: #b00020;
+}
+
+/* ===== Table ===== */
+.lec-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #e9e9ee;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.lec-table thead th {
+    font-size: 13px;
+    font-weight: 750;
+    color: #2b2b2b;
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #eeeeee;
+    background: #fafafb;
+}
+
+.lec-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.lec-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Input trong table gọn lại */
+.lec-table .lec-search {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 10px;
+}
+
+/* ===== Buttons ===== */
+.lec-btn {
+    /* để nút tự vừa chữ, không bị bó */
+    min-height: 38px;
+    padding: 6px 16px;
+    border-radius: 10px;
+
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.2;
+    white-space: nowrap;
+
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Trong table actions: đảm bảo đủ rộng cho Disable */
+.lec-table td .lec-btn {
+    min-width: 92px;
+}
+
+.lec-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Reload (secondary) */
+.lec-btn.btn-reload {
+    background: #f5f6fa;
+    color: #333;
+    border-color: #dcdde6;
+}
+
+.lec-btn.btn-reload:hover:not(:disabled) {
+    background: #eceef5;
+}
+
+/* Add (primary) */
+.lec-btn.btn-add {
+    background: #2563eb;
+    color: #fff;
+    padding: 6px 18px; /* add rộng hơn chút cho đẹp */
+}
+
+.lec-btn.btn-add:hover:not(:disabled) {
+    background: #1e4fd6;
+}
+
+/* Disable (danger light) */
+.lec-btn.btn-disable {
+    background: #fff1f2;
+    color: #9f1239;
+    border-color: #fecdd3;
+}
+
+.lec-btn.btn-disable:hover:not(:disabled) {
+    background: #ffe4e6;
+}
+
+.lec-btn.btn-reload:active:not(:disabled),
+.lec-btn.btn-add:active:not(:disabled),
+.lec-btn.btn-disable:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+/* ===== Fix: Reload bị bó chữ trong toolbar ===== */
+.manage-toolbar .lec-search {
+    flex: 1 1 320px;       /* input co giãn */
+    min-width: 220px;
+}
+
+.manage-toolbar .lec-btn {
+    flex: 0 0 auto;        /* nút không bị co */
+    width: auto !important;
+    max-width: none !important;
+    min-width: 96px;       /* đủ chứa chữ Reload */
+    padding: 6px 16px !important;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.page-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.page-sub {
+    opacity: 0.7;
+    font-size: 13px;
+}
+
+.row-inactive {
+    opacity: 0.6;
+}
+
+.actions-cell {
+    display: flex;
+    justify-content: center;   /* căn giữa ngang */
+    align-items: center;       /* căn giữa dọc */
+    gap: 8px;                  /* khoảng cách giữa các nút */
+    white-space: nowrap;
+}
+
+
+/* pill */
+.pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+
+.pill-on {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.pill-off {
+    background: #f3f4f6;
+    color: #374151;
+    border-color: #e5e7eb;
+}
+
+/* enable */
+.lec-btn.btn-enable {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+.lec-btn.btn-enable:hover:not(:disabled) {
+    background: #d1fae5;
+}
+
+.lec-btn.btn-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+.lec-btn.btn-danger:hover:not(:disabled) {
+    background: #fecaca;
+}

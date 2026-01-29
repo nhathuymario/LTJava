@@ -60,8 +60,28 @@ export async function aaUpdatePlo(id: number, req: PloUpsertReq) {
     const { data } = await api.put<PloDto>(`/aa/plos/${id}`, req)
     return data
 }
-export async function aaDeletePlo(id: number) {
+export async function aaSoftDeletePlo(id: number) {
+    // disable/ẩn
     await api.delete(`/aa/plos/${id}`)
+}
+
+export async function aaHardDeletePlo(id: number) {
+    // xóa hẳn DB
+    await api.delete(`/aa/plos/${id}/hard`)
+}
+
+/**
+ * ✅ Enable/Disable chuẩn bằng UPDATE (không cần gọi DELETE)
+ * Vì controller PUT nhận PloUpsertReq full fields
+ */
+export async function aaSetPloActive(id: number, active: boolean, current: PloDto) {
+    const { data } = await api.put<PloDto>(`/aa/plos/${id}`, {
+        scopeKey: current.scopeKey,
+        code: current.code,
+        description: current.description,
+        active,
+    })
+    return data
 }
 
 /** ===== Lecturer: CLO ===== */
