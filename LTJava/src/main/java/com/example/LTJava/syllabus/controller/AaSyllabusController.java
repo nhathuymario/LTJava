@@ -55,4 +55,8 @@ public class AaSyllabusController {
         syllabusService.setCourseRelations(req);
     }
 
+    @GetMapping("/courses/{courseId}/relations")
+    public ResponseEntity<?> getRelations(@PathVariable Long courseId) {
+        return ResponseEntity.ok(syllabusService.getCourseRelations(courseId));
+    }
 }

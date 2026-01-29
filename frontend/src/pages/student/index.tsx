@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/css/pages/lecturer.css";
+import "../../assets/css/pages/student.css";
 import { hasRole, getToken } from "../../services/auth";
 import { studentApi, type Course } from "../../services/student";
 
 export default function StudentCoursesPage() {
     const nav = useNavigate();
 
+    const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+
+
     const [courses, setCourses] = useState<Course[]>([]);
-    const [unread, setUnread] = useState<number>(0);
+    // const [unread, setUnread] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [err, setErr] = useState<string | null>(null);
 
@@ -37,13 +40,14 @@ export default function StudentCoursesPage() {
             setLoading(true);
             setErr(null);
             try {
-                const [coursesRes, unreadRes] = await Promise.all([
+                const [coursesRes] = await Promise.all([
+                // const [coursesRes, unreadRes] = await Promise.all([
                     studentApi.myCourses(),
                     studentApi.unreadCount(), // ✅ CHỈ LẤY SỐ
                 ]);
 
                 setCourses(coursesRes || []);
-                setUnread(Number(unreadRes || 0));
+                // setUnread(Number(unreadRes || 0));
             } catch (e: any) {
                 setErr(e?.response?.data?.message || e?.message || "Không tải được dữ liệu");
             } finally {
@@ -97,29 +101,29 @@ export default function StudentCoursesPage() {
                             <option value="name_desc">Z → A</option>
                         </select>
 
-                        {/* 🔔 CHỈ HIỂN THỊ SỐ */}
-                        <button
-                            className="lec-select"
-                            onClick={() => nav("/student/notifications")}
-                        >
-                            🔔 Notifications
-                            {unread > 0 && (
-                                <span
-                                    style={{
-                                        marginLeft: 6,
-                                        background: "#ef4444",
-                                        color: "#fff",
-                                        borderRadius: 999,
-                                        padding: "2px 8px",
-                                        fontSize: 12,
-                                        lineHeight: "14px",
-                                        fontWeight: 700,
-                                    }}
-                                >
-                  {unread}
-                </span>
-                            )}
-                        </button>
+                {/*        /!* 🔔 CHỈ HIỂN THỊ SỐ *!/*/}
+                {/*        <button*/}
+                {/*            className="lec-select"*/}
+                {/*            onClick={() => nav("/student/notifications")}*/}
+                {/*        >*/}
+                {/*            🔔 Notifications*/}
+                {/*            {unread > 0 && (*/}
+                {/*                <span*/}
+                {/*                    style={{*/}
+                {/*                        marginLeft: 6,*/}
+                {/*                        background: "#ef4444",*/}
+                {/*                        color: "#fff",*/}
+                {/*                        borderRadius: 999,*/}
+                {/*                        padding: "2px 8px",*/}
+                {/*                        fontSize: 12,*/}
+                {/*                        lineHeight: "14px",*/}
+                {/*                        fontWeight: 700,*/}
+                {/*                    }}*/}
+                {/*                >*/}
+                {/*  {unread}*/}
+                {/*</span>*/}
+                {/*            )}*/}
+                {/*        </button>*/}
                     </div>
 
                     {loading && <div className="lec-empty">Đang tải...</div>}
@@ -134,20 +138,71 @@ export default function StudentCoursesPage() {
                                     <div
                                         key={c.id}
                                         className="course-row"
-                                        style={{ cursor: "pointer" }}
+                                        style={{
+                                            cursor: "pointer",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                            position: "relative",
+                                        }}
                                         onClick={() =>
                                             nav(`/student/courses/${c.id}`, { state: { course: c } })
                                         }
                                     >
-                                        <div className={`course-thumb thumb-${idx % 4}`} />
-                                        <div className="course-info">
-                                            <div className="course-name">
-                                                [{c.code || "N/A"}] - {c.name || "Unnamed course"}
+                                        {/* LEFT */}
+                                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                            <div className={`course-thumb thumb-${idx % 4}`} />
+                                            <div className="course-info">
+                                                <div className="course-name">
+                                                    [{c.code || "N/A"}] - {c.name || "Unnamed course"}
+                                                </div>
+                                                <div className="course-sub">Bấm để xem syllabus</div>
                                             </div>
-                                            <div className="course-sub">Bấm để xem syllabus</div>
                                         </div>
+
+                                        {/* RIGHT ⋯ */}
+                                        <div
+                                            className="course-more"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <button
+                                                className="course-more-btn"
+                                                onClick={() =>
+                                                    setOpenMenuId(openMenuId === c.id ? null : c.id)
+                                                }
+                                                aria-label="More"
+                                            >
+                                                ⋮
+                                            </button>
+
+                                            {openMenuId === c.id && (
+                                                <div className="course-more-menu">
+                                                    <button
+                                                        className="course-more-item danger"
+                                                        onClick={async () => {
+                                                            const ok = confirm(`Hủy đăng ký môn "${c.name}"?`);
+                                                            if (!ok) return;
+
+                                                            try {
+                                                                await studentApi.unsubscribeCourse(c.id);
+                                                                setCourses((prev) =>
+                                                                    prev.filter((x) => x.id !== c.id)
+                                                                );
+                                                                setOpenMenuId(null);
+                                                            } catch (e: any) {
+                                                                alert("❌ Không thể hủy đăng ký");
+                                                            }
+                                                        }}
+                                                    >
+                                                        🚫 Hủy đăng ký
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
                                     </div>
                                 ))
+
                             )}
                         </div>
                     )}

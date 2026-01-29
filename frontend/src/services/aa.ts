@@ -2,6 +2,21 @@
 import { api } from "./api";
 import type { NoteRequest, Syllabus, SyllabusStatus } from "./syllabus";
 
+export type CourseRelationsResponse = {
+    courseId: number;
+    prerequisiteIds: number[];
+    parallelIds: number[];
+    supplementaryIds: number[];
+};
+
+export type SetCourseRelationsBody = {
+    courseId: number;
+    prerequisiteIds: number[];
+    parallelIds: number[];
+    supplementaryIds: number[];
+};
+
+
 export const aaApi = {
     listByStatus: (status: SyllabusStatus) =>
         api.get<Syllabus[]>("/aa/syllabus", { params: { status } }).then((r) => r.data),
@@ -11,6 +26,14 @@ export const aaApi = {
 
     reject: (id: number, reason?: string) =>
         api.put<Syllabus>(`/aa/syllabus/${id}/reject`, reason ? ({ note: reason } satisfies NoteRequest) : {}).then((r) => r.data),
+
+    // ✅ NEW: load relations (prefill để sửa/xóa)
+    getCourseRelations: (courseId: number) =>
+        api.get<CourseRelationsResponse>(`/aa/syllabus/courses/${courseId}/relations`).then((r) => r.data),
+
+    // ✅ NEW: set relations (replace list)
+    setCourseRelations: (body: SetCourseRelationsBody) =>
+        api.put<void>("/aa/syllabus/courses/relations", body).then((r) => r.data),
 };
 
 // backward compatible (nếu page cũ còn dùng)

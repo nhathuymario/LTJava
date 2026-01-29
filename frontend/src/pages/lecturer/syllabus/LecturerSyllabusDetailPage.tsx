@@ -13,6 +13,35 @@ async function viewSyllabusContent(syllabusId: number) {
     return data;
 }
 
+/** META: GET /api/syllabus/{id} (academicYear/semester/aiSummary/keywords...) */
+type SyllabusMeta = {
+    id: number;
+    title?: string;
+    academicYear?: string;
+    semester?: string;
+    aiSummary?: string;
+    keywords?: string;
+    status?: string;
+    version?: number;
+    // nếu backend trả course:
+    course?: { id: number; code?: string; name?: string };
+};
+
+async function getSyllabusMeta(syllabusId: number) {
+    // ⚠️ nếu backend bạn dùng endpoint khác thì đổi dòng này:
+    // const { data } = await api.get(`/student/syllabus/${syllabusId}`);
+    const { data } = await api.get(`/syllabus/${syllabusId}`);
+    return data as SyllabusMeta;
+}
+
+function parseKeywords(raw?: string): string[] {
+    if (!raw) return [];
+    return raw
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean);
+}
+
 export default function LecturerSyllabusDetailPage() {
     const nav = useNavigate();
     const { syllabusId } = useParams<{ syllabusId: string }>();
@@ -21,6 +50,8 @@ export default function LecturerSyllabusDetailPage() {
         const n = Number(syllabusId);
         return Number.isFinite(n) ? n : null;
     }, [syllabusId]);
+
+    const [meta, setMeta] = useState<SyllabusMeta | null>(null);
 
     const [content, setContent] = useState<CourseOutcomes>(() =>
         createEmptyCourseOutcomes()
@@ -65,9 +96,16 @@ export default function LecturerSyllabusDetailPage() {
         (async () => {
             setLoading(true);
             setErr(null);
+            setMeta(null); // ✅ reset meta tránh dùng dữ liệu cũ
+
             try {
-                const c = await viewSyllabusContent(sid);
+                const [m, c] = await Promise.all([
+                    getSyllabusMeta(sid).catch(() => null),
+                    viewSyllabusContent(sid),
+                ]);
                 if (cancelled) return;
+
+                setMeta(m);
 
                 const empty = createEmptyCourseOutcomes();
                 setContent({
@@ -94,6 +132,7 @@ export default function LecturerSyllabusDetailPage() {
             cancelled = true;
         };
     }, [token, canView, sid, nav]);
+
 
     if (!token) {
         return (
@@ -138,13 +177,21 @@ export default function LecturerSyllabusDetailPage() {
         );
     }
 
+    const keywords = parseKeywords(meta?.keywords);
+    const courseId = meta?.course?.id ?? null;
+
     return (
         <div className="lec-page">
             <div className="lec-container">
                 <div className="manage-toolbar">
-                    <button className="lec-btn" onClick={() => nav(-1)}>
+                    <button
+                        className="lec-btn"
+                        onClick={() => (courseId ? nav(`/lecturer/courses/${courseId}`) : nav(-1))}
+                    >
                         ← Back
                     </button>
+
+
 
                     <div style={{ flex: 1 }} />
 
@@ -189,6 +236,49 @@ export default function LecturerSyllabusDetailPage() {
                                         Credits: <b>{content.generalInfo.credits}</b>
                                     </>
                                 ) : null}
+                            </div>
+
+                            {/* ✅ CHỈ THÊM: AY + Semester (không ảnh hưởng layout cũ) */}
+                            <div style={{ marginTop: 6, color: "#6b6f76", fontSize: 13 }}>
+                                AY: <b>{meta?.academicYear || "—"}</b> · Sem:{" "}
+                                <b>{meta?.semester || "—"}</b>
+                            </div>
+                        </div>
+
+                        {/* ✅ CHỈ THÊM: AI Summary + Keywords */}
+                        <div className="lec-card" style={{ marginTop: 12 }}>
+                            <h3 className="lec-section-title">AI Summary & Keywords</h3>
+
+                            <div style={{ marginBottom: 12 }}>
+                                <div style={{ fontWeight: 700, marginBottom: 6 }}>Tóm tắt (AI)</div>
+                                <div style={{ whiteSpace: "pre-wrap" }}>
+                                    {meta?.aiSummary || "—"}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div style={{ fontWeight: 700, marginBottom: 6 }}>Keywords</div>
+                                {keywords.length ? (
+                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                        {keywords.map((k) => (
+                                            <span
+                                                key={k}
+                                                style={{
+                                                    display: "inline-block",
+                                                    padding: "4px 10px",
+                                                    borderRadius: 999,
+                                                    border: "1px solid #e5e7eb",
+                                                    background: "#f9fafb",
+                                                    fontSize: 13,
+                                                }}
+                                            >
+                                                {k}
+                                            </span>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div style={{ color: "#6b6f76" }}>—</div>
+                                )}
                             </div>
                         </div>
 

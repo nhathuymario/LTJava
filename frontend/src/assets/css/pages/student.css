@@ -1,0 +1,369 @@
+.lec-page {
+    background: #fff;
+    min-height: 100vh;
+    padding: 24px 0;
+}
+
+.lec-container {
+    width: min(1200px, calc(100% - 48px));
+    margin: 0 auto;
+}
+
+.lec-title {
+    font-size: 40px;
+    margin: 0 0 18px 0;
+    font-weight: 800;
+    color: #2b2b2b;
+}
+
+.wave { font-size: 24px; vertical-align: middle; }
+
+.lec-card {
+    border: 1px solid #e9e9ee;
+    border-radius: 14px;
+    padding: 18px 18px 8px;
+    overflow: visible;
+}
+
+.lec-section-title {
+    font-size: 20px;
+    margin: 0 0 14px 0;
+    font-weight: 750;
+}
+
+.lec-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.lec-search {
+    flex: 1;
+    border: 1px solid #d9d9e3;
+    padding: 10px 12px;
+    border-radius: 10px;
+    outline: none;
+}
+
+.lec-select {
+    border: 1px solid #d9d9e3;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.lec-btn {
+    width: 40px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    display: grid;
+    place-items: center;
+    color: #6b6f76;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+
+
+.lec-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.course-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 56px;
+    gap: 16px;
+    padding: 14px 0;
+    border-top: 1px solid #eeeeee;
+    align-items: center;
+}
+
+.course-thumb {
+    width: 130px;
+    height: 64px;
+    border-radius: 10px;
+    background: #f3f3f7;
+}
+
+/* fake pattern giống ảnh (không cần ảnh thật vẫn ra đẹp) */
+.thumb-0 { background: repeating-radial-gradient(circle at 20% 30%, #f6d68a 0, #f6d68a 8px, #f3c46a 8px, #f3c46a 16px); }
+.thumb-1 { background: repeating-linear-gradient(135deg, #1f7bd6 0, #1f7bd6 10px, #2e8fe8 10px, #2e8fe8 20px); }
+.thumb-2 { background: repeating-linear-gradient(90deg, #6dde7f 0, #6dde7f 10px, #53c56a 10px, #53c56a 20px); }
+.thumb-3 { background: repeating-linear-gradient(0deg, #1fbbaa 0, #1fbbaa 10px, #16a596 10px, #16a596 20px); }
+
+.course-info { display: flex; flex-direction: column; gap: 6px; }
+
+.course-name {
+    font-weight: 750;
+    font-size: 16px;
+    color: #202123;
+}
+
+.course-sub {
+    color: #6b6f76;
+    font-size: 14px;
+}
+
+.course-more {
+    width: 40px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    display: grid;
+    place-items: center;
+    color: #6b6f76;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.course-more:hover { background: #f3f3f7; }
+
+.lec-empty {
+    color: #6b6f76;
+    padding: 14px 0 18px;
+}
+
+
+ /*3 class dưới của syllabus*/
+.course-detail-header {
+    padding: 10px 0 18px;
+}
+
+.course-detail-title {
+    font-size: 36px;
+    font-weight: 850;
+    color: #2b2b2b;
+    margin-top: 8px;
+}
+
+.course-detail-desc {
+    margin-top: 8px;
+    color: #6b6f76;
+    font-size: 14px;
+}
+
+/* ⋮ button */
+.course-more {
+    position: relative;
+}
+
+.course-more-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 6px;
+    border-radius: 50%;
+    color: #6b7280;
+}
+
+.course-more-btn:hover {
+    background: #f3f4f6;
+}
+
+/* Dropdown menu */
+.course-more-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+
+    min-width: 180px;
+    background: #fff;
+    border-radius: 12px;
+
+    box-shadow:
+            0 4px 12px rgba(0, 0, 0, 0.12),
+            0 1px 3px rgba(0, 0, 0, 0.08);
+
+    padding: 6px 0;
+    z-index: 50;
+}
+
+/* Menu item */
+.course-more-item {
+    width: 100%;
+    background: transparent;
+    border: none;
+
+    padding: 10px 16px;
+    text-align: left;
+
+    font-size: 14px;
+    color: #111827;
+
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.course-more-item:hover {
+    background: #f9fafb;
+}
+
+/* Danger item */
+.course-more-item.danger {
+    color: #dc2626;
+}
+
+.course-more-item.danger:hover {
+    background: #fee2e2;
+}
+
+
+.syllabus-folder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 6px 0 18px;
+}
+
+.syllabus-folder {
+    border: 1px solid #e9e9ee;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    position: relative;
+    overflow: visible;
+}
+
+.syllabus-folder-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: #eef3ff;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.syllabus-folder-name {
+    font-size: 18px;
+    font-weight: 750;
+}
+
+.syllabus-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.syllabus-actions {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.syllabus-more {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    color: #6b6f76;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.syllabus-more:hover {
+    color: #2b2b2b;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+}
+
+.syllabus-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 4px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    min-width: 180px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.syllabus-menu-item {
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    color: #2b2b2b;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.syllabus-menu-item:hover {
+    background: #f5f5f5;
+}
+
+.syllabus-menu-item:active {
+    background: #efefef;
+}
+
+/* Status badge */
+.syllabus-status {
+    margin-left: 8px;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.status-draft {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-submitted {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.syllabus-menu-item.danger {
+    color: #b00020;
+}
+
+.syllabus-clickable {
+    cursor: pointer;
+}
+.syllabus-clickable:hover {
+    background: #f7f9fb;
+}
+
+
+.lec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.lec-table th,
+.lec-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    vertical-align: top;
+}
+
+.lec-table thead th {
+    background: #f3f4f6;
+    font-weight: 600;
+}
+
+.lec-empty {
+    padding: 10px;
+    color: #6b6f76;
+}

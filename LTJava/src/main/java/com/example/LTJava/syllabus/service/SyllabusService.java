@@ -2,6 +2,7 @@ package com.example.LTJava.syllabus.service;
 
 import java.util.List;
 
+import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
 import com.example.LTJava.syllabus.dto.CreateSyllabusRequest;
 import com.example.LTJava.syllabus.dto.HodCourseGroupResponse;
 import com.example.LTJava.syllabus.dto.SetCourseRelationsRequest;
@@ -41,6 +42,9 @@ public interface SyllabusService {
     Syllabus approveByAa(Long syllabusId, Long aaId);
     Syllabus rejectByAa(Long syllabusId, Long aaId, String reason);
     void setCourseRelations(SetCourseRelationsRequest req);
+    SetCourseRelationsRequest getCourseRelations(Long courseId);
+    
+
     // 5) PRINCIPAL (AA_APPROVED -> PRINCIPAL_APPROVED / REJECTED)
     Syllabus approveByPrincipal(Long syllabusId, Long principalId);
     Syllabus rejectByPrincipal(Long syllabusId, Long principalId, String reason);
@@ -62,5 +66,6 @@ public interface SyllabusService {
 
     // 9) SUBSCRIBE / NOTIFICATION
     void subscribeCourse(Long userId, Long courseId);
+    void unsubscribeCourse(Long userId, Long courseId);
     List<Notification> getMyNotifications(Long userId);
 }

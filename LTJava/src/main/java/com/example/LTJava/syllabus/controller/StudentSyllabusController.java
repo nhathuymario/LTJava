@@ -82,6 +82,17 @@ public class StudentSyllabusController {
         return ResponseEntity.ok("Đăng ký nhận thông báo thành công!");
     }
 
+    // ❌ hủy đăng ký nhận syllabus của course
+    @DeleteMapping("/subscribe/{courseId}")
+    public ResponseEntity<?> unsubscribe(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long courseId
+    ) {
+        syllabusService.unsubscribeCourse(currentUser.getUser().getId(), courseId);
+        return ResponseEntity.ok("Đã hủy đăng ký khóa học");
+    }
+
+
     @GetMapping("/notifications")
     public ResponseEntity<?> notifications(@AuthenticationPrincipal CustomUserDetails currentUser) {
         return ResponseEntity.ok(syllabusService.getMyNotifications(currentUser.getUser().getId()));

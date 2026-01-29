@@ -14,7 +14,7 @@ export function createEmptyCourseOutcomes(): CourseOutcomes {
             selfStudy: "",
             prerequisiteId: "",
             corequisiteId: "",
-            parallerId: "",
+            // parallerId: "",
             courseType: "",
             component: "",
             scopeKey: "",

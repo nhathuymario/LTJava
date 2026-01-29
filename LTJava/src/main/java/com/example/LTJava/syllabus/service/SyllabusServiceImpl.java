@@ -53,16 +53,24 @@ public class SyllabusServiceImpl implements SyllabusService {
     // LECTURER
     // =========================
 
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
     @Override
     public Syllabus createSyllabus(CreateSyllabusRequest request, Long lecturerId) {
 
         Course course = courseRepository.findById(request.getCourseId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Course không tồn tại với id=" + request.getCourseId()));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Course không tồn tại với id=" + request.getCourseId()
+                ));
 
         User lecturer = userRepository.findById(lecturerId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Lecturer không tồn tại với id=" + lecturerId));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Lecturer không tồn tại với id=" + lecturerId
+                ));
 
         Syllabus syllabus = new Syllabus();
         syllabus.setCourse(course);
@@ -70,19 +78,49 @@ public class SyllabusServiceImpl implements SyllabusService {
         syllabus.setDescription(request.getDescription());
         syllabus.setAcademicYear(request.getAcademicYear());
         syllabus.setSemester(request.getSemester());
+
         syllabus.setStatus(SyllabusStatus.DRAFT);
         syllabus.setVersion(1);
         syllabus.setCreatedBy(lecturer);
 
+        // ✅ AI: FE gửi thì dùng, thiếu thì generate
+        String ai = request.getAiSummary();
+        String kw = request.getKeywords();
+
+        if (isBlank(ai) || isBlank(kw)) {
+            String title = request.getTitle();
+            String desc = request.getDescription();
+
+            // fallback để AI có input
+            if (isBlank(desc) || desc.trim().length() < 10) {
+                desc = "Syllabus môn " + course.getName() + ". Hãy tạo tóm tắt và 5 từ khóa phù hợp.";
+            }
+
+            String[] out = aiService.processSyllabusContent(title, desc);
+
+            if (isBlank(ai)) ai = (out != null && out.length > 0) ? out[0] : "";
+            if (isBlank(kw)) kw = (out != null && out.length > 1) ? out[1] : "";
+        }
+
+        // fallback cuối: cấm rỗng để DB không trống
+        if (isBlank(ai)) ai = "Chưa có tóm tắt AI.";
+        if (isBlank(kw)) kw = "syllabus";
+
+        syllabus.setAiSummary(ai);
+        syllabus.setKeywords(kw);
+
         return syllabusRepository.save(syllabus);
     }
 
+
+
     @Override
     public Syllabus updateSyllabus(Long syllabusId, CreateSyllabusRequest request, Long lecturerId) {
-        Syllabus syllabus = syllabusRepository.findByIdAndCreatedBy_Id(syllabusId, lecturerId)
+
+        Syllabus syllabus = syllabusRepository
+                .findByIdAndCreatedBy_Id(syllabusId, lecturerId)
                 .orElseThrow(() -> new RuntimeException("Syllabus không tồn tại hoặc không thuộc quyền của bạn"));
 
-        // ✅ chỉ cho sửa khi DRAFT
         if (syllabus.getStatus() != SyllabusStatus.DRAFT) {
             throw new RuntimeException("Chỉ syllabus ở trạng thái DRAFT mới được chỉnh sửa");
         }
@@ -92,8 +130,34 @@ public class SyllabusServiceImpl implements SyllabusService {
         syllabus.setAcademicYear(request.getAcademicYear());
         syllabus.setSemester(request.getSemester());
 
+        // ✅ AI: FE gửi thì dùng, thiếu thì generate
+        String ai = request.getAiSummary();
+        String kw = request.getKeywords();
+
+        if (isBlank(ai) || isBlank(kw)) {
+            String title = request.getTitle();
+            String desc = request.getDescription();
+
+            if (isBlank(desc) || desc.trim().length() < 10) {
+                desc = "Syllabus môn " + syllabus.getCourse().getName() + ". Hãy tạo tóm tắt và 5 từ khóa phù hợp.";
+            }
+
+            String[] out = aiService.processSyllabusContent(title, desc);
+
+            if (isBlank(ai)) ai = (out != null && out.length > 0) ? out[0] : "";
+            if (isBlank(kw)) kw = (out != null && out.length > 1) ? out[1] : "";
+        }
+
+        if (isBlank(ai)) ai = "Chưa có tóm tắt AI.";
+        if (isBlank(kw)) kw = "syllabus";
+
+        syllabus.setAiSummary(ai);
+        syllabus.setKeywords(kw);
+
         return syllabusRepository.save(syllabus);
     }
+
+
 
     @Override
     public void deleteSyllabus(Long syllabusId, Long lecturerId) {
@@ -353,36 +417,59 @@ public class SyllabusServiceImpl implements SyllabusService {
     // =========================
     // AA
     // =========================
-
     @Override
+    @Transactional(readOnly = true)
+    public SetCourseRelationsRequest getCourseRelations(Long courseId) {
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        SetCourseRelationsRequest res = new SetCourseRelationsRequest();
+        res.setCourseId(course.getId());
+        res.setPrerequisiteIds(
+                course.getPrerequisites().stream().map(Course::getId).toList()
+        );
+        res.setParallelIds(
+                course.getParallelCourses().stream().map(Course::getId).toList()
+        );
+        res.setSupplementaryIds(
+                course.getSupplementaryCourses().stream().map(Course::getId).toList()
+        );
+
+        return res;
+    }
+
+
+
+    @Transactional
     public void setCourseRelations(SetCourseRelationsRequest req) {
         Course course = courseRepository.findById(req.getCourseId())
-                .orElseThrow(() -> new RuntimeException("Course syllabus không tồn tại: " + req.getCourseId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
 
+        // 1) Clear hết quan hệ cũ
         course.getPrerequisites().clear();
         course.getParallelCourses().clear();
         course.getSupplementaryCourses().clear();
 
-        addMany(course.getPrerequisites(), req.getPrerequisiteIds(), req.getCourseId());
-        addMany(course.getParallelCourses(), req.getParallelIds(), req.getCourseId());
-        addMany(course.getSupplementaryCourses(), req.getSupplementaryIds(), req.getCourseId());
+        // 2) Add lại theo request (nếu null thì coi như [])
+        if (req.getPrerequisiteIds() != null && !req.getPrerequisiteIds().isEmpty()) {
+            var pres = courseRepository.findAllById(req.getPrerequisiteIds());
+            course.getPrerequisites().addAll(pres);
+        }
+
+        if (req.getParallelIds() != null && !req.getParallelIds().isEmpty()) {
+            var pars = courseRepository.findAllById(req.getParallelIds());
+            course.getParallelCourses().addAll(pars);
+        }
+
+        if (req.getSupplementaryIds() != null && !req.getSupplementaryIds().isEmpty()) {
+            var sups = courseRepository.findAllById(req.getSupplementaryIds());
+            course.getSupplementaryCourses().addAll(sups);
+        }
 
         courseRepository.save(course);
     }
 
-    private void addMany(Set<Course> target, List<Long> ids, Long selfId) {
-        if (ids == null) return;
-
-        for (Long id : ids) {
-            if (id == null) continue;
-            if (id.equals(selfId)) continue;
-
-            Course related = courseRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Related course không tồn tại: " + id));
-
-            target.add(related);
-        }
-    }
 
     @Override
     public Syllabus approveByAa(Long syllabusId, Long aaId) {
@@ -714,6 +801,16 @@ public class SyllabusServiceImpl implements SyllabusService {
 
         subRepo.save(new Subscription(user, course));
     }
+
+    @Override
+    @Transactional
+    public void unsubscribeCourse(Long userId, Long courseId) {
+        if (!subRepo.existsByUser_IdAndCourse_Id(userId, courseId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn chưa đăng ký môn này");
+        }
+        subRepo.deleteByUser_IdAndCourse_Id(userId, courseId);
+    }
+
 
 
     @Override

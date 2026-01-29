@@ -38,6 +38,9 @@ export const studentApi = {
     subscribeCourse: (courseId: number) =>
         api.post<string>(`/student/syllabus/subscribe/${courseId}`).then((r) => r.data),
 
+    unsubscribeCourse: (courseId: number) =>
+        api.delete<string>(`/student/syllabus/subscribe/${courseId}`).then((r) => r.data),
+
     notifications: () => api.get<Notification[]>("/student/syllabus/notifications").then((r) => r.data),
 
     unreadCount: () =>

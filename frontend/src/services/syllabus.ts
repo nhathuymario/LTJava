@@ -47,6 +47,10 @@ export interface CreateSyllabusRequest {
     description?: string
     academicYear?: string
     semester?: string
+
+    aiSummary?: string;
+    keywords?: string;
+
 }
 
 export interface NoteRequest {

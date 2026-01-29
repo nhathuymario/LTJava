@@ -36,7 +36,10 @@ export default function LecturerSyllabusNewPage() {
         description: "",
         academicYear: "",
         semester: "",
+        aiSummary: "",
+        keywords: "",
     });
+
 
     const [courses, setCourses] = useState<Course[]>([]);
     const [loadingCourses, setLoadingCourses] = useState(false);

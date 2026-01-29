@@ -24,11 +24,25 @@ function safeJsonParse<T>(v: any, fallback: T): T {
 }
 
 export const lecturerApi = {
-    createSyllabus: (payload: CreateSyllabusRequest) =>
-        api.post<Syllabus>("/lecturer/syllabus", payload).then((r) => r.data),
+    createSyllabus: (payload: CreateSyllabusRequest) => {
+        const body: any = {
+            ...payload,
+            // ✅ đảm bảo không null
+            aiSummary: (payload as any)?.aiSummary ?? "",
+            keywords: (payload as any)?.keywords ?? "",
+        };
+        return api.post<Syllabus>("/lecturer/syllabus", body).then((r) => r.data);
+    },
 
-    updateSyllabus: (id: number, payload: CreateSyllabusRequest) =>
-        api.put<Syllabus>(`/lecturer/syllabus/${id}`, payload).then((r) => r.data),
+    updateSyllabus: (id: number, payload: CreateSyllabusRequest) => {
+        const body: any = {
+            ...payload,
+            aiSummary: (payload as any)?.aiSummary ?? "",
+            keywords: (payload as any)?.keywords ?? "",
+        };
+        return api.put<Syllabus>(`/lecturer/syllabus/${id}`, body).then((r) => r.data);
+    },
+
 
     deleteSyllabus: (id: number) =>
         api.delete<void>(`/lecturer/syllabus/${id}`).then((r) => r.data),

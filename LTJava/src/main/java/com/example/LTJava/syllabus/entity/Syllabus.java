@@ -80,12 +80,11 @@ public class Syllabus {
     private String keywords;
 
 
-    // --- Getter & Setter cho Keywords ---
-    public String getKeywords() { return keywords; }
 
-    public void setKeywords(String keywords) { this.keywords = keywords; }
 
-    // --- GETTER & SETTER CHO AI SUMMARY ---
+    // getters & setters
+
+
     public String getAiSummary() {
         return aiSummary;
     }
@@ -94,7 +93,14 @@ public class Syllabus {
         this.aiSummary = aiSummary;
     }
 
-    // getters & setters
+    public String getKeywords() {
+        return keywords;
+    }
+
+    public void setKeywords(String keywords) {
+        this.keywords = keywords;
+    }
+
     public Long getId() {
         return id;
     }
