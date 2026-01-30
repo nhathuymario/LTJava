@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/pages/lecturer.css";
 
+import PaginationBar from "../../components/common/PaginationBar"
 
 import { hasRole, getToken } from "../../services/auth";
 import { getMyCourses, type Course } from "../../services/course";
@@ -74,6 +75,25 @@ export default function LecturerPage() {
         return list;
     }, [courses, q, sort]);
 
+    const PAGE_SIZE = 10
+    const [page, setPage] = useState(1)
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages)
+    }, [page, totalPages])
+
+    useEffect(() => {
+        setPage(1) // reset khi search/sort đổi
+    }, [q, sort])
+
+    const paged = useMemo(() => {
+        const start = (page - 1) * PAGE_SIZE
+        return filtered.slice(start, start + PAGE_SIZE)
+    }, [filtered, page])
+
+
     return (
         <div className="lec-page">
             <div className="lec-container">
@@ -112,7 +132,7 @@ export default function LecturerPage() {
                             {filtered.length === 0 ? (
                                 <div className="lec-empty">Không có course nào.</div>
                             ) : (
-                                filtered.map((c, idx) => (
+                                paged.map((c, idx) => (
                                     <div
                                         key={c.id}
                                         className="course-row"
@@ -164,11 +184,22 @@ export default function LecturerPage() {
                                                         Ánh xạ CLO-PLO
                                                     </button>
                                                 </div>
+
                                             )}
                                         </div>
                                     </div>
                                 ))
                             )}
+                            <PaginationBar
+                                page={page}
+                                totalPages={totalPages}
+                                totalItems={filtered.length}
+                                pageSize={PAGE_SIZE}
+                                onPrev={() => setPage(p => Math.max(1, p - 1))}
+                                onNext={() => setPage(p => Math.min(totalPages, p + 1))}
+                            />
+
+
                         </div>
                     )}
                 </div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/pages/hod.css";
 
+import PaginationBar from "../../components/common/PaginationBar"
 import { hasRole, getToken } from "../../services/auth";
 import { hodApi } from "../../services/hod";
 import type { Syllabus } from "../../services/syllabus";
@@ -110,6 +111,30 @@ export default function HodPage() {
         return list;
     }, [items, q, sort]);
 
+
+    const PAGE_SIZE = 10
+    const [page, setPage] = useState(1)
+
+    const totalPages = useMemo(
+        () => Math.max(1, Math.ceil(courses.length / PAGE_SIZE)),
+        [courses.length]
+    )
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages)
+    }, [page, totalPages])
+
+    useEffect(() => {
+        setPage(1)
+        // courses(null) // nếu có menu
+    }, [q, sort])
+
+    const paged = useMemo(() => {
+        const start = (page - 1) * PAGE_SIZE
+        return courses.slice(start, start + PAGE_SIZE)
+    }, [courses, page])
+
+
     return (
         <div className="lec-page">
             <div className="lec-container">
@@ -151,7 +176,7 @@ export default function HodPage() {
                             {courses.length === 0 ? (
                                 <div className="lec-empty">Không có course nào đang chờ duyệt.</div>
                             ) : (
-                                courses.map((c, idx) => (
+                                paged.map((c, idx) => (
                                     <div
                                         key={c.courseId}
                                         className="course-row"
@@ -175,6 +200,15 @@ export default function HodPage() {
                                     </div>
                                 ))
                             )}
+                            <PaginationBar
+                                page={page}
+                                totalPages={totalPages}
+                                totalItems={courses.length}
+                                pageSize={PAGE_SIZE}
+                                onPrev={() => setPage(p => Math.max(1, p - 1))}
+                                onNext={() => setPage(p => Math.min(totalPages, p + 1))}
+                            />
+
                         </div>
                     )}
                 </div>

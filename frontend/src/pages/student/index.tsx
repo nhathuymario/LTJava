@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "../../assets/css/pages/student.css";
 import { hasRole, getToken } from "../../services/auth";
 import { studentApi, type Course } from "../../services/student";
+import PaginationBar from "../../components/common/PaginationBar"
+
 
 export default function StudentCoursesPage() {
     const nav = useNavigate();
@@ -74,6 +76,32 @@ export default function StudentCoursesPage() {
 
         return list;
     }, [courses, q, sort]);
+    // =====================================================
+    // Phân trang
+    // =====================================================
+    const PAGE_SIZE = 10
+    const [page, setPage] = useState(1)
+
+    const totalPages = useMemo(
+        () => Math.max(1, Math.ceil(view.length / PAGE_SIZE)),
+        [view.length]
+    )
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages)
+    }, [page, totalPages])
+
+    useEffect(() => {
+        setPage(1)
+        // setMenuOpen(null) // nếu có menu
+    }, [q, sort])
+
+    const paged = useMemo(() => {
+        const start = (page - 1) * PAGE_SIZE
+        return view.slice(start, start + PAGE_SIZE)
+    }, [view, page])
+
+
 
     // =====================================================
     // UI
@@ -134,7 +162,7 @@ export default function StudentCoursesPage() {
                             {view.length === 0 ? (
                                 <div className="lec-empty">Bạn chưa đăng ký môn nào.</div>
                             ) : (
-                                view.map((c, idx) => (
+                                paged.map((c, idx) => (
                                     <div
                                         key={c.id}
                                         className="course-row"
@@ -204,7 +232,17 @@ export default function StudentCoursesPage() {
                                 ))
 
                             )}
+                            <PaginationBar
+                                page={page}
+                                totalPages={totalPages}
+                                totalItems={view.length}
+                                pageSize={PAGE_SIZE}
+                                onPrev={() => setPage(p => Math.max(1, p - 1))}
+                                onNext={() => setPage(p => Math.min(totalPages, p + 1))}
+                            />
+
                         </div>
+
                     )}
                 </div>
             </div>

@@ -16,6 +16,8 @@ import "../../assets/css/pages/admin.css"
 const ROLE_OPTIONS = ["SYSTEM_ADMIN", "LECTURER", "AA", "STUDENT", "PRINCIPAL", "HOD"] as const
 type RoleOption = (typeof ROLE_OPTIONS)[number]
 
+type SortKey = "name_asc" | "name_desc"
+
 function toDDMMYYYY(value: string) {
     const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
     if (!m) return value
@@ -23,15 +25,10 @@ function toDDMMYYYY(value: string) {
     return `${d}/${mm}/${y}`
 }
 
-// ✅ Chuẩn hoá trạng thái: ưu tiên active (BE của bạn đang dùng active)
 function isUserLocked(u: any): boolean {
-    // BE: active=true/false
     if (typeof u?.active === "boolean") return !u.active
-
-    // fallback nếu BE trả enabled/locked theo kiểu khác
     if (typeof u?.locked === "boolean") return u.locked
     if (typeof u?.enabled === "boolean") return !u.enabled
-
     return false
 }
 
@@ -46,6 +43,10 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(true)
     const [busyId, setBusyId] = useState<number | null>(null)
     const [error, setError] = useState<string | null>(null)
+
+    // ✅ search + sort UI
+    const [q, setQ] = useState("")
+    const [sort, setSort] = useState<SortKey>("name_asc")
 
     // create user
     const [fullName, setFullName] = useState("")
@@ -87,10 +88,7 @@ export default function AdminPage() {
     }, [])
 
     const onCreateUser = async () => {
-        if (!isSystemAdmin) {
-            alert("Chỉ SYSTEM_ADMIN")
-            return
-        }
+        if (!isSystemAdmin) return alert("Chỉ SYSTEM_ADMIN")
 
         const body = {
             fullName: fullName.trim(),
@@ -113,14 +111,8 @@ export default function AdminPage() {
     }
 
     const onImportExcel = async () => {
-        if (!isSystemAdmin) {
-            alert("Chỉ SYSTEM_ADMIN")
-            return
-        }
-        if (!excelFile) {
-            alert("Chọn file .xlsx trước")
-            return
-        }
+        if (!isSystemAdmin) return alert("Chỉ SYSTEM_ADMIN")
+        if (!excelFile) return alert("Chọn file .xlsx trước")
 
         try {
             const res = await importUsersExcel(excelFile)
@@ -138,12 +130,7 @@ export default function AdminPage() {
         try {
             setBusyId(u.id)
             await lockUser(u.id)
-
-            // ✅ optimistic update: set active=false
-            setUsers((prev: any) =>
-                prev.map((x: any) => (x.id === u.id ? { ...x, active: false, enabled: false, locked: true } : x))
-            )
-
+            setUsers((prev: any) => prev.map((x: any) => (x.id === u.id ? { ...x, active: false, enabled: false, locked: true } : x)))
             await fetchUsers()
         } catch (err: any) {
             alert(err?.response?.data?.message || err?.response?.data || "Khoá thất bại")
@@ -156,12 +143,7 @@ export default function AdminPage() {
         try {
             setBusyId(u.id)
             await unlockUser(u.id)
-
-            // ✅ optimistic update: set active=true
-            setUsers((prev: any) =>
-                prev.map((x: any) => (x.id === u.id ? { ...x, active: true, enabled: true, locked: false } : x))
-            )
-
+            setUsers((prev: any) => prev.map((x: any) => (x.id === u.id ? { ...x, active: true, enabled: true, locked: false } : x)))
             await fetchUsers()
         } catch (err: any) {
             alert(err?.response?.data?.message || err?.response?.data || "Mở khoá thất bại")
@@ -174,14 +156,7 @@ export default function AdminPage() {
         try {
             setBusyId(u.id)
             await changeUserRole(u.id, roleName as RoleName)
-
-            // optimistic: set role UI luôn (nếu roles là array object)
-            setUsers((prev: any) =>
-                prev.map((x: any) =>
-                    x.id === u.id ? { ...x, roles: [{ name: roleName }] } : x
-                )
-            )
-
+            setUsers((prev: any) => prev.map((x: any) => (x.id === u.id ? { ...x, roles: [{ name: roleName }] } : x)))
             await fetchUsers()
         } catch (err: any) {
             alert(err?.response?.data?.message || err?.response?.data || "Đổi role thất bại")
@@ -203,6 +178,48 @@ export default function AdminPage() {
         }
     }
 
+    // =============================
+    // ✅ Search + Sort + Pagination
+    // =============================
+    const PAGE_SIZE = 10
+    const [page, setPage] = useState(1)
+
+    const filtered = useMemo(() => {
+        const needle = q.toLowerCase().trim()
+
+        let list = users.filter((u: any) => {
+            const role0 = u?.roles?.[0]?.name ?? ""
+            const hay = `${u.username ?? ""} ${u.fullName ?? ""} ${u.cccd ?? ""} ${role0}`.toLowerCase()
+            return hay.includes(needle)
+        })
+
+        list.sort((a: any, b: any) => {
+            const an = (a.fullName || a.username || "").toLowerCase()
+            const bn = (b.fullName || b.username || "").toLowerCase()
+            return sort === "name_asc" ? an.localeCompare(bn) : bn.localeCompare(an)
+        })
+
+        return list
+    }, [users, q, sort])
+
+    const totalPages = useMemo(() => Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)), [filtered.length])
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages)
+    }, [page, totalPages])
+
+    useEffect(() => {
+        setPage(1) // reset khi search/sort đổi
+    }, [q, sort])
+
+    const paged = useMemo(() => {
+        const start = (page - 1) * PAGE_SIZE
+        return filtered.slice(start, start + PAGE_SIZE)
+    }, [filtered, page])
+
+    const from = filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
+    const to = Math.min(page * PAGE_SIZE, filtered.length)
+
     return (
         <div className="admin-wrapper">
             <div className="admin-card">
@@ -211,22 +228,38 @@ export default function AdminPage() {
                 {error && <div className="admin-alert">{error}</div>}
                 {loading && <p>Đang tải...</p>}
 
+                {/* ✅ Search + Sort toolbar */}
+                {!loading && !error && (
+                    <div className="admin-section">
+                        <h3>Tìm kiếm</h3>
+                        <div className="admin-row">
+                            <input
+                                className="admin-input"
+                                placeholder="Tìm theo username / họ tên / CCCD / role..."
+                                value={q}
+                                onChange={(e) => setQ(e.target.value)}
+                            />
+                            <select className="admin-select" value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
+                                <option value="name_asc">Tên A → Z</option>
+                                <option value="name_desc">Tên Z → A</option>
+                            </select>
+                            <button className="admin-btn secondary" onClick={() => { setQ(""); setSort("name_asc") }}>
+                                Reset
+                            </button>
+                        </div>
+
+                        <div style={{ color: "#6b7280", marginTop: 6 }}>
+                            Kết quả: {filtered.length} user
+                        </div>
+                    </div>
+                )}
+
                 {/* Tạo đơn */}
                 <div className="admin-section">
                     <h3>Tạo tài khoản đơn</h3>
                     <div className="admin-row">
-                        <input
-                            className="admin-input"
-                            placeholder="Họ và tên"
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                        />
-                        <input
-                            className="admin-input"
-                            placeholder="CCCD"
-                            value={cccd}
-                            onChange={(e) => setCccd(e.target.value)}
-                        />
+                        <input className="admin-input" placeholder="Họ và tên" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                        <input className="admin-input" placeholder="CCCD" value={cccd} onChange={(e) => setCccd(e.target.value)} />
                         <input className="admin-input" type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
                         <select className="admin-select" value={newRole} onChange={(e) => setNewRole(e.target.value as RoleOption)}>
                             {ROLE_OPTIONS.map((r) => (
@@ -248,12 +281,7 @@ export default function AdminPage() {
                     <p style={{ color: "#6b7280" }}>File mẫu: fullName | cccd | dateOfBirth | roleName</p>
 
                     <div className="admin-row">
-                        <input
-                            className="admin-input"
-                            type="file"
-                            accept=".xlsx"
-                            onChange={(e) => setExcelFile(e.target.files?.[0] ?? null)}
-                        />
+                        <input className="admin-input" type="file" accept=".xlsx" onChange={(e) => setExcelFile(e.target.files?.[0] ?? null)} />
                         <button className="admin-btn" onClick={onImportExcel}>
                             Import Excel
                         </button>
@@ -262,8 +290,7 @@ export default function AdminPage() {
                     {importResult && (
                         <div style={{ marginTop: 10 }}>
                             <div style={{ color: "#6b7280" }}>
-                                Tổng dòng: {importResult.totalRows ?? "-"} | Thành công: {importResult.successCount ?? 0} | Lỗi:{" "}
-                                {importResult.failedCount ?? 0}
+                                Tổng dòng: {importResult.totalRows ?? "-"} | Thành công: {importResult.successCount ?? 0} | Lỗi: {importResult.failedCount ?? 0}
                             </div>
 
                             {Array.isArray(importResult.errors) && importResult.errors.length > 0 && (
@@ -302,7 +329,7 @@ export default function AdminPage() {
                             </thead>
 
                             <tbody>
-                            {users.map((u: any) => {
+                            {paged.map((u: any) => {
                                 const locked = isUserLocked(u)
                                 const currentRole = getCurrentRoleName(u)
                                 const isBusy = busyId === u.id
@@ -327,12 +354,7 @@ export default function AdminPage() {
                                         <td>{locked ? "Khoá" : "Mở"}</td>
 
                                         <td>
-                                            <select
-                                                className="admin-select"
-                                                value={currentRole}
-                                                disabled={isBusy}
-                                                onChange={(e) => onChangeRole(u, e.target.value)}
-                                            >
+                                            <select className="admin-select" value={currentRole} disabled={isBusy} onChange={(e) => onChangeRole(u, e.target.value)}>
                                                 {ROLE_OPTIONS.map((r) => (
                                                     <option key={r} value={r}>
                                                         {r}
@@ -352,12 +374,7 @@ export default function AdminPage() {
                                                 </button>
                                             )}
 
-                                            <button
-                                                className="admin-btn danger"
-                                                style={{ marginLeft: 6 }}
-                                                disabled={isBusy}
-                                                onClick={() => onDelete(u)}
-                                            >
+                                            <button className="admin-btn danger" style={{ marginLeft: 6 }} disabled={isBusy} onClick={() => onDelete(u)}>
                                                 {isBusy ? "..." : "Xoá"}
                                             </button>
                                         </td>
@@ -366,6 +383,29 @@ export default function AdminPage() {
                             })}
                             </tbody>
                         </table>
+
+                        {/* ✅ Pagination bar */}
+                        {filtered.length > 0 && (
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, gap: 8 }}>
+                                <div style={{ color: "#6b7280" }}>
+                                    Hiển thị {from}–{to} / {filtered.length}
+                                </div>
+
+                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                    <button className="admin-btn secondary" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                                        ← Prev
+                                    </button>
+
+                                    <div style={{ minWidth: 110, textAlign: "center", color: "#6b7280" }}>
+                                        Trang {page} / {totalPages}
+                                    </div>
+
+                                    <button className="admin-btn secondary" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                                        Next →
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
