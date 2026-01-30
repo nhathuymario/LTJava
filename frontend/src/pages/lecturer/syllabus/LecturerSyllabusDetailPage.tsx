@@ -6,9 +6,8 @@ import type { CourseOutcomes } from "./types"
 import { createEmptyCourseOutcomes } from "./defaults"
 import CloPloMatrixView from "../../../components/outcomes/CloPloMatrixView"
 
-// ✅ dùng đúng service của bạn
-import { viewSyllabusContent } from "../../../services/outcomes"
-import { lecturerApi } from "../../../services/lecturer"
+// ✅ view chung (content + meta)
+import { viewSyllabusContent, viewSyllabusMeta } from "../../../services/outcomes"
 
 // ===== types (meta) =====
 type SyllabusMeta = {
@@ -37,7 +36,6 @@ function safeJsonParse<T>(v: any, fallback: T): T {
 /** ✅ ép array an toàn để tránh .map crash */
 function asArray<T>(v: any, fallback: T[] = []): T[] {
     if (Array.isArray(v)) return v as T[]
-    // có case BE trả JSON string của array
     if (typeof v === "string") return safeJsonParse<T[]>(v, fallback)
     return fallback
 }
@@ -63,7 +61,6 @@ function parseKeywords(raw: any): string[] {
 function normalizeCourseOutcomes(raw: any): CourseOutcomes {
     const empty = createEmptyCourseOutcomes()
 
-    // generalInfo có thể là string JSON hoặc object
     const gi = safeJsonParse<Record<string, any>>(raw?.generalInfo, {})
     const mergedGI = {
         ...empty.generalInfo,
@@ -71,7 +68,6 @@ function normalizeCourseOutcomes(raw: any): CourseOutcomes {
         ...(raw?.generalInfo && typeof raw.generalInfo === "object" ? raw.generalInfo : {}),
     }
 
-    // các field array có thể là string JSON / null / object sai
     const courseObjectives = asArray<string>(raw?.courseObjectives, [])
     const courseLearningOutcomes = asArray<{ code: string; description: string }>(raw?.courseLearningOutcomes, [])
     const assessmentMethods = asArray<{ component: string; method: string; clos: string; criteria: string }>(
@@ -90,6 +86,7 @@ function normalizeCourseOutcomes(raw: any): CourseOutcomes {
         studentDuties: raw?.studentDuties ?? empty.studentDuties,
 
         courseObjectives,
+
         courseLearningOutcomes: courseLearningOutcomes.map((x: any) => ({
             code: x?.code ?? "",
             description: x?.description ?? "",
@@ -116,6 +113,40 @@ function normalizeCourseOutcomes(raw: any): CourseOutcomes {
             plo: x?.plo ?? "",
             level: x?.level ?? null,
         })) as any,
+    }
+}
+
+function normalizeMeta(raw: any): SyllabusMeta | null {
+    if (!raw) return null
+
+    // BE có thể trả courseId/courseCode... hoặc course object
+    const courseObj = (raw as any)?.course
+    const course =
+        courseObj && typeof courseObj === "object"
+            ? {
+                id: Number(courseObj?.id),
+                code: courseObj?.code,
+                name: courseObj?.name,
+            }
+            : (raw as any)?.courseId
+                ? {
+                    id: Number((raw as any)?.courseId),
+                    code: (raw as any)?.courseCode,
+                    name: (raw as any)?.courseName,
+                }
+                : undefined
+
+    const idNum = Number((raw as any)?.id)
+    return {
+        id: Number.isFinite(idNum) ? idNum : 0,
+        title: (raw as any)?.title,
+        academicYear: (raw as any)?.academicYear,
+        semester: (raw as any)?.semester,
+        aiSummary: (raw as any)?.aiSummary,
+        keywords: (raw as any)?.keywords,
+        status: (raw as any)?.status,
+        version: (raw as any)?.version,
+        course,
     }
 }
 
@@ -169,39 +200,19 @@ export default function LecturerSyllabusDetailPage() {
 
             try {
                 // ✅ 1) content view chung
-                const raw = await viewSyllabusContent(sid)
+                const rawContent = await viewSyllabusContent(sid)
                 if (cancelled) return
-                setContent(normalizeCourseOutcomes(raw))
+                setContent(normalizeCourseOutcomes(rawContent))
 
-                // ✅ 2) meta (nếu được phép)
-                if (isLecturer || isHod || isAa || isPrincipal || isAdmin) {
-                    try {
-                        const m = await lecturerApi.getById(sid)
-                        if (cancelled) return
-
-                        const mapped: SyllabusMeta = {
-                            id: m.id,
-                            title: (m as any)?.title,
-                            academicYear: (m as any)?.academicYear,
-                            semester: (m as any)?.semester,
-                            aiSummary: (m as any)?.aiSummary,
-                            keywords: (m as any)?.keywords,
-                            status: (m as any)?.status,
-                            version: (m as any)?.version,
-                            course: (m as any)?.course
-                                ? {
-                                    id: (m as any)?.course?.id,
-                                    code: (m as any)?.course?.code,
-                                    name: (m as any)?.course?.name,
-                                }
-                                : undefined,
-                        }
-
-                        setMeta(mapped)
-                    } catch (e) {
-                        console.warn("Load meta via /lecturer/syllabus/{id} failed:", e)
-                        setMeta(null)
-                    }
+                // ✅ 2) meta view chung (role-based) — ai canView cũng thử load
+                try {
+                    const rawMeta = await viewSyllabusMeta(sid)
+                    if (cancelled) return
+                    setMeta(normalizeMeta(rawMeta))
+                } catch (e) {
+                    // nếu role không đủ quyền (vd student mà syllabus chưa PUBLISHED) thì meta sẽ fail -> dùng fallback từ content
+                    console.warn("Load meta via /api/syllabus/{id}/meta failed:", e)
+                    if (!cancelled) setMeta(null)
                 }
             } catch (e: any) {
                 if (cancelled) return
@@ -214,7 +225,7 @@ export default function LecturerSyllabusDetailPage() {
         return () => {
             cancelled = true
         }
-    }, [token, canView, sid, nav, isLecturer, isHod, isAa, isPrincipal, isAdmin])
+    }, [token, canView, sid, nav])
 
     // ===== Guards UI (không trắng) =====
     if (!token) {
@@ -310,7 +321,6 @@ export default function LecturerSyllabusDetailPage() {
 
     const scopeKey = (content as any)?.generalInfo?.scopeKey
 
-    // ✅ safe arrays (tuy đã normalize nhưng cứ giữ cho chắc)
     const courseObjectives = Array.isArray(content.courseObjectives) ? content.courseObjectives : []
     const clos = Array.isArray(content.courseLearningOutcomes) ? content.courseLearningOutcomes : []
     const assessmentMethods = Array.isArray(content.assessmentMethods) ? content.assessmentMethods : []
@@ -431,8 +441,8 @@ export default function LecturerSyllabusDetailPage() {
                                 <tr>
                                     <td style={{ fontWeight: 600 }}>Phân bố thời gian</td>
                                     <td colSpan={3}>
-                                        LT/BT: {content.generalInfo?.theory || "—"} · TH/TN: {content.generalInfo?.practice || "—"} · DA/TL:{" "}
-                                        {content.generalInfo?.project || "—"} · Tổng: {content.generalInfo?.total || "—"} · Tự học:{" "}
+                                        LT/BT: {content.generalInfo?.theory || "—"} · TH/TN: {content.generalInfo?.practice || "—"} ·
+                                        DA/TL: {content.generalInfo?.project || "—"} · Tổng: {content.generalInfo?.total || "—"} · Tự học:{" "}
                                         {content.generalInfo?.selfStudy || "—"}
                                     </td>
                                 </tr>

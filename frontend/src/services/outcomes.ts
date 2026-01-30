@@ -134,3 +134,7 @@ export async function lecturerSaveSyllabusContent(syllabusId: number, req: any) 
     return data;
 }
 
+export async function viewSyllabusMeta(syllabusId: number) {
+    const { data } = await api.get(`/syllabus/${syllabusId}/meta`)
+    return data
+}

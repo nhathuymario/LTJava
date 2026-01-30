@@ -1,5 +1,6 @@
 package com.example.LTJava.user.service;
 
+import com.example.LTJava.syllabus.repository.NotificationRepository;
 import com.example.LTJava.user.dto.CreateUserRequest;
 import com.example.LTJava.user.entity.Role;
 import com.example.LTJava.user.entity.User;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.example.LTJava.user.dto.ImportUsersResult;
 import com.example.LTJava.user.dto.UserImportRow;
 import com.example.LTJava.user.importer.ExcelUserImporter;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -26,15 +28,18 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final ExcelUserImporter excelUserImporter;
+    private NotificationRepository notificationRepository;
 
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder, PasswordEncoder passwordEncoder1,
-                           ExcelUserImporter excelUserImporter) {
+                           ExcelUserImporter excelUserImporter,
+                           NotificationRepository notificationRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder1;
+        this.passwordEncoder = passwordEncoder;
         this.excelUserImporter = excelUserImporter;
+        this.notificationRepository = notificationRepository;
     }
 
     @Override
@@ -153,10 +158,13 @@ public class UserServiceImpl implements UserService {
     }
     // xóa user
     @Override
+    @Transactional
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new RuntimeException("Không tìm thấy user id = " + userId);
         }
+        notificationRepository.deleteByUserId(userId);
+
         userRepository.deleteById(userId);
     }
 

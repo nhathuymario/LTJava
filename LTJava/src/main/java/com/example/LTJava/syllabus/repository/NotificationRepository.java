@@ -16,4 +16,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     // dùng cho read-all nếu muốn lấy list unread
     List<Notification> findByUser_IdAndReadFalse(Long userId);
+
+    @Modifying
+    @Query("delete from Notification n where n.user.id = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }
