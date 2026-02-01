@@ -5,6 +5,7 @@ import { hasRole, getToken } from "../../../services/auth"
 import type { CourseOutcomes } from "./types"
 import { createEmptyCourseOutcomes } from "./defaults"
 import CloPloMatrixView from "../../../components/outcomes/CloPloMatrixView"
+import { goHomeByRole } from "../../../utils/navByRole"
 
 // ✅ view chung (content + meta)
 import { viewSyllabusContent, viewSyllabusMeta } from "../../../services/outcomes"
@@ -330,7 +331,18 @@ export default function LecturerSyllabusDetailPage() {
         <div className="lec-page">
             <div className="lec-container">
                 <div className="manage-toolbar">
-                    <button className="lec-btn" onClick={() => (courseId ? nav(`/lecturer/courses/${courseId}`) : nav(-1))}>
+                    <button
+                        className="lec-btn"
+                        onClick={() => {
+                            if (courseId && hasRole("LECTURER")) {
+                                // chỉ lecturer mới quay về lecturer/course
+                                nav(`/lecturer/courses/${courseId}`)
+                            } else {
+                                // các role khác → về home theo role (student/admin/aa/...)
+                                goHomeByRole(nav)
+                            }
+                        }}
+                    >
                         ← Back
                     </button>
 

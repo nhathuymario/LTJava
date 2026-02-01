@@ -1,158 +1,240 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import "../../assets/css/pages/lecturer.css";
+import { useEffect, useMemo, useState } from "react"
+import { useNavigate, useParams } from "react-router-dom"
+import "../../assets/css/pages/lecturer.css"
 
-import { hasRole, getToken } from "../../services/auth";
-import { getCourseById, type Course } from "../../services/course";
+import { hasRole, getToken } from "../../services/auth"
+import { getCourseById, type Course } from "../../services/course"
+import { lecturerApi } from "../../services/lecturer"
+import type { Syllabus } from "../../services/syllabus"
+import { goHomeByRole } from "../../utils/navByRole"
+import PaginationBar from "../../components/common/PaginationBar"
 
-import { lecturerApi } from "../../services/lecturer";
-import type { Syllabus } from "../../services/syllabus";
+type SortKey = "name_asc" | "name_desc"
 
 export default function LecturerCourseDetailPage() {
-    const nav = useNavigate();
-    const { courseId } = useParams();
-    const id = Number(courseId);
+    const nav = useNavigate()
+    const { courseId } = useParams()
+    const id = Number(courseId)
 
-    const [course, setCourse] = useState<Course | null>(null);
-    const [syllabi, setSyllabi] = useState<Syllabus[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    // ======================
+    // AUTH
+    // ======================
+    const isLecturer = hasRole("LECTURER")
+
+    // ======================
+    // STATE
+    // ======================
+    const [course, setCourse] = useState<Course | null>(null)
+    const [syllabi, setSyllabi] = useState<Syllabus[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    // search + sort
+    const [q, setQ] = useState("")
+    const [sort, setSort] = useState<SortKey>("name_asc")
 
     // menu 3 chấm
-    const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-    const toggleMenu = (sid: number) => setOpenMenuId((prev) => (prev === sid ? null : sid));
+    const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+    const toggleMenu = (sid: number) =>
+        setOpenMenuId((prev) => (prev === sid ? null : sid))
 
-    const isLecturer = hasRole("LECTURER");
-
+    // ======================
+    // LOAD DATA
+    // ======================
     useEffect(() => {
-        const token = getToken?.() || localStorage.getItem("token");
+        const token = getToken?.() || localStorage.getItem("token")
+
         if (!token) {
-            setError("Bạn chưa đăng nhập (thiếu token).");
-            setLoading(false);
-            return;
+            setError("Bạn chưa đăng nhập (thiếu token).")
+            setLoading(false)
+            return
         }
         if (!isLecturer) {
-            setError("Bạn không có quyền truy cập (LECTURER).");
-            setLoading(false);
-            return;
+            setError("Bạn không có quyền truy cập (LECTURER).")
+            setLoading(false)
+            return
         }
         if (!id) {
-            setError("courseId không hợp lệ.");
-            setLoading(false);
-            return;
+            setError("courseId không hợp lệ.")
+            setLoading(false)
+            return
         }
 
-        (async () => {
-            setLoading(true);
-            setError(null);
+        ;(async () => {
+            setLoading(true)
+            setError(null)
             try {
                 const [c, s] = await Promise.all([
                     getCourseById(id),
-                    lecturerApi.getByCourse(id), // ✅ mới
-                ]);
-                setCourse(c);
-                setSyllabi(s);
+                    lecturerApi.getByCourse(id),
+                ])
+                setCourse(c)
+                setSyllabi(s || [])
             } catch (err: any) {
-                const resp = err?.response?.data;
-                const msg = resp?.message || resp || err?.message || "Không tải được dữ liệu course/syllabus";
-                setError(typeof msg === "string" ? msg : "Không tải được dữ liệu");
+                const resp = err?.response?.data
+                const msg =
+                    resp?.message ||
+                    resp ||
+                    err?.message ||
+                    "Không tải được dữ liệu course/syllabus"
+                setError(typeof msg === "string" ? msg : "Không tải được dữ liệu")
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
-        })();
-    }, [id, isLecturer]);
+        })()
+    }, [id, isLecturer])
 
-    const handleSubmitSyllabus = async (syllabusId: number) => {
-        if (!window.confirm("Bạn chắc chắn muốn submit syllabus này cho HoD?")) return;
-
+    // ======================
+    // ACTIONS
+    // ======================
+    const handleSubmit = async (sid: number) => {
+        if (!window.confirm("Submit syllabus này cho HoD?")) return
         try {
-            await lecturerApi.submit(syllabusId); // ✅ mới
-            setSyllabi((prev) => prev.map((s) => (s.id === syllabusId ? { ...s, status: "SUBMITTED" } : s)));
-            setOpenMenuId(null);
-        } catch (err: any) {
-            alert(err?.response?.data?.message || "Submit thất bại");
+            await lecturerApi.submit(sid)
+            setSyllabi((prev) =>
+                prev.map((s) =>
+                    s.id === sid ? { ...s, status: "SUBMITTED" as any } : s
+                )
+            )
+            setOpenMenuId(null)
+        } catch (e: any) {
+            alert(e?.response?.data?.message || "Submit thất bại")
         }
-    };
+    }
+
+    const handleResubmit = async (sid: number) => {
+        if (!window.confirm("Gửi lại syllabus này cho HoD?")) return
+        try {
+            await lecturerApi.resubmit(sid)
+            setSyllabi((prev) =>
+                prev.map((s) =>
+                    s.id === sid ? { ...s, status: "SUBMITTED" as any } : s
+                )
+            )
+            setOpenMenuId(null)
+        } catch (e: any) {
+            alert(e?.response?.data?.message || "Resubmit thất bại")
+        }
+    }
+
+    const handleMoveToDraft = async (sid: number) => {
+        if (!window.confirm("Chuyển syllabus về DRAFT để sửa?")) return
+        try {
+            await lecturerApi.moveToDraft(sid)
+            setSyllabi((prev) =>
+                prev.map((s) =>
+                    s.id === sid ? { ...s, status: "DRAFT" as any } : s
+                )
+            )
+            setOpenMenuId(null)
+        } catch (e: any) {
+            alert(e?.response?.data?.message || "Move to draft thất bại")
+        }
+    }
 
     const handleUpdateVersion = async (sid: number) => {
-        if (!window.confirm("Tạo version mới từ syllabus đã PUBLISHED?")) return;
-
+        if (!window.confirm("Tạo version mới từ syllabus đã PUBLISHED?")) return
         try {
-            const newSyllabus = await lecturerApi.createNewVersion(sid);
-
-            // cập nhật list để thấy ngay (tuỳ bạn có muốn hay không)
-            setSyllabi((prev) => [newSyllabus, ...prev]);
-
-            setOpenMenuId(null);
-            nav(`/lecturer/syllabus/${newSyllabus.id}/edit`, { state: { courseId: id } });
-        } catch (err: any) {
-            alert(err?.response?.data?.message || "Tạo version mới thất bại");
+            const newS = await lecturerApi.createNewVersion(sid)
+            setSyllabi((prev) => [newS, ...prev])
+            setOpenMenuId(null)
+            nav(`/lecturer/syllabus/${newS.id}/edit`, {
+                state: { courseId: id },
+            })
+        } catch (e: any) {
+            alert(e?.response?.data?.message || "Update version thất bại")
         }
-    };
+    }
 
-
-    const handleResubmitSyllabus = async (syllabusId: number) => {
-        if (!window.confirm("Bạn chắc chắn muốn gửi lại syllabus này cho HoD?")) return;
-
+    const handleEdit = async (s: Syllabus) => {
         try {
-            await lecturerApi.resubmit(syllabusId); // ✅ mới
-            setSyllabi((prev) => prev.map((s) => (s.id === syllabusId ? { ...s, status: "SUBMITTED" } : s)));
-            setOpenMenuId(null);
-        } catch (err: any) {
-            alert(err?.response?.data?.message || "Resubmit thất bại");
-        }
-    };
-
-    const handleMoveToDraft = async (syllabusId: number) => {
-        if (!window.confirm("Chuyển syllabus về DRAFT để sửa?")) return;
-
-        try {
-            await lecturerApi.moveToDraft(syllabusId);
-            setSyllabi((prev) =>
-                prev.map((s) => (s.id === syllabusId ? { ...s, status: "DRAFT" } : s))
-            );
-            setOpenMenuId(null);
-        } catch (err: any) {
-            alert(err?.response?.data?.message || "Move to draft thất bại");
-        }
-    };
-
-
-    const handleEditSyllabus = async (s: Syllabus) => {
-        try {
-            // nếu đang REQUESTEDIT/REJECTED thì chuyển về DRAFT trước
-            if (s.status === "REQUESTEDIT" || s.status === "REJECTED") {
-                await lecturerApi.moveToDraft(s.id);
-                setSyllabi((prev) =>
-                    prev.map((x) => (x.id === s.id ? { ...x, status: "DRAFT" } : x))
-                );
+            if (
+                (s as any).status === "REQUESTEDIT" ||
+                (s as any).status === "REJECTED"
+            ) {
+                await lecturerApi.moveToDraft(s.id)
             }
-
-            setOpenMenuId(null);
-            nav(`/lecturer/syllabus/${s.id}/edit`, { state: { courseId: id } });
-        } catch (err: any) {
-            alert(err?.response?.data?.message || "Không thể chuyển về DRAFT để sửa");
+            setOpenMenuId(null)
+            nav(`/lecturer/syllabus/${s.id}/edit`, {
+                state: { courseId: id },
+            })
+        } catch (e: any) {
+            alert(e?.response?.data?.message || "Không thể sửa syllabus")
         }
-    };
+    }
 
-    const handleDeleteSyllabus = async (sid: number) => {
-        if (!window.confirm("Xóa syllabus này? (chỉ xóa được khi DRAFT)")) return;
-
+    const handleDelete = async (sid: number) => {
+        if (!window.confirm("Xóa syllabus này? (chỉ xóa khi DRAFT)")) return
         try {
-            await lecturerApi.deleteSyllabus(sid);
-            setSyllabi((prev) => prev.filter((x) => x.id !== sid));
-            setOpenMenuId(null);
-        } catch (err: any) {
-            alert(err?.response?.data?.message || "Xóa thất bại");
+            await lecturerApi.deleteSyllabus(sid)
+            setSyllabi((prev) => prev.filter((x) => x.id !== sid))
+            setOpenMenuId(null)
+        } catch (e: any) {
+            alert(e?.response?.data?.message || "Xóa thất bại")
         }
-    };
+    }
 
+    // ======================
+    // FILTER + SORT
+    // ======================
+    const filtered = useMemo(() => {
+        const needle = q.toLowerCase().trim()
 
+        const list = syllabi.filter((s: any) =>
+            `${s.title ?? ""} ${s.status ?? ""} ${s.academicYear ?? ""} ${
+                s.semester ?? ""
+            } ${s.course?.code ?? ""} ${s.course?.name ?? ""}`
+                .toLowerCase()
+                .includes(needle)
+        )
+
+        list.sort((a: any, b: any) => {
+            const an = (a.title || "").toLowerCase()
+            const bn = (b.title || "").toLowerCase()
+            return sort === "name_asc"
+                ? an.localeCompare(bn)
+                : bn.localeCompare(an)
+        })
+
+        return list
+    }, [syllabi, q, sort])
+
+    // ======================
+    // PAGINATION
+    // ======================
+    const PAGE_SIZE = 10
+    const [page, setPage] = useState(1)
+
+    const totalPages = useMemo(
+        () => Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)),
+        [filtered.length]
+    )
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages)
+    }, [page, totalPages])
+
+    useEffect(() => {
+        setPage(1)
+        setOpenMenuId(null)
+    }, [q, sort])
+
+    const paged = useMemo(() => {
+        const start = (page - 1) * PAGE_SIZE
+        return filtered.slice(start, start + PAGE_SIZE)
+    }, [filtered, page])
+
+    // ======================
+    // RENDER
+    // ======================
     return (
         <div className="lec-page">
             <div className="lec-container">
                 <div className="lec-card">
-                    <button className="lec-link" onClick={() => nav("/lecturer")}>
+                    <button
+                        className="lec-link"
+                        onClick={() => goHomeByRole(nav)}
+                    >
                         ← Quay lại
                     </button>
 
@@ -161,38 +243,74 @@ export default function LecturerCourseDetailPage() {
 
                     {!loading && !error && course && (
                         <>
-                            {/* Header course */}
                             <div className="course-detail-header">
                                 <div className="course-detail-title">
                                     [{course.code}] - {course.name}
                                 </div>
                             </div>
 
-                            {/* Syllabus list dạng folder */}
+                            {/* SEARCH + SORT */}
+                            <div
+                                className="lec-toolbar"
+                                style={{ marginTop: 12 }}
+                            >
+                                <input
+                                    className="lec-search"
+                                    placeholder="Tìm syllabus..."
+                                    value={q}
+                                    onChange={(e) => setQ(e.target.value)}
+                                />
+
+                                <select
+                                    className="lec-select"
+                                    value={sort}
+                                    onChange={(e) =>
+                                        setSort(e.target.value as SortKey)
+                                    }
+                                >
+                                    <option value="name_asc">A → Z</option>
+                                    <option value="name_desc">Z → A</option>
+                                </select>
+                            </div>
+
                             <div className="syllabus-folder-list">
-                                {syllabi.length === 0 ? (
-                                    <div className="lec-empty">Chưa có giáo trình nào.</div>
+                                {filtered.length === 0 ? (
+                                    <div className="lec-empty">
+                                        Không có syllabus phù hợp.
+                                    </div>
                                 ) : (
-                                    syllabi.map((s: any) => (
-                                        <div key={s.id} className="syllabus-folder">
-                                            <div className="syllabus-left">
-                                                <div
-                                                    className="syllabus-left syllabus-clickable"
-                                                    onClick={() => nav(`/syllabus/${s.id}`)}
-                                                >
-                                                <div className="syllabus-folder-icon">📁</div>
+                                    paged.map((s: any) => (
+                                        <div
+                                            key={s.id}
+                                            className="syllabus-folder"
+                                        >
+                                            <div
+                                                className="syllabus-left syllabus-clickable"
+                                                onClick={() =>
+                                                    nav(`/syllabus/${s.id}`)
+                                                }
+                                            >
+                                                <div className="syllabus-folder-icon">
+                                                    📁
+                                                </div>
                                                 <div className="syllabus-folder-name">
                                                     {s.title}
-                                                    <span className={`syllabus-status status-${String(s.status || "").toLowerCase()}`}> {s.status} </span>
+                                                    <span
+                                                        className={`syllabus-status status-${String(
+                                                            s.status || ""
+                                                        ).toLowerCase()}`}
+                                                    >
+                                                        {s.status}
+                                                    </span>
                                                 </div>
                                             </div>
-                                                </div>
+
                                             <div className="syllabus-actions">
                                                 <button
                                                     className="syllabus-more"
                                                     onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleMenu(s.id);
+                                                        e.stopPropagation()
+                                                        toggleMenu(s.id)
                                                     }}
                                                 >
                                                     ⋮
@@ -200,82 +318,111 @@ export default function LecturerCourseDetailPage() {
 
                                                 {openMenuId === s.id && (
                                                     <div className="syllabus-menu">
-                                                        {s.status === "DRAFT" && (
+                                                        {s.status ===
+                                                            "DRAFT" && (
+                                                                <>
+                                                                    <button
+                                                                        className="syllabus-menu-item"
+                                                                        onClick={() =>
+                                                                            handleEdit(
+                                                                                s
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        ✏️ Sửa
+                                                                    </button>
+
+                                                                    <button
+                                                                        className="syllabus-menu-item"
+                                                                        onClick={() =>
+                                                                            nav(
+                                                                                `/lecturer/syllabus/${s.id}/reviews`
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        💬 Xem
+                                                                        review
+                                                                    </button>
+
+                                                                    <button
+                                                                        className="syllabus-menu-item danger"
+                                                                        onClick={() =>
+                                                                            handleDelete(
+                                                                                s.id
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        🗑️ Xóa
+                                                                    </button>
+
+                                                                    <button
+                                                                        className="syllabus-menu-item"
+                                                                        onClick={() =>
+                                                                            handleSubmit(
+                                                                                s.id
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        📤 Submit
+                                                                    </button>
+                                                                </>
+                                                            )}
+
+                                                        {(s.status ===
+                                                            "REQUESTEDIT" ||
+                                                            s.status ===
+                                                            "REJECTED") && (
                                                             <>
                                                                 <button
                                                                     className="syllabus-menu-item"
-                                                                    onClick={() => handleEditSyllabus(s)}
+                                                                    onClick={() =>
+                                                                        handleMoveToDraft(
+                                                                            s.id
+                                                                        )
+                                                                    }
                                                                 >
-                                                                    ✏️ Sửa
-                                                                </button>
-
-                                                                <button className="syllabus-menu-item"
-                                                                        onClick={() => nav(`/lecturer/syllabus/${s.id}/reviews`)}
-                                                                >
-                                                                    💬 Xem review
-                                                                </button>
-
-                                                                <button
-                                                                    className="syllabus-menu-item danger"
-                                                                    onClick={() => handleDeleteSyllabus(s.id)}
-                                                                >
-                                                                    🗑️ Xóa
+                                                                    ✏️ Move
+                                                                    to draft
                                                                 </button>
 
                                                                 <button
                                                                     className="syllabus-menu-item"
-                                                                    onClick={() => handleSubmitSyllabus(s.id)}
+                                                                    onClick={() =>
+                                                                        handleResubmit(
+                                                                            s.id
+                                                                        )
+                                                                    }
                                                                 >
-                                                                    📤 Submit to HoD
+                                                                    🔁 Resubmit
                                                                 </button>
                                                             </>
                                                         )}
 
-                                                        {(s.status === "REQUESTEDIT" || s.status === "REJECTED") && (
-                                                            <>
+                                                        {s.status ===
+                                                            "PUBLISHED" && (
                                                                 <button
                                                                     className="syllabus-menu-item"
-                                                                    onClick={() => handleMoveToDraft(s.id)}
+                                                                    onClick={() =>
+                                                                        handleUpdateVersion(
+                                                                            s.id
+                                                                        )
+                                                                    }
                                                                 >
-                                                                    ✏️ Move to draft để sửa
-                                                                </button>
-
-                                                                <button
-                                                                    className="syllabus-menu-item"
-                                                                    onClick={() => handleResubmitSyllabus(s.id)}
-                                                                >
-                                                                    🔁 Resubmit to HoD
-                                                                </button>
-                                                            </>
-                                                        )}
-
-                                                        {s.status === "PUBLISHED" && (
-                                                            <button
-                                                                className="syllabus-menu-item"
-                                                                onClick={() => handleUpdateVersion(s.id)}
-                                                            >
-                                                                🆕 Update version
-                                                            </button>
-                                                        )}
-
-                                                        {s.status !== "DRAFT" &&
-                                                            s.status !== "REQUESTEDIT" &&
-                                                            s.status !== "REJECTED" && (
-                                                                <button
-                                                                    className="syllabus-menu-item"
-                                                                    onClick={() => setOpenMenuId(null)}
-                                                                >
-                                                                    Đóng
+                                                                    🆕 Update
+                                                                    version
                                                                 </button>
                                                             )}
-                                                    </div>
-                                                )}
 
-
-                                                {/* Nếu muốn hiện ghi chú reject/requestedit */}
-                                                {s.editNote && (
-                                                    <div className="syllabus-note" style={{ marginTop: 6, fontSize: 13, opacity: 0.9 }}>
-                                                        Ghi chú: {s.editNote}
+                                                        <button
+                                                            className="syllabus-menu-item"
+                                                            onClick={() =>
+                                                                setOpenMenuId(
+                                                                    null
+                                                                )
+                                                            }
+                                                        >
+                                                            Đóng
+                                                        </button>
                                                     </div>
                                                 )}
                                             </div>
@@ -283,10 +430,25 @@ export default function LecturerCourseDetailPage() {
                                     ))
                                 )}
                             </div>
+
+                            <PaginationBar
+                                page={page}
+                                totalPages={totalPages}
+                                totalItems={filtered.length}
+                                pageSize={PAGE_SIZE}
+                                onPrev={() =>
+                                    setPage((p) => Math.max(1, p - 1))
+                                }
+                                onNext={() =>
+                                    setPage((p) =>
+                                        Math.min(totalPages, p + 1)
+                                    )
+                                }
+                            />
                         </>
                     )}
                 </div>
             </div>
         </div>
-    );
+    )
 }
