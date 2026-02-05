@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface SyllabusRepository extends JpaRepository<Syllabus, Long> {
+    // để xem/sửa syllabus do minh tạo tranh tạo ròi moi check role tốn query
     Optional<Syllabus> findByIdAndCreatedBy_Id(Long id, Long lecturerId);
     //để tạm check thông tin
     List<Syllabus> findByCreatedBy_Id(Long lecturerId);

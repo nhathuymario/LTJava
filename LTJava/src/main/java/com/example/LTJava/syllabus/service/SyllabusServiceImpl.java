@@ -31,7 +31,6 @@ public class SyllabusServiceImpl implements SyllabusService {
     private final SyllabusRepository syllabusRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
-    @Autowired
     private final SyllabusContentRepository syllabusContentRepository;
 
 

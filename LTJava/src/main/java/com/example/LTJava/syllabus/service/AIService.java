@@ -56,7 +56,7 @@ public class AIService {
         return new String[]{"Lỗi xử lý AI", ""};
     }
 
-    // ... (Code cũ giữ nguyên) ...
+
 
     // --- HÀM MỚI: VIẾT THÔNG BÁO ---
     public String createNotificationMessage(String courseName, String summary, Integer version) {
